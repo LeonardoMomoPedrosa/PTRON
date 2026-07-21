@@ -1,0 +1,22 @@
+# .NET build output
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+*.user
+
+# Rider / VS
+.idea/
+.vs/
+
+# SQLite database (local state) and its WAL/SHM sidecars
+*.db
+*.db-shm
+*.db-wal
+
+# Uploaded images (user content)
+src/PTRON/wwwroot/uploads/
+
+# OS files
+Thumbs.db
+.DS_Store

@@ -1,0 +1,59 @@
+using System.Globalization;
+using Microsoft.EntityFrameworkCore;
+using MudBlazor.Services;
+using PTRON.Data;
+using PTRON.Services;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Brazilian culture for currency/number/date formatting.
+var ptBr = CultureInfo.GetCultureInfo("pt-BR");
+CultureInfo.DefaultThreadCurrentCulture = ptBr;
+CultureInfo.DefaultThreadCurrentUICulture = ptBr;
+
+// Add services to the container.
+builder.Services.AddRazorPages();
+builder.Services.AddServerSideBlazor();
+builder.Services.AddMudServices();
+
+builder.Services.AddDbContextFactory<AppDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("Default")
+                      ?? "Data Source=ptron.db"));
+
+builder.Services.AddScoped<ImageUploadService>();
+
+var app = builder.Build();
+
+// Apply migrations / create the database on startup.
+using (var scope = app.Services.CreateScope())
+{
+    var factory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<AppDbContext>>();
+    using var db = factory.CreateDbContext();
+    db.Database.Migrate();
+}
+
+var supportedCultures = new[] { ptBr };
+app.UseRequestLocalization(new Microsoft.AspNetCore.Builder.RequestLocalizationOptions
+{
+    DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture(ptBr),
+    SupportedCultures = supportedCultures,
+    SupportedUICultures = supportedCultures
+});
+
+// Configure the HTTP request pipeline.
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Error");
+    app.UseHsts();
+}
+
+app.UseHttpsRedirection();
+
+app.UseStaticFiles();
+
+app.UseRouting();
+
+app.MapBlazorHub();
+app.MapFallbackToPage("/_Host");
+
+app.Run();
