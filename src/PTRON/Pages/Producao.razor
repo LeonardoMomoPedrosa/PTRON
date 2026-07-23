@@ -1,6 +1,194 @@
 @page "/producao"
+@inject ProducaoService ProducaoService
+@inject EquipamentoService EquipamentoService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
 
 <PageTitle>Produção</PageTitle>
 
-<MudText Typo="Typo.h5" GutterBottom="true">Produção</MudText>
-<MudAlert Severity="Severity.Info">Em construção (Épico 5).</MudAlert>
+<MudText Typo="Typo.h5" Class="mb-4">Produção</MudText>
+
+<MudPaper Class="pa-4 mb-4" Outlined="true">
+    <MudGrid>
+        <MudItem xs="12" md="6">
+            <MudSelect T="int?" @bind-Value="_equipamentoId" @bind-Value:after="OnEquipamentoChanged"
+                       Label="Equipamento (modelo)"
+                       Clearable="true"
+                       AnchorOrigin="Origin.BottomCenter">
+                @foreach (var eq in _equipamentos)
+                {
+                    <MudSelectItem T="int?" Value="eq.Id">@eq.Nome</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudTextField @bind-Value="_descricao"
+                          Label="Descrição adicional do produto"
+                          MaxLength="1000"
+                          Immediate="true"
+                          HelperText="Ex.: número de série, lote, observação" />
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+@if (_preview is null)
+{
+    <MudAlert Severity="Severity.Info">Selecione um equipamento para revisar os insumos e o custo estimado.</MudAlert>
+}
+else if (_preview.Linhas.Count == 0)
+{
+    <MudAlert Severity="Severity.Warning">
+        O equipamento "@_preview.EquipamentoNome" não possui insumos cadastrados na BOM.
+    </MudAlert>
+}
+else
+{
+    @if (!_preview.PodeProduzir)
+    {
+        <MudAlert Severity="Severity.Error" Class="mb-4" Dense="true">
+            <MudText Typo="Typo.subtitle2">Não é possível produzir — insumos faltantes:</MudText>
+            <ul class="mt-2 mb-0">
+                @foreach (var f in _preview.Faltantes)
+                {
+                    <li>
+                        <b>@f.InsumoNome</b>: necessário @Format.Number(f.QtdNecessaria),
+                        disponível @Format.Number(f.SaldoDisponivel)
+                        (falta @Format.Number(f.Faltante))
+                    </li>
+                }
+            </ul>
+        </MudAlert>
+    }
+    else
+    {
+        <MudAlert Severity="Severity.Success" Class="mb-4" Dense="true">
+            Todos os insumos estão disponíveis. Custo estimado: <b>@Format.Money(_preview.CustoEstimado)</b>
+        </MudAlert>
+    }
+
+    <MudPaper Class="mb-4">
+        <MudTable Items="_preview.Linhas" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm">
+            <HeaderContent>
+                <MudTh>Insumo</MudTh>
+                <MudTh Style="text-align:right">Necessário</MudTh>
+                <MudTh Style="text-align:right">Disponível</MudTh>
+                <MudTh Style="text-align:right">Custo unit.</MudTh>
+                <MudTh Style="text-align:right">Subtotal</MudTh>
+                <MudTh Style="text-align:center">Status</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Insumo">@context.InsumoNome</MudTd>
+                <MudTd DataLabel="Necessário" Style="text-align:right">@Format.Number(context.QtdNecessaria)</MudTd>
+                <MudTd DataLabel="Disponível" Style="text-align:right"
+                       Class="@(context.Disponivel ? null : "mud-error-text")">
+                    @Format.Number(context.SaldoDisponivel)
+                </MudTd>
+                <MudTd DataLabel="Custo unit." Style="text-align:right">@Format.Money(context.CustoUnitario)</MudTd>
+                <MudTd DataLabel="Subtotal" Style="text-align:right">@Format.Money(context.Subtotal)</MudTd>
+                <MudTd DataLabel="Status" Style="text-align:center">
+                    @if (context.Disponivel)
+                    {
+                        <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Small" />
+                    }
+                    else
+                    {
+                        <MudChip T="string" Color="Color.Error" Size="Size.Small">
+                            Falta @Format.Number(context.Faltante)
+                        </MudChip>
+                    }
+                </MudTd>
+            </RowTemplate>
+            <FooterContent>
+                <MudTd></MudTd>
+                <MudTd></MudTd>
+                <MudTd></MudTd>
+                <MudTd Style="text-align:right"><b>Custo estimado</b></MudTd>
+                <MudTd Style="text-align:right"><b>@Format.Money(_preview.CustoEstimado)</b></MudTd>
+                <MudTd></MudTd>
+            </FooterContent>
+        </MudTable>
+    </MudPaper>
+
+    <MudStack Row="true" Justify="Justify.FlexEnd">
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.PrecisionManufacturing"
+                   Disabled="@(!_preview.PodeProduzir || _produzindo)"
+                   OnClick="Produzir">
+            Produzir
+        </MudButton>
+    </MudStack>
+}
+
+@code {
+    private List<Equipamento> _equipamentos = new();
+    private int? _equipamentoId;
+    private string? _descricao;
+    private ProducaoPreview? _preview;
+    private bool _produzindo;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _equipamentos = await EquipamentoService.GetAllAsync();
+    }
+
+    private async Task OnEquipamentoChanged()
+    {
+        _preview = null;
+        if (_equipamentoId is null)
+        {
+            return;
+        }
+
+        _preview = await ProducaoService.GetPreviewAsync(_equipamentoId.Value);
+    }
+
+    private async Task Produzir()
+    {
+        if (_preview is null || !_preview.PodeProduzir)
+        {
+            return;
+        }
+
+        var parameters = new DialogParameters<ConfirmDialog>
+        {
+            {
+                x => x.Message,
+                $"Produzir 1 unidade de \"{_preview.EquipamentoNome}\" com custo estimado de {Format.Money(_preview.CustoEstimado)}? Os insumos serão subtraídos do estoque."
+            },
+            { x => x.ConfirmText, "Produzir" },
+            { x => x.Color, Color.Primary }
+        };
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>("Confirmar produção", parameters);
+        var result = await dialog.Result;
+        if (result is { Canceled: true })
+        {
+            return;
+        }
+
+        _produzindo = true;
+        try
+        {
+            var produto = await ProducaoService.ProduzirAsync(_preview.EquipamentoId, _descricao);
+            Snackbar.Add(
+                $"Produto #{produto.Id} criado. Custo total: {Format.Money(produto.CustoTotal)}.",
+                Severity.Success);
+
+            _descricao = null;
+            // Refresh preview so saldos update.
+            _preview = await ProducaoService.GetPreviewAsync(_preview.EquipamentoId);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+            if (_equipamentoId is not null)
+            {
+                _preview = await ProducaoService.GetPreviewAsync(_equipamentoId.Value);
+            }
+        }
+        finally
+        {
+            _produzindo = false;
+        }
+    }
+}

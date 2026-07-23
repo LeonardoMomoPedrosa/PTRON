@@ -1,0 +1,209 @@
+@inject TipoInsumoService TipoService
+@inject ImageUploadService Images
+@inject ISnackbar Snackbar
+
+<MudDialog OnKeyUp="OnDialogKeyUp">
+    <DialogContent>
+        <MudForm @ref="_form" Model="_model">
+            <MudGrid>
+                <MudItem xs="12" sm="8">
+                    <MudTextField @bind-Value="_model.Nome"
+                                  Label="Nome"
+                                  Required="true"
+                                  RequiredError="O nome é obrigatório."
+                                  MaxLength="150"
+                                  Immediate="true"
+                                  DebounceInterval="0" />
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudSelect T="int?"
+                               @bind-Value="_tipoId"
+                               Label="Tipo"
+                               Required="true"
+                               RequiredError="O tipo é obrigatório."
+                               Clearable="false"
+                               AnchorOrigin="Origin.BottomCenter">
+                        @foreach (var tipo in _tipos)
+                        {
+                            <MudSelectItem T="int?" Value="tipo.Id">@tipo.Nome</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+
+                <MudItem xs="12" sm="4">
+                    <MudTextField @bind-Value="_model.Valor" Label="Valor (opcional)"
+                                  MaxLength="50" HelperText="Ex.: 8Ω, 5µF"
+                                  Immediate="true" DebounceInterval="0" />
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudTextField @bind-Value="_model.Potencia" Label="Potência (opcional)"
+                                  MaxLength="50" HelperText="Ex.: 2W, 5W"
+                                  Immediate="true" DebounceInterval="0" />
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudTextField @bind-Value="_model.Voltagem" Label="Voltagem (opcional)"
+                                  MaxLength="50" HelperText="Ex.: 35V, 400V"
+                                  Immediate="true" DebounceInterval="0" />
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="4">
+                        <MudFileUpload T="IBrowserFile" Accept=".jpg,.jpeg,.png,.gif,.webp"
+                                       FilesChanged="UploadFile">
+                            <CustomContent Context="fileUpload">
+                                <MudButton Variant="Variant.Outlined"
+                                           StartIcon="@Icons.Material.Filled.Image"
+                                           OnClick="@fileUpload.OpenFilePickerAsync">
+                                    @(string.IsNullOrEmpty(_model.FotoPath) ? "Selecionar foto" : "Trocar foto")
+                                </MudButton>
+                            </CustomContent>
+                        </MudFileUpload>
+                        @if (!string.IsNullOrEmpty(_model.FotoPath))
+                        {
+                            <MudImage Src="@_model.FotoPath" Width="56" Height="56"
+                                      ObjectFit="ObjectFit.Cover" Class="rounded" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
+                                           Size="Size.Small" OnClick="RemovePhoto" />
+                        }
+                    </MudStack>
+                </MudItem>
+
+                @if (_isCopyMode)
+                {
+                    <MudItem xs="12">
+                        <MudAlert Severity="Severity.Info" Dense="true">
+                            Cópia do insumo original. Mesmo tipo e nome — altere valor, potência ou voltagem e salve para criar um novo.
+                        </MudAlert>
+                    </MudItem>
+                }
+
+                @if (_model.Id != 0)
+                {
+                    <MudItem xs="6">
+                        <MudTextField Value="@Format.Number(_model.Saldo)" Label="Saldo (estoque)"
+                                      ReadOnly="true" Disabled="true" />
+                    </MudItem>
+                    <MudItem xs="6">
+                        <MudTextField Value="@Format.Money(_model.CustoUnitario)" Label="Custo unitário"
+                                      ReadOnly="true" Disabled="true" />
+                    </MudItem>
+                }
+            </MudGrid>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        @if (_model.Id != 0)
+        {
+            <MudButton Variant="Variant.Outlined"
+                       Color="Color.Secondary"
+                       StartIcon="@Icons.Material.Filled.ContentCopy"
+                       OnClick="StartCopy">
+                Criar cópia com outro valor
+            </MudButton>
+            <MudSpacer />
+        }
+        <MudButton OnClick="Cancel">Cancelar</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit">
+            @(_isCopyMode || _model.Id == 0 ? "Criar" : "Salvar")
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter] public Insumo? Insumo { get; set; }
+
+    private MudForm _form = default!;
+    private Insumo _model = new();
+    private List<TipoInsumo> _tipos = new();
+    private int? _tipoId;
+    private bool _isCopyMode;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _tipos = await TipoService.GetAllAsync();
+
+        _model = Insumo is null
+            ? new Insumo()
+            : new Insumo
+            {
+                Id = Insumo.Id,
+                Nome = Insumo.Nome,
+                TipoInsumoId = Insumo.TipoInsumoId,
+                Valor = Insumo.Valor,
+                Potencia = Insumo.Potencia,
+                Voltagem = Insumo.Voltagem,
+                Saldo = Insumo.Saldo,
+                CustoUnitario = Insumo.CustoUnitario,
+                FotoPath = Insumo.FotoPath
+            };
+
+        _tipoId = Insumo?.TipoInsumoId;
+    }
+
+    private async Task StartCopy()
+    {
+        _model = new Insumo
+        {
+            Id = 0,
+            Nome = _model.Nome,
+            TipoInsumoId = _model.TipoInsumoId,
+            Valor = _model.Valor,
+            Potencia = _model.Potencia,
+            Voltagem = _model.Voltagem,
+            FotoPath = null,
+            Saldo = 0,
+            CustoUnitario = 0
+        };
+        _tipoId = _model.TipoInsumoId == 0 ? null : _model.TipoInsumoId;
+        _isCopyMode = true;
+        await MudDialog.SetTitleAsync("Novo insumo (cópia)");
+    }
+
+    private async Task UploadFile(IBrowserFile? file)
+    {
+        if (file is null)
+        {
+            return;
+        }
+
+        try
+        {
+            _model.FotoPath = await Images.SaveAsync(file);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+
+    private void RemovePhoto() => _model.FotoPath = null;
+
+    private async Task OnDialogKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await Submit();
+        }
+    }
+
+    private async Task Submit()
+    {
+        await _form.ValidateAsync();
+        if (!_form.IsValid || _tipoId is null)
+        {
+            if (_tipoId is null)
+            {
+                Snackbar.Add("Selecione o tipo do insumo.", Severity.Warning);
+            }
+            return;
+        }
+
+        _model.TipoInsumoId = _tipoId.Value;
+        MudDialog.Close(DialogResult.Ok(_model));
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

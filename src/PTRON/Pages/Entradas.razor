@@ -1,6 +1,273 @@
 @page "/entradas"
+@inject EntradaEstoqueService EntradaService
+@inject InsumoService InsumoService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
 
 <PageTitle>Entrada de estoque</PageTitle>
 
-<MudText Typo="Typo.h5" GutterBottom="true">Entrada de estoque</MudText>
-<MudAlert Severity="Severity.Info">Em construção (Épico 4).</MudAlert>
+<MudText Typo="Typo.h5" Class="mb-4">Entrada de estoque</MudText>
+
+<MudTabs Elevation="1" Rounded="true" ApplyEffectsToContainer="true">
+    <MudTabPanel Text="Nova entrada" Icon="@Icons.Material.Filled.AddShoppingCart">
+        <MudPaper Class="pa-4 mb-4 mt-4" Outlined="true">
+            <MudGrid Class="align-end">
+                <MudItem xs="12" sm="5">
+                    <MudAutocomplete T="Insumo"
+                                     @bind-Value="_novoInsumo"
+                                     Label="Insumo"
+                                     SearchFunc="SearchInsumos"
+                                     ToStringFunc="@(i => i is null ? string.Empty : InsumoLabel(i))"
+                                     ResetValueOnEmptyText="true"
+                                     CoerceText="true"
+                                     Clearable="true"
+                                     AnchorOrigin="Origin.BottomCenter" />
+                </MudItem>
+                <MudItem xs="6" sm="2">
+                    <MudNumericField T="decimal" @bind-Value="_novaQtd" Label="Quantidade"
+                                     Min="0m" Step="1m" />
+                </MudItem>
+                <MudItem xs="6" sm="3">
+                    <MudNumericField T="decimal" @bind-Value="_novoPreco" Label="Preço unitário"
+                                     Min="0m" Step="0.01m" Format="N2" Culture="@Format.Culture" />
+                </MudItem>
+                <MudItem xs="12" sm="2">
+                    <MudButton Variant="Variant.Filled" Color="Color.Secondary"
+                               StartIcon="@Icons.Material.Filled.Add" OnClick="AddLinha" FullWidth="true">
+                        Adicionar
+                    </MudButton>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+
+        <MudPaper Class="mb-4">
+            <MudTable Items="_cart" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm">
+                <HeaderContent>
+                    <MudTh>Insumo</MudTh>
+                    <MudTh Style="text-align:right">Qtd</MudTh>
+                    <MudTh Style="text-align:right">Preço unit.</MudTh>
+                    <MudTh Style="text-align:right">Subtotal</MudTh>
+                    <MudTh Style="text-align:right">Ações</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Insumo">@context.Insumo?.Nome</MudTd>
+                    <MudTd DataLabel="Qtd" Style="text-align:right">
+                        <MudNumericField T="decimal" @bind-Value="context.Qtd" Min="0.0001m"
+                                         Variant="Variant.Text" Margin="Margin.Dense"
+                                         Style="max-width:100px; margin-left:auto;" HideSpinButtons="true" />
+                    </MudTd>
+                    <MudTd DataLabel="Preço unit." Style="text-align:right">
+                        <MudNumericField T="decimal" @bind-Value="context.PrecoUnitario" Min="0m"
+                                         Variant="Variant.Text" Margin="Margin.Dense"
+                                         Format="N2" Culture="@Format.Culture"
+                                         Style="max-width:120px; margin-left:auto;" HideSpinButtons="true" />
+                    </MudTd>
+                    <MudTd DataLabel="Subtotal" Style="text-align:right">
+                        @Format.Money(context.Qtd * context.PrecoUnitario)
+                    </MudTd>
+                    <MudTd Style="text-align:right">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small"
+                                       Color="Color.Error" OnClick="@(() => RemoverLinha(context))" />
+                    </MudTd>
+                </RowTemplate>
+                <NoRecordsContent>
+                    <MudText>Nenhum item no carrinho. Adicione insumos acima.</MudText>
+                </NoRecordsContent>
+                <FooterContent>
+                    <MudTd></MudTd>
+                    <MudTd></MudTd>
+                    <MudTd Style="text-align:right"><b>Total</b></MudTd>
+                    <MudTd Style="text-align:right"><b>@Format.Money(TotalCart)</b></MudTd>
+                    <MudTd></MudTd>
+                </FooterContent>
+            </MudTable>
+        </MudPaper>
+
+        <MudStack Row="true" Justify="Justify.FlexEnd" Spacing="2">
+            <MudButton Variant="Variant.Outlined" OnClick="LimparCart" Disabled="@(!_cart.Any())">
+                Limpar
+            </MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Check"
+                       OnClick="Finalizar" Disabled="@(!_cart.Any())">
+                Finalizar entrada
+            </MudButton>
+        </MudStack>
+    </MudTabPanel>
+
+    <MudTabPanel Text="Histórico" Icon="@Icons.Material.Filled.History">
+        <MudTable Items="_historico" Loading="_loadingHistorico" Dense="true" Hover="true" Class="mt-4"
+                  Breakpoint="Breakpoint.Sm" LoadingProgressColor="Color.Primary">
+            <HeaderContent>
+                <MudTh>Data</MudTh>
+                <MudTh Style="text-align:right">Itens</MudTh>
+                <MudTh Style="text-align:right">Total</MudTh>
+                <MudTh Style="text-align:right">Detalhe</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Data">@Format.Date(context.Data)</MudTd>
+                <MudTd DataLabel="Itens" Style="text-align:right">@context.Itens.Count</MudTd>
+                <MudTd DataLabel="Total" Style="text-align:right">
+                    @Format.Money(context.Itens.Sum(i => i.Qtd * i.PrecoUnitario))
+                </MudTd>
+                <MudTd Style="text-align:right">
+                    <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small"
+                                   Color="Color.Primary" OnClick="@(() => VerDetalhe(context))" />
+                </MudTd>
+            </RowTemplate>
+            <NoRecordsContent>
+                <MudText>Nenhuma entrada registrada.</MudText>
+            </NoRecordsContent>
+        </MudTable>
+    </MudTabPanel>
+</MudTabs>
+
+@code {
+    private List<Insumo> _insumos = new();
+    private List<CartLine> _cart = new();
+    private List<EntradaEstoque> _historico = new();
+    private bool _loadingHistorico = true;
+
+    private Insumo? _novoInsumo;
+    private decimal _novaQtd = 1m;
+    private decimal _novoPreco;
+
+    private decimal TotalCart => _cart.Sum(c => c.Qtd * c.PrecoUnitario);
+
+    protected override async Task OnInitializedAsync()
+    {
+        _insumos = await InsumoService.GetAllAsync();
+        await LoadHistorico();
+    }
+
+    private async Task LoadHistorico()
+    {
+        _loadingHistorico = true;
+        _historico = await EntradaService.GetHistoricoAsync();
+        _loadingHistorico = false;
+    }
+
+    private Task<IEnumerable<Insumo>> SearchInsumos(string? value, CancellationToken token)
+    {
+        IEnumerable<Insumo> result = string.IsNullOrWhiteSpace(value)
+            ? _insumos
+            : _insumos.Where(i => i.Nome.Contains(value, StringComparison.OrdinalIgnoreCase));
+        return Task.FromResult(result);
+    }
+
+    private static string InsumoLabel(Insumo i)
+        => $"{i.Nome} (saldo: {Format.Number(i.Saldo)} · {Format.Money(i.CustoUnitario)})";
+
+    private void AddLinha()
+    {
+        if (_novoInsumo is null)
+        {
+            Snackbar.Add("Selecione um insumo.", Severity.Warning);
+            return;
+        }
+
+        if (_novaQtd <= 0)
+        {
+            Snackbar.Add("A quantidade deve ser maior que zero.", Severity.Warning);
+            return;
+        }
+
+        if (_novoPreco < 0)
+        {
+            Snackbar.Add("O preço unitário não pode ser negativo.", Severity.Warning);
+            return;
+        }
+
+        var existing = _cart.FirstOrDefault(c => c.InsumoId == _novoInsumo.Id);
+        if (existing is not null)
+        {
+            // Merge into existing line using weighted average of the two prices.
+            var totalQtd = existing.Qtd + _novaQtd;
+            existing.PrecoUnitario = (existing.Qtd * existing.PrecoUnitario + _novaQtd * _novoPreco) / totalQtd;
+            existing.Qtd = totalQtd;
+        }
+        else
+        {
+            _cart.Add(new CartLine
+            {
+                InsumoId = _novoInsumo.Id,
+                Insumo = _novoInsumo,
+                Qtd = _novaQtd,
+                PrecoUnitario = _novoPreco
+            });
+        }
+
+        _novoInsumo = null;
+        _novaQtd = 1m;
+        _novoPreco = 0m;
+    }
+
+    private void RemoverLinha(CartLine line) => _cart.Remove(line);
+
+    private void LimparCart() => _cart.Clear();
+
+    private async Task Finalizar()
+    {
+        if (!_cart.Any())
+        {
+            return;
+        }
+
+        if (_cart.Any(c => c.Qtd <= 0 || c.PrecoUnitario < 0))
+        {
+            Snackbar.Add("Corrija quantidade e preço de todos os itens antes de finalizar.", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters<ConfirmDialog>
+        {
+            { x => x.Message, $"Finalizar entrada com {_cart.Count} item(ns) no total de {Format.Money(TotalCart)}? Os saldos e custos médios serão atualizados." },
+            { x => x.ConfirmText, "Finalizar" },
+            { x => x.Color, Color.Primary }
+        };
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>("Confirmar entrada", parameters);
+        var result = await dialog.Result;
+        if (result is { Canceled: true })
+        {
+            return;
+        }
+
+        try
+        {
+            var itens = _cart.Select(c => new EntradaEstoqueItem
+            {
+                InsumoId = c.InsumoId,
+                Qtd = c.Qtd,
+                PrecoUnitario = c.PrecoUnitario
+            }).ToList();
+
+            await EntradaService.FinalizarAsync(itens);
+            Snackbar.Add("Entrada de estoque finalizada.", Severity.Success);
+            _cart.Clear();
+            _insumos = await InsumoService.GetAllAsync();
+            await LoadHistorico();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+
+    private async Task VerDetalhe(EntradaEstoque entrada)
+    {
+        var parameters = new DialogParameters<EntradaDetalheDialog>
+        {
+            { x => x.Entrada, entrada }
+        };
+        await DialogService.ShowAsync<EntradaDetalheDialog>(
+            $"Entrada #{entrada.Id} — {Format.Date(entrada.Data)}", parameters);
+    }
+
+    private sealed class CartLine
+    {
+        public int InsumoId { get; set; }
+        public Insumo? Insumo { get; set; }
+        public decimal Qtd { get; set; }
+        public decimal PrecoUnitario { get; set; }
+    }
+}

@@ -1,0 +1,40 @@
+<MudDialog>
+    <DialogContent>
+        <MudTable Items="Entrada.Itens" Dense="true" Hover="true" Elevation="0">
+            <HeaderContent>
+                <MudTh>Insumo</MudTh>
+                <MudTh Style="text-align:right">Qtd</MudTh>
+                <MudTh Style="text-align:right">Preço unit.</MudTh>
+                <MudTh Style="text-align:right">Subtotal</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Insumo">@context.Insumo?.Nome</MudTd>
+                <MudTd DataLabel="Qtd" Style="text-align:right">@Format.Number(context.Qtd)</MudTd>
+                <MudTd DataLabel="Preço unit." Style="text-align:right">@Format.Money(context.PrecoUnitario)</MudTd>
+                <MudTd DataLabel="Subtotal" Style="text-align:right">
+                    @Format.Money(context.Qtd * context.PrecoUnitario)
+                </MudTd>
+            </RowTemplate>
+            <FooterContent>
+                <MudTd></MudTd>
+                <MudTd></MudTd>
+                <MudTd Style="text-align:right"><b>Total</b></MudTd>
+                <MudTd Style="text-align:right">
+                    <b>@Format.Money(Entrada.Itens.Sum(i => i.Qtd * i.PrecoUnitario))</b>
+                </MudTd>
+            </FooterContent>
+        </MudTable>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Close" Color="Color.Primary" Variant="Variant.Filled">Fechar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter] public EntradaEstoque Entrada { get; set; } = default!;
+
+    private void Close() => MudDialog.Close();
+}

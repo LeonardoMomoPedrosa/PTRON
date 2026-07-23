@@ -1,0 +1,221 @@
+@inject InsumoService InsumoService
+@inject ImageUploadService Images
+@inject ISnackbar Snackbar
+
+<MudDialog OnKeyUp="OnDialogKeyUp">
+    <DialogContent>
+            <MudForm @ref="_form" Model="_model">
+                <MudGrid>
+                <MudItem xs="12" sm="8">
+                    <MudTextField @bind-Value="_model.Nome"
+                                  Label="Nome"
+                                  Required="true"
+                                  RequiredError="O nome é obrigatório."
+                                  MaxLength="150"
+                                  Immediate="true"
+                                  DebounceInterval="0" />
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                        <MudFileUpload T="IBrowserFile" Accept=".jpg,.jpeg,.png,.gif,.webp"
+                                       FilesChanged="UploadFile">
+                            <CustomContent Context="fileUpload">
+                                <MudButton Variant="Variant.Outlined"
+                                           StartIcon="@Icons.Material.Filled.Image"
+                                           OnClick="@fileUpload.OpenFilePickerAsync">
+                                    @(string.IsNullOrEmpty(_model.FotoPath) ? "Foto" : "Trocar")
+                                </MudButton>
+                            </CustomContent>
+                        </MudFileUpload>
+                        @if (!string.IsNullOrEmpty(_model.FotoPath))
+                        {
+                            <MudImage Src="@_model.FotoPath" Width="48" Height="48"
+                                      ObjectFit="ObjectFit.Cover" Class="rounded" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
+                                           Size="Size.Small" OnClick="@(() => _model.FotoPath = null)" />
+                        }
+                    </MudStack>
+                </MudItem>
+            </MudGrid>
+
+            <MudText Typo="Typo.subtitle1" Class="mt-4 mb-2">Insumos do equipamento</MudText>
+
+            <MudGrid Class="align-end">
+                <MudItem xs="12" sm="7">
+                    <MudAutocomplete T="Insumo"
+                                     @bind-Value="_novoInsumo"
+                                     Label="Insumo"
+                                     SearchFunc="SearchInsumos"
+                                     ToStringFunc="@(i => i?.Nome ?? string.Empty)"
+                                     ResetValueOnEmptyText="true"
+                                     CoerceText="true"
+                                     Clearable="true"
+                                     AnchorOrigin="Origin.BottomCenter" />
+                </MudItem>
+                <MudItem xs="8" sm="3">
+                    <MudNumericField T="decimal" @bind-Value="_novaQtd" Label="Qtd"
+                                     Min="0" Step="1"
+                                     Immediate="true" DebounceInterval="0" />
+                </MudItem>
+                <MudItem xs="4" sm="2">
+                    <MudButton Variant="Variant.Filled" Color="Color.Secondary"
+                               StartIcon="@Icons.Material.Filled.Add" OnClick="AddInsumo" FullWidth="true">
+                        Add
+                    </MudButton>
+                </MudItem>
+            </MudGrid>
+
+            <MudTable Items="_bom" Dense="true" Class="mt-2" Elevation="0">
+                <HeaderContent>
+                    <MudTh>Insumo</MudTh>
+                    <MudTh Style="text-align:right">Qtd</MudTh>
+                    <MudTh Style="text-align:right"></MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Insumo">@context.Insumo?.Nome</MudTd>
+                    <MudTd DataLabel="Qtd" Style="text-align:right">@Format.Number(context.Qtd)</MudTd>
+                    <MudTd Style="text-align:right">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small"
+                                       Color="Color.Error" OnClick="@(() => RemoveRow(context))" />
+                    </MudTd>
+                </RowTemplate>
+                <NoRecordsContent>
+                    <MudText Typo="Typo.body2">Nenhum insumo adicionado.</MudText>
+                </NoRecordsContent>
+            </MudTable>
+            </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancelar</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit">Salvar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter] public Equipamento? Equipamento { get; set; }
+
+    private MudForm _form = default!;
+    private Equipamento _model = new();
+    private List<EquipamentoInsumo> _bom = new();
+    private List<Insumo> _insumos = new();
+
+    private Insumo? _novoInsumo;
+    private decimal _novaQtd = 1m;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _insumos = await InsumoService.GetAllAsync();
+
+        if (Equipamento is null)
+        {
+            _model = new Equipamento();
+            _bom = new List<EquipamentoInsumo>();
+        }
+        else
+        {
+            _model = new Equipamento { Id = Equipamento.Id, Nome = Equipamento.Nome, FotoPath = Equipamento.FotoPath };
+            _bom = Equipamento.Insumos
+                .Select(ei => new EquipamentoInsumo
+                {
+                    InsumoId = ei.InsumoId,
+                    Qtd = ei.Qtd,
+                    Insumo = ei.Insumo ?? _insumos.FirstOrDefault(i => i.Id == ei.InsumoId)
+                })
+                .ToList();
+        }
+    }
+
+    private Task<IEnumerable<Insumo>> SearchInsumos(string? value, CancellationToken token)
+    {
+        IEnumerable<Insumo> result = string.IsNullOrWhiteSpace(value)
+            ? _insumos
+            : _insumos.Where(i => i.Nome.Contains(value, StringComparison.OrdinalIgnoreCase));
+        return Task.FromResult(result);
+    }
+
+    private void AddInsumo()
+    {
+        if (_novoInsumo is null)
+        {
+            Snackbar.Add("Selecione um insumo.", Severity.Warning);
+            return;
+        }
+
+        if (_novaQtd <= 0)
+        {
+            Snackbar.Add("A quantidade deve ser maior que zero.", Severity.Warning);
+            return;
+        }
+
+        var existing = _bom.FirstOrDefault(b => b.InsumoId == _novoInsumo.Id);
+        if (existing is not null)
+        {
+            existing.Qtd += _novaQtd;
+        }
+        else
+        {
+            _bom.Add(new EquipamentoInsumo
+            {
+                InsumoId = _novoInsumo.Id,
+                Qtd = _novaQtd,
+                Insumo = _novoInsumo
+            });
+        }
+
+        _novoInsumo = null;
+        _novaQtd = 1m;
+    }
+
+    private void RemoveRow(EquipamentoInsumo row) => _bom.Remove(row);
+
+    private async Task UploadFile(IBrowserFile? file)
+    {
+        if (file is null)
+        {
+            return;
+        }
+
+        try
+        {
+            _model.FotoPath = await Images.SaveAsync(file);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+
+    private async Task OnDialogKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key != "Enter")
+        {
+            return;
+        }
+
+        // Enter with an insumo selected adds a BOM line; otherwise saves the equipment.
+        if (_novoInsumo is not null)
+        {
+            AddInsumo();
+            return;
+        }
+
+        await Submit();
+    }
+
+    private async Task Submit()
+    {
+        await _form.ValidateAsync();
+        if (!_form.IsValid)
+        {
+            return;
+        }
+
+        _model.Insumos = _bom;
+        MudDialog.Close(DialogResult.Ok(_model));
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

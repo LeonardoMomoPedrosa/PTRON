@@ -1,6 +1,149 @@
 @page "/equipamentos"
+@inject EquipamentoService EquipamentoService
+@inject InsumoService InsumoService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
 
 <PageTitle>Equipamentos</PageTitle>
 
-<MudText Typo="Typo.h5" GutterBottom="true">Equipamentos</MudText>
-<MudAlert Severity="Severity.Info">Em construção (Épico 3).</MudAlert>
+<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4">
+    <MudText Typo="Typo.h5">Equipamentos</MudText>
+    <MudSpacer />
+    <MudButton StartIcon="@Icons.Material.Filled.Add"
+               Color="Color.Primary"
+               Variant="Variant.Filled"
+               OnClick="OpenCreate">
+        Novo equipamento
+    </MudButton>
+</MudStack>
+
+<MudPaper>
+    <MudTable Items="_equipamentos"
+              Loading="_loading"
+              Hover="true"
+              Dense="true"
+              Breakpoint="Breakpoint.Sm"
+              LoadingProgressColor="Color.Primary">
+        <HeaderContent>
+            <MudTh Style="width:64px">Foto</MudTh>
+            <MudTh>Nome</MudTh>
+            <MudTh Style="text-align:right">Insumos</MudTh>
+            <MudTh Style="text-align:right">Ações</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Foto">
+                @if (!string.IsNullOrEmpty(context.FotoPath))
+                {
+                    <MudImage Src="@context.FotoPath" Width="40" Height="40"
+                              ObjectFit="ObjectFit.Cover" Class="rounded" />
+                }
+                else
+                {
+                    <MudIcon Icon="@Icons.Material.Filled.DeveloperBoard" Color="Color.Default" />
+                }
+            </MudTd>
+            <MudTd DataLabel="Nome">@context.Nome</MudTd>
+            <MudTd DataLabel="Insumos" Style="text-align:right">@context.Insumos.Count</MudTd>
+            <MudTd DataLabel="Ações" Style="text-align:right">
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small"
+                               Color="Color.Primary" OnClick="@(() => OpenEdit(context))" />
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small"
+                               Color="Color.Error" OnClick="@(() => Delete(context))" />
+            </MudTd>
+        </RowTemplate>
+        <NoRecordsContent>
+            <MudText>Nenhum equipamento cadastrado.</MudText>
+        </NoRecordsContent>
+    </MudTable>
+</MudPaper>
+
+@code {
+    private List<Equipamento> _equipamentos = new();
+    private bool _loading = true;
+
+    protected override async Task OnInitializedAsync() => await Load();
+
+    private async Task Load()
+    {
+        _loading = true;
+        _equipamentos = await EquipamentoService.GetAllAsync();
+        _loading = false;
+    }
+
+    private async Task OpenCreate()
+    {
+        if ((await InsumoService.GetAllAsync()).Count == 0)
+        {
+            Snackbar.Add("Cadastre ao menos um insumo antes de criar equipamentos.", Severity.Warning);
+            return;
+        }
+
+        var dialog = await DialogService.ShowAsync<EquipamentoDialog>("Novo equipamento");
+        var result = await dialog.Result;
+        if (result is { Canceled: false, Data: Equipamento novo })
+        {
+            try
+            {
+                await EquipamentoService.CreateAsync(novo);
+                Snackbar.Add("Equipamento criado.", Severity.Success);
+                await Load();
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add(ex.Message, Severity.Error);
+            }
+        }
+    }
+
+    private async Task OpenEdit(Equipamento equipamento)
+    {
+        var full = await EquipamentoService.GetWithBomAsync(equipamento.Id);
+        if (full is null)
+        {
+            Snackbar.Add("Equipamento não encontrado.", Severity.Error);
+            await Load();
+            return;
+        }
+
+        var parameters = new DialogParameters<EquipamentoDialog> { { x => x.Equipamento, full } };
+        var dialog = await DialogService.ShowAsync<EquipamentoDialog>("Editar equipamento", parameters);
+        var result = await dialog.Result;
+        if (result is { Canceled: false, Data: Equipamento editado })
+        {
+            try
+            {
+                await EquipamentoService.UpdateAsync(editado);
+                Snackbar.Add("Equipamento atualizado.", Severity.Success);
+                await Load();
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add(ex.Message, Severity.Error);
+            }
+        }
+    }
+
+    private async Task Delete(Equipamento equipamento)
+    {
+        var parameters = new DialogParameters<ConfirmDialog>
+        {
+            { x => x.Message, $"Excluir o equipamento \"{equipamento.Nome}\" e sua lista de insumos?" },
+            { x => x.ConfirmText, "Excluir" }
+        };
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>("Confirmar exclusão", parameters);
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            try
+            {
+                await EquipamentoService.DeleteAsync(equipamento.Id);
+                Snackbar.Add("Equipamento excluído.", Severity.Success);
+                await Load();
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add(ex.Message, Severity.Error);
+            }
+        }
+    }
+}

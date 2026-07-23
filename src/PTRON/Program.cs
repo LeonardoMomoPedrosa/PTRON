@@ -21,15 +21,27 @@ builder.Services.AddDbContextFactory<AppDbContext>(options =>
                       ?? "Data Source=ptron.db"));
 
 builder.Services.AddScoped<ImageUploadService>();
+builder.Services.AddScoped<TipoInsumoService>();
+builder.Services.AddScoped<InsumoService>();
+builder.Services.AddScoped<EquipamentoService>();
+builder.Services.AddScoped<EntradaEstoqueService>();
+builder.Services.AddScoped<ProducaoService>();
+builder.Services.AddScoped<ProdutoService>();
 
 var app = builder.Build();
 
-// Apply migrations / create the database on startup.
+// Apply migrations / create the database on startup, then seed if empty.
 using (var scope = app.Services.CreateScope())
 {
     var factory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<AppDbContext>>();
     using var db = factory.CreateDbContext();
     db.Database.Migrate();
+
+    // Ensure upload folder exists.
+    var env = scope.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
+    Directory.CreateDirectory(Path.Combine(env.WebRootPath, "uploads"));
+
+    await SeedData.EnsureSeededAsync(factory);
 }
 
 var supportedCultures = new[] { ptBr };

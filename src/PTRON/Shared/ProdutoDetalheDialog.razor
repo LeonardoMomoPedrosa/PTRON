@@ -1,0 +1,52 @@
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="2" Class="mb-4">
+            <MudText><b>Equipamento:</b> @Produto.Equipamento?.Nome</MudText>
+            <MudText><b>Data:</b> @Format.Date(Produto.Data)</MudText>
+            <MudText>
+                <b>Descrição:</b>
+                @(string.IsNullOrWhiteSpace(Produto.DescricaoAdicional) ? "—" : Produto.DescricaoAdicional)
+            </MudText>
+            <MudText><b>Custo total:</b> @Format.Money(Produto.CustoTotal)</MudText>
+        </MudStack>
+
+        <MudText Typo="Typo.subtitle2" Class="mb-2">Insumos consumidos (snapshot)</MudText>
+        <MudTable Items="Produto.Insumos" Dense="true" Hover="true" Elevation="0">
+            <HeaderContent>
+                <MudTh>Insumo</MudTh>
+                <MudTh Style="text-align:right">Qtd</MudTh>
+                <MudTh Style="text-align:right">Preço unit.</MudTh>
+                <MudTh Style="text-align:right">Subtotal</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Insumo">@context.Insumo?.Nome</MudTd>
+                <MudTd DataLabel="Qtd" Style="text-align:right">@Format.Number(context.Qtd)</MudTd>
+                <MudTd DataLabel="Preço unit." Style="text-align:right">@Format.Money(context.PrecoUnitario)</MudTd>
+                <MudTd DataLabel="Subtotal" Style="text-align:right">
+                    @Format.Money(context.Qtd * context.PrecoUnitario)
+                </MudTd>
+            </RowTemplate>
+            <FooterContent>
+                <MudTd></MudTd>
+                <MudTd></MudTd>
+                <MudTd Style="text-align:right"><b>Total</b></MudTd>
+                <MudTd Style="text-align:right"><b>@Format.Money(Produto.CustoTotal)</b></MudTd>
+            </FooterContent>
+            <NoRecordsContent>
+                <MudText>Nenhum insumo registrado.</MudText>
+            </NoRecordsContent>
+        </MudTable>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Close" Color="Color.Primary" Variant="Variant.Filled">Fechar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter] public Produto Produto { get; set; } = default!;
+
+    private void Close() => MudDialog.Close();
+}

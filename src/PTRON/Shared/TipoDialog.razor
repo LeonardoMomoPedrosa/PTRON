@@ -1,0 +1,56 @@
+<MudDialog OnKeyUp="OnDialogKeyUp">
+    <DialogContent>
+        <MudForm @ref="_form" Model="_model">
+            <MudTextField @bind-Value="_model.Nome"
+                          Label="Nome"
+                          Required="true"
+                          RequiredError="O nome é obrigatório."
+                          MaxLength="100"
+                          Immediate="true"
+                          DebounceInterval="0"
+                          HelperText="Ex.: Resistor, Diodo, Capacitor, Válvula" />
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancelar</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit">Salvar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter] public TipoInsumo? Tipo { get; set; }
+
+    private MudForm _form = default!;
+    private TipoInsumo _model = new();
+
+    protected override void OnInitialized()
+    {
+        _model = Tipo is null
+            ? new TipoInsumo()
+            : new TipoInsumo { Id = Tipo.Id, Nome = Tipo.Nome };
+    }
+
+    private async Task OnDialogKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await Submit();
+        }
+    }
+
+    private async Task Submit()
+    {
+        await _form.ValidateAsync();
+        if (!_form.IsValid)
+        {
+            return;
+        }
+
+        MudDialog.Close(DialogResult.Ok(_model));
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

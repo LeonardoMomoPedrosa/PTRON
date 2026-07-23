@@ -15,15 +15,15 @@ Aplicativo de controle de produção de equipamentos eletrônicos (uso pessoal).
 | Épico | Descrição | Status |
 |-------|-----------|--------|
 | 0 | Fundação do projeto | ✅ Concluído |
-| 1 | Cadastro de Tipos | ⬜ Pendente |
-| 2 | Cadastro de Insumos | ⬜ Pendente |
-| 3 | Equipamentos / Modelos | ⬜ Pendente |
-| 4 | Entrada de Estoque | ⬜ Pendente |
-| 5 | Produção | ⬜ Pendente |
-| 6 | Produtos | ⬜ Pendente |
-| 7 | Acabamento | ⬜ Pendente |
+| 1 | Cadastro de Tipos | ✅ Concluído |
+| 2 | Cadastro de Insumos | ✅ Concluído |
+| 3 | Equipamentos / Modelos | ✅ Concluído |
+| 4 | Entrada de Estoque | ✅ Concluído |
+| 5 | Produção | ✅ Concluído |
+| 6 | Produtos | ✅ Concluído |
+| 7 | Acabamento | ✅ Concluído |
 
-> Última atualização: Épico 0 finalizado — projeto compila (0 warnings), executa, aplica migrations e cria `ptron.db`. Próximo: Épico 1.
+> Última atualização: Épico 7 finalizado — seed, validações, smoke test do fluxo completo e README atualizado. **Plano completo (E0–E7).**
 
 ## Modelo de dados
 
@@ -55,72 +55,88 @@ Preparar o esqueleto técnico antes das funcionalidades.
 
 ---
 
-## Épico 1 — Cadastro de Tipos (item 1)
+## Épico 1 — Cadastro de Tipos (item 1) ✅
 
-- **E1-S1** — Listar tipos em tabela.
-- **E1-S2** — Criar/editar tipo (campo Nome) via diálogo.
-- **E1-S3** — Excluir tipo, bloqueando exclusão se houver insumos vinculados.
+- [x] **E1-S1** — Listar tipos em `MudTable` (ordenado por nome, estado vazio e loading).
+- [x] **E1-S2** — Criar/editar tipo (campo Nome) via `TipoDialog` com validação (`MudForm`).
+- [x] **E1-S3** — Excluir tipo com `ConfirmDialog`, bloqueando quando houver insumos vinculados (aviso via `Snackbar`).
 
----
-
-## Épico 2 — Cadastro de Insumos (item 2)
-
-- **E2-S1** — Listar insumos (Nome, Tipo, Saldo, Custo unitário, miniatura da foto).
-- **E2-S2** — Criar/editar insumo: seleção de Tipo (dropdown), campos opcionais (valor, potência, voltagem), upload de foto opcional.
-- **E2-S3** — Saldo e Custo unitário exibidos como somente-leitura (sempre 0 no cadastro).
-- **E2-S4** — Excluir insumo, bloqueando se estiver em BOM ou tiver saldo/movimentos.
-- **E2-S5** — Busca/filtro por nome e por tipo.
+**Implementação:** `TipoInsumoService` (CRUD + `CountInsumosAsync`) via `IDbContextFactory`; `ConfirmDialog` reutilizável; feedback por `ISnackbar`. Registrado em DI.
 
 ---
 
-## Épico 3 — Cadastro de Equipamentos / Modelos (item 3 + 3a)
+## Épico 2 — Cadastro de Insumos (item 2) ✅
 
-- **E3-S1** — Listar equipamentos (Nome, foto).
-- **E3-S2** — Criar/editar equipamento (Nome + foto).
-- **E3-S3** — Editor de BOM: adicionar/remover insumos com quantidade (autocomplete de insumo).
-- **E3-S4** — Excluir equipamento (e sua BOM), preservando produtos já feitos.
+- [x] **E2-S1** — Listar insumos (Foto, Nome, Tipo, Especificações, Saldo, Custo unitário) em `MudTable`.
+- [x] **E2-S2** — Criar/editar via `InsumoDialog`: `MudSelect` de Tipo, campos opcionais, upload de foto (`MudFileUpload` → `ImageUploadService`) com preview/remover.
+- [x] **E2-S3** — Saldo e Custo unitário exibidos somente-leitura (visíveis apenas na edição); zerados no cadastro.
+- [x] **E2-S4** — Excluir insumo bloqueando quando em BOM, com movimentações de estoque, usado em produtos ou com saldo.
+- [x] **E2-S5** — Busca por nome (debounce) + filtro por tipo.
+
+**Implementação:** `InsumoService` (CRUD, limpeza de fotos, guardas de exclusão). Testado no navegador.
 
 ---
 
-## Épico 4 — Entrada de Estoque (item 4)
+## Épico 3 — Cadastro de Equipamentos / Modelos (item 3 + 3a) ✅
 
-- **E4-S1** — Tela "cart": adicionar linhas de insumo via autocomplete + Quantidade + Preço unitário.
-- **E4-S2** — Editar/remover linhas antes de finalizar; total da entrada exibido.
-- **E4-S3** — Finalizar entrada (transação): para cada insumo, recalcular **custo médio ponderado** e incrementar Saldo.
+- [x] **E3-S1** — Listar equipamentos (Foto, Nome, contagem de insumos) em `MudTable`.
+- [x] **E3-S2** — Criar/editar via `EquipamentoDialog` (Nome + foto).
+- [x] **E3-S3** — Editor de BOM: `MudAutocomplete` de insumo + quantidade, adicionar/remover linhas (mescla duplicados).
+- [x] **E3-S4** — Excluir equipamento e sua BOM (cascade); **bloqueado** quando há produtos produzidos, preservando-os.
+
+**Implementação:** `EquipamentoService` (CRUD + reconciliação de BOM, limpeza de foto, guarda de produtos). Testado no navegador (BOM recarrega na edição).
+
+> Decisão: como `Produto` referencia `Equipamento` (RESTRICT), a exclusão é bloqueada quando existem produtos — assim os produtos já feitos são preservados.
+
+---
+
+## Épico 4 — Entrada de Estoque (item 4) ✅
+
+- [x] **E4-S1** — Tela "cart" com autocomplete de insumo + Quantidade + Preço unitário.
+- [x] **E4-S2** — Editar/remover linhas no carrinho; total exibido; mescla de duplicados.
+- [x] **E4-S3** — Finalizar em transação: grava `EntradaEstoque` + itens e recalcula custo médio ponderado.
   - `novoCusto = (Saldo*CustoUnitario + Σ qtd*preço) / (Saldo + Σ qtd)`
-- **E4-S4** — Histórico de entradas (opcional, somente leitura).
+- [x] **E4-S4** — Aba Histórico (somente leitura) com diálogo de detalhe.
+
+**Implementação:** `EntradaEstoqueService.FinalizarAsync`; `Entradas.razor` com abas Nova entrada / Histórico; `EntradaDetalheDialog`. Verificado no navegador com o exemplo da especificação.
 
 ---
 
-## Épico 5 — Produção (item 5)
+## Épico 5 — Produção (item 5) ✅
 
-- **E5-S1** — Selecionar equipamento; exibir BOM com necessário x disponível e **custo estimado**.
-- **E5-S2** — Validar disponibilidade; se faltar insumo, bloquear e listar os faltantes.
-- **E5-S3** — Campo "Descrição adicional do produto".
-- **E5-S4** — Produzir (transação): subtrair saldo, criar `Produto` + `ProdutoInsumo` (snapshot de custo), calcular `CustoTotal`.
+- [x] **E5-S1** — Selecionar equipamento; exibir BOM com necessário × disponível e custo estimado.
+- [x] **E5-S2** — Validar disponibilidade; se faltar, bloquear "Produzir" e listar faltantes.
+- [x] **E5-S3** — Campo "Descrição adicional do produto".
+- [x] **E5-S4** — Produzir (transação): subtrair saldo, criar `Produto` + `ProdutoInsumo` (snapshot), calcular `CustoTotal`.
 
----
-
-## Épico 6 — Produtos (item 6 + 6a)
-
-- **E6-S1** — Listar produtos produzidos (equipamento, descrição, data, custo total/unitário).
-- **E6-S2** — Detalhe do produto com insumos consumidos e custos (snapshot).
-- **E6-S3** — Excluir produto (transação): devolver insumos ao estoque (saldo).
-- **E6-S4** — Garantir que alterar BOM de um modelo NÃO afeta produtos já criados.
+**Implementação:** `ProducaoService` (`GetPreviewAsync`, `ProduzirAsync`); `Producao.razor`. Verificado no navegador (bloqueio → estoque → produção → saldos atualizados).
 
 ---
 
-## Épico 7 — Acabamento
+## Épico 6 — Produtos (item 6 + 6a) ✅
 
-- **E7-S1** — Seed de dados de exemplo (tipos + insumos) para teste.
-- **E7-S2** — Validações de formulário e mensagens de erro amigáveis.
-- **E7-S3** — Teste manual do fluxo completo: cadastro → entrada → produção → listagem → exclusão.
-- **E7-S4** — README com instruções de execução e backup do `ptron.db`.
+- [x] **E6-S1** — Listar produtos (Id, equipamento, descrição, data, custo total).
+- [x] **E6-S2** — Detalhe com insumos consumidos e custos (snapshot) via `ProdutoDetalheDialog`.
+- [x] **E6-S3** — Excluir produto (transação): devolve quantidades ao `Saldo` dos insumos.
+- [x] **E6-S4** — Alterar BOM do modelo **não** altera produtos já feitos (snapshot independente).
+
+**Implementação:** `ProdutoService` (`GetAllAsync`, `GetWithInsumosAsync`, `DeleteAsync`); `Produtos.razor`. Verificado no navegador (listagem → detalhe → BOM editada sem afetar produto → exclusão restaurando estoque).
+
+---
+
+## Épico 7 — Acabamento ✅
+
+- [x] **E7-S1** — Seed idempotente (`SeedData`): 6 tipos + 7 insumos quando o banco está vazio; pasta `uploads/` criada no startup.
+- [x] **E7-S2** — Validações reforçadas: nome obrigatório (trim), tipo obrigatório no insumo, nome de tipo único (case-insensitive); mensagens em português via Snackbar.
+- [x] **E7-S3** — Smoke test do fluxo: produção → listagem → exclusão (+ validação de tipo duplicado).
+- [x] **E7-S4** — README atualizado (execução, seed, backup WAL/uploads, status completo).
+
+**Implementação:** `Data/SeedData.cs`; `Services/Validation.cs`; ajustes em `TipoInsumoService` / `InsumoService` / `EquipamentoService` / `Program.cs` / `README.md`.
 
 ---
 
 ## Ordem sugerida de execução
 
-~~E0~~ → **E1** (próximo) → E2 → E3 → E4 → E5 → E6 → E7
+~~E0~~ → ~~E1~~ → ~~E2~~ → ~~E3~~ → ~~E4~~ → ~~E5~~ → ~~E6~~ → ~~E7~~ ✅
 
-(As funcionalidades de valor real começam a aparecer no E4/E5; E1–E3 são pré-requisitos de dados.)
+**Plano completo.**

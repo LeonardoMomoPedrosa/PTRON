@@ -1,6 +1,133 @@
 @page "/tipos"
+@inject TipoInsumoService TipoService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
 
 <PageTitle>Tipos</PageTitle>
 
-<MudText Typo="Typo.h5" GutterBottom="true">Tipos</MudText>
-<MudAlert Severity="Severity.Info">Em construção (Épico 1).</MudAlert>
+<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4">
+    <MudText Typo="Typo.h5">Tipos</MudText>
+    <MudSpacer />
+    <MudButton StartIcon="@Icons.Material.Filled.Add"
+               Color="Color.Primary"
+               Variant="Variant.Filled"
+               OnClick="OpenCreate">
+        Novo tipo
+    </MudButton>
+</MudStack>
+
+<MudPaper>
+    <MudTable Items="_tipos"
+              Loading="_loading"
+              Hover="true"
+              Dense="true"
+              Breakpoint="Breakpoint.Sm"
+              LoadingProgressColor="Color.Primary">
+        <HeaderContent>
+            <MudTh>Nome</MudTh>
+            <MudTh Style="text-align:right">Ações</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Nome">@context.Nome</MudTd>
+            <MudTd DataLabel="Ações" Style="text-align:right">
+                <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                               Size="Size.Small"
+                               Color="Color.Primary"
+                               OnClick="@(() => OpenEdit(context))" />
+                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                               Size="Size.Small"
+                               Color="Color.Error"
+                               OnClick="@(() => Delete(context))" />
+            </MudTd>
+        </RowTemplate>
+        <NoRecordsContent>
+            <MudText>Nenhum tipo cadastrado.</MudText>
+        </NoRecordsContent>
+    </MudTable>
+</MudPaper>
+
+@code {
+    private List<TipoInsumo> _tipos = new();
+    private bool _loading = true;
+
+    protected override async Task OnInitializedAsync() => await Load();
+
+    private async Task Load()
+    {
+        _loading = true;
+        _tipos = await TipoService.GetAllAsync();
+        _loading = false;
+    }
+
+    private async Task OpenCreate()
+    {
+        var dialog = await DialogService.ShowAsync<TipoDialog>("Novo tipo");
+        var result = await dialog.Result;
+        if (result is { Canceled: false, Data: TipoInsumo novo })
+        {
+            try
+            {
+                await TipoService.CreateAsync(novo);
+                Snackbar.Add("Tipo criado.", Severity.Success);
+                await Load();
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add(ex.Message, Severity.Error);
+            }
+        }
+    }
+
+    private async Task OpenEdit(TipoInsumo tipo)
+    {
+        var parameters = new DialogParameters<TipoDialog> { { x => x.Tipo, tipo } };
+        var dialog = await DialogService.ShowAsync<TipoDialog>("Editar tipo", parameters);
+        var result = await dialog.Result;
+        if (result is { Canceled: false, Data: TipoInsumo editado })
+        {
+            try
+            {
+                await TipoService.UpdateAsync(editado);
+                Snackbar.Add("Tipo atualizado.", Severity.Success);
+                await Load();
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add(ex.Message, Severity.Error);
+            }
+        }
+    }
+
+    private async Task Delete(TipoInsumo tipo)
+    {
+        var count = await TipoService.CountInsumosAsync(tipo.Id);
+        if (count > 0)
+        {
+            Snackbar.Add(
+                $"Não é possível excluir \"{tipo.Nome}\": {count} insumo(s) vinculado(s).",
+                Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters<ConfirmDialog>
+        {
+            { x => x.Message, $"Excluir o tipo \"{tipo.Nome}\"?" },
+            { x => x.ConfirmText, "Excluir" }
+        };
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>("Confirmar exclusão", parameters);
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            try
+            {
+                await TipoService.DeleteAsync(tipo.Id);
+                Snackbar.Add("Tipo excluído.", Severity.Success);
+                await Load();
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add(ex.Message, Severity.Error);
+            }
+        }
+    }
+}

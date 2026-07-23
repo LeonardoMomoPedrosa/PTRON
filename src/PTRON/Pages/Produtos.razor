@@ -1,6 +1,111 @@
 @page "/produtos"
+@inject ProdutoService ProdutoService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
 
 <PageTitle>Produtos</PageTitle>
 
-<MudText Typo="Typo.h5" GutterBottom="true">Produtos</MudText>
-<MudAlert Severity="Severity.Info">Em construção (Épico 6).</MudAlert>
+<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4">
+    <MudText Typo="Typo.h5">Produtos</MudText>
+    <MudSpacer />
+    <MudText Typo="Typo.body2" Class="mud-secondary-text">
+        Criados apenas pela produção. Excluir devolve os insumos ao estoque.
+    </MudText>
+</MudStack>
+
+<MudPaper>
+    <MudTable Items="_produtos"
+              Loading="_loading"
+              Hover="true"
+              Dense="true"
+              Breakpoint="Breakpoint.Sm"
+              LoadingProgressColor="Color.Primary">
+        <HeaderContent>
+            <MudTh>#</MudTh>
+            <MudTh>Equipamento</MudTh>
+            <MudTh>Descrição</MudTh>
+            <MudTh>Data</MudTh>
+            <MudTh Style="text-align:right">Custo total</MudTh>
+            <MudTh Style="text-align:right">Ações</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="#">@context.Id</MudTd>
+            <MudTd DataLabel="Equipamento">@context.Equipamento?.Nome</MudTd>
+            <MudTd DataLabel="Descrição">
+                @(string.IsNullOrWhiteSpace(context.DescricaoAdicional) ? "—" : context.DescricaoAdicional)
+            </MudTd>
+            <MudTd DataLabel="Data">@Format.Date(context.Data)</MudTd>
+            <MudTd DataLabel="Custo total" Style="text-align:right">@Format.Money(context.CustoTotal)</MudTd>
+            <MudTd DataLabel="Ações" Style="text-align:right">
+                <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small"
+                               Color="Color.Primary" OnClick="@(() => VerDetalhe(context))" />
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small"
+                               Color="Color.Error" OnClick="@(() => Delete(context))" />
+            </MudTd>
+        </RowTemplate>
+        <NoRecordsContent>
+            <MudText>Nenhum produto produzido ainda.</MudText>
+        </NoRecordsContent>
+    </MudTable>
+</MudPaper>
+
+@code {
+    private List<Produto> _produtos = new();
+    private bool _loading = true;
+
+    protected override async Task OnInitializedAsync() => await Load();
+
+    private async Task Load()
+    {
+        _loading = true;
+        _produtos = await ProdutoService.GetAllAsync();
+        _loading = false;
+    }
+
+    private async Task VerDetalhe(Produto produto)
+    {
+        var full = await ProdutoService.GetWithInsumosAsync(produto.Id);
+        if (full is null)
+        {
+            Snackbar.Add("Produto não encontrado.", Severity.Error);
+            await Load();
+            return;
+        }
+
+        var parameters = new DialogParameters<ProdutoDetalheDialog>
+        {
+            { x => x.Produto, full }
+        };
+        await DialogService.ShowAsync<ProdutoDetalheDialog>(
+            $"Produto #{full.Id}", parameters);
+    }
+
+    private async Task Delete(Produto produto)
+    {
+        var parameters = new DialogParameters<ConfirmDialog>
+        {
+            {
+                x => x.Message,
+                $"Excluir o produto #{produto.Id} ({produto.Equipamento?.Nome})? Os insumos consumidos voltarão ao estoque."
+            },
+            { x => x.ConfirmText, "Excluir" }
+        };
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>("Confirmar exclusão", parameters);
+        var result = await dialog.Result;
+        if (result is { Canceled: true })
+        {
+            return;
+        }
+
+        try
+        {
+            await ProdutoService.DeleteAsync(produto.Id);
+            Snackbar.Add("Produto excluído. Insumos devolvidos ao estoque.", Severity.Success);
+            await Load();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+}
