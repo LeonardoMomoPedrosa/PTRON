@@ -15,6 +15,7 @@ CultureInfo.DefaultThreadCurrentUICulture = ptBr;
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddMudServices();
+builder.Services.AddHealthChecks();
 
 builder.Services.AddDbContextFactory<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("Default")
@@ -27,6 +28,7 @@ builder.Services.AddScoped<EquipamentoService>();
 builder.Services.AddScoped<EntradaEstoqueService>();
 builder.Services.AddScoped<ProducaoService>();
 builder.Services.AddScoped<ProdutoService>();
+builder.Services.AddScoped<SqlConsoleService>();
 
 var app = builder.Build();
 
@@ -57,14 +59,14 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
     app.UseHsts();
+    app.UseHttpsRedirection();
 }
-
-app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 
 app.UseRouting();
 
+app.MapHealthChecks("/health");
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 

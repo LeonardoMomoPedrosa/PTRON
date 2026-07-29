@@ -114,6 +114,7 @@
     private IMudDialogInstance MudDialog { get; set; } = default!;
 
     [Parameter] public Insumo? Insumo { get; set; }
+    [Parameter] public int? DefaultTipoInsumoId { get; set; }
 
     private MudForm _form = default!;
     private Insumo _model = new();
@@ -140,7 +141,7 @@
                 FotoPath = Insumo.FotoPath
             };
 
-        _tipoId = Insumo?.TipoInsumoId;
+        _tipoId = Insumo?.TipoInsumoId ?? DefaultTipoInsumoId;
     }
 
     private async Task StartCopy()
@@ -153,7 +154,7 @@
             Valor = _model.Valor,
             Potencia = _model.Potencia,
             Voltagem = _model.Voltagem,
-            FotoPath = null,
+            FotoPath = _model.FotoPath,
             Saldo = 0,
             CustoUnitario = 0
         };

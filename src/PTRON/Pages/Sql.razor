@@ -1,0 +1,166 @@
+@page "/sql"
+@inject SqlConsoleService SqlService
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<PageTitle>SQL</PageTitle>
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4">
+    <MudText Typo="Typo.h5">SQL</MudText>
+    <MudSpacer />
+    <MudButton StartIcon="@Icons.Material.Filled.PlayArrow"
+               Color="Color.Primary"
+               Variant="Variant.Filled"
+               Disabled="_running || string.IsNullOrWhiteSpace(_sql)"
+               OnClick="Execute">
+        Executar
+    </MudButton>
+</MudStack>
+
+<MudAlert Severity="Severity.Warning" Dense="true" Class="mb-4">
+    Console direto no SQLite. SELECT mostra resultados; UPDATE / DELETE / INSERT alteram o banco.
+</MudAlert>
+
+@if (_tables.Count > 0)
+{
+    <MudStack Row="true" Wrap="Wrap.Wrap" Spacing="1" Class="mb-3">
+        @foreach (var table in _tables)
+        {
+            <MudChip T="string"
+                     Size="Size.Small"
+                     Variant="Variant.Outlined"
+                     OnClick="@(() => UseSelect(table))">
+                @table
+            </MudChip>
+        }
+    </MudStack>
+}
+
+<MudTextField @bind-Value="_sql"
+              Label="Comando SQL"
+              Lines="8"
+              Immediate="true"
+              Class="mb-4"
+              Style="font-family: Consolas, monospace;"
+              HelperText="Ex.: SELECT * FROM Insumos;  |  UPDATE Insumos SET Saldo = 10 WHERE Id = 1;" />
+
+@if (!string.IsNullOrEmpty(_message))
+{
+    <MudAlert Severity="@_messageSeverity" Dense="true" Class="mb-4" ShowCloseIcon="true"
+              CloseIconClicked="@(() => _message = null)">
+        @_message
+    </MudAlert>
+}
+
+@if (_result is { IsQuery: true })
+{
+    <MudPaper>
+        <MudTable Items="_result.Rows"
+                  Dense="true"
+                  Hover="true"
+                  Breakpoint="Breakpoint.None"
+                  Loading="_running"
+                  Style="overflow-x:auto">
+            <HeaderContent>
+                @foreach (var col in _result.Columns)
+                {
+                    <MudTh>@col</MudTh>
+                }
+            </HeaderContent>
+            <RowTemplate>
+                @foreach (var cell in context)
+                {
+                    <MudTd>@(cell?.ToString() ?? "NULL")</MudTd>
+                }
+            </RowTemplate>
+            <NoRecordsContent>
+                <MudText>Nenhuma linha retornada.</MudText>
+            </NoRecordsContent>
+        </MudTable>
+    </MudPaper>
+    <MudText Typo="Typo.caption" Class="mt-2">@_result.RowsAffected linha(s)</MudText>
+}
+
+@code {
+    private string _sql = "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;";
+    private List<string> _tables = new();
+    private SqlConsoleResult? _result;
+    private string? _message;
+    private Severity _messageSeverity = Severity.Info;
+    private bool _running;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _tables = await SqlService.GetTableNamesAsync();
+        }
+        catch
+        {
+            // Ignore — page still usable without chips.
+        }
+    }
+
+    private void UseSelect(string table)
+    {
+        _sql = $"SELECT * FROM \"{table}\" LIMIT 100;";
+    }
+
+    private async Task Execute()
+    {
+        var sql = _sql.Trim();
+        if (IsDestructive(sql))
+        {
+            var parameters = new DialogParameters<ConfirmDialog>
+            {
+                { x => x.Message, "Este comando pode alterar ou apagar dados. Continuar?" },
+                { x => x.ConfirmText, "Executar" },
+                { x => x.Color, Color.Warning }
+            };
+            var dialog = await DialogService.ShowAsync<ConfirmDialog>("Confirmar comando", parameters);
+            var result = await dialog.Result;
+            if (result is null || result.Canceled)
+            {
+                return;
+            }
+        }
+
+        _running = true;
+        _result = null;
+        _message = null;
+        try
+        {
+            var result = await SqlService.ExecuteAsync(sql);
+            _result = result.IsQuery ? result : null;
+            _message = result.IsQuery
+                ? $"Consulta OK — {result.RowsAffected} linha(s)."
+                : $"Comando OK — {result.RowsAffected} linha(s) afetada(s).";
+            _messageSeverity = Severity.Success;
+
+            if (!result.IsQuery)
+            {
+                _tables = await SqlService.GetTableNamesAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            _message = ex.Message;
+            _messageSeverity = Severity.Error;
+        }
+        finally
+        {
+            _running = false;
+        }
+    }
+
+    private static bool IsDestructive(string sql)
+    {
+        var start = sql.TrimStart();
+        return start.StartsWith("UPDATE", StringComparison.OrdinalIgnoreCase)
+               || start.StartsWith("DELETE", StringComparison.OrdinalIgnoreCase)
+               || start.StartsWith("INSERT", StringComparison.OrdinalIgnoreCase)
+               || start.StartsWith("DROP", StringComparison.OrdinalIgnoreCase)
+               || start.StartsWith("ALTER", StringComparison.OrdinalIgnoreCase)
+               || start.StartsWith("REPLACE", StringComparison.OrdinalIgnoreCase);
+    }
+}

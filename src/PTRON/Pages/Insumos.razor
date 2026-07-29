@@ -125,7 +125,11 @@
             return;
         }
 
-        var dialog = await DialogService.ShowAsync<InsumoDialog>("Novo insumo");
+        var parameters = new DialogParameters<InsumoDialog>
+        {
+            { x => x.DefaultTipoInsumoId, _tipoFiltro }
+        };
+        var dialog = await DialogService.ShowAsync<InsumoDialog>("Novo insumo", parameters);
         var result = await dialog.Result;
         if (result is { Canceled: false, Data: Insumo novo })
         {
