@@ -25,8 +25,17 @@ public class InsumoService
 
         if (!string.IsNullOrWhiteSpace(search))
         {
-            var term = search.Trim();
-            query = query.Where(i => EF.Functions.Like(i.Nome, $"%{term}%"));
+            // Every token must match at least one field (nome, tipo, valor, potência, voltagem).
+            foreach (var token in SplitSearchTokens(search))
+            {
+                var t = $"%{token}%";
+                query = query.Where(i =>
+                    EF.Functions.Like(i.Nome, t)
+                    || EF.Functions.Like(i.TipoInsumo!.Nome, t)
+                    || (i.Valor != null && EF.Functions.Like(i.Valor, t))
+                    || (i.Potencia != null && EF.Functions.Like(i.Potencia, t))
+                    || (i.Voltagem != null && EF.Functions.Like(i.Voltagem, t)));
+            }
         }
 
         if (tipoId is not null)
@@ -34,8 +43,45 @@ public class InsumoService
             query = query.Where(i => i.TipoInsumoId == tipoId);
         }
 
-        return await query.OrderBy(i => i.Nome).ToListAsync();
+        return await query
+            .OrderBy(i => i.Nome)
+            .ThenBy(i => i.Valor)
+            .ThenBy(i => i.Potencia)
+            .ThenBy(i => i.Voltagem)
+            .ToListAsync();
     }
+
+    /// <summary>
+    /// Matches when every whitespace-separated token appears in nome, tipo, valor, potência or voltagem.
+    /// Example: "Resistor Carbono 10" matches Nome=Carbono, Tipo=Resistor, Valor=10Ω.
+    /// </summary>
+    public static bool MatchesSearch(Insumo i, string? search)
+    {
+        if (string.IsNullOrWhiteSpace(search))
+        {
+            return true;
+        }
+
+        foreach (var token in SplitSearchTokens(search))
+        {
+            if (!FieldContains(i.Nome, token)
+                && !FieldContains(i.TipoInsumo?.Nome, token)
+                && !FieldContains(i.Valor, token)
+                && !FieldContains(i.Potencia, token)
+                && !FieldContains(i.Voltagem, token))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static string[] SplitSearchTokens(string search)
+        => search.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+    private static bool FieldContains(string? field, string token)
+        => field is not null && field.Contains(token, StringComparison.OrdinalIgnoreCase);
 
     public async Task<Insumo?> GetAsync(int id)
     {

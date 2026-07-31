@@ -1,6 +1,7 @@
 @page "/entradas"
 @inject EntradaEstoqueService EntradaService
 @inject InsumoService InsumoService
+@inject EntradaCartState CartState
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 
@@ -13,23 +14,30 @@
         <MudPaper Class="pa-4 mb-4 mt-4" Outlined="true">
             <MudGrid Class="align-end">
                 <MudItem xs="12" sm="5">
-                    <MudAutocomplete T="Insumo"
+                    <MudAutocomplete T="Insumo" @ref="_insumoSearch"
                                      @bind-Value="_novoInsumo"
+                                     @bind-Value:after="AfterInsumoChanged"
                                      Label="Insumo"
                                      SearchFunc="SearchInsumos"
                                      ToStringFunc="@(i => i is null ? string.Empty : InsumoLabel(i))"
                                      ResetValueOnEmptyText="true"
                                      CoerceText="true"
                                      Clearable="true"
-                                     AnchorOrigin="Origin.BottomCenter" />
+                                     AnchorOrigin="Origin.BottomCenter"
+                                     OnKeyUp="OnInsumoKeyUp" />
                 </MudItem>
                 <MudItem xs="6" sm="2">
-                    <MudNumericField T="decimal" @bind-Value="_novaQtd" Label="Quantidade"
-                                     Min="0m" Step="1m" />
+                    <MudNumericField T="decimal" @ref="_qtdField"
+                                     @bind-Value="_novaQtd" Label="Quantidade"
+                                     Min="0m" Step="1m" Immediate="true" HideSpinButtons="true"
+                                     OnKeyUp="OnQtdKeyUp" />
                 </MudItem>
                 <MudItem xs="6" sm="3">
-                    <MudNumericField T="decimal" @bind-Value="_novoPreco" Label="Preço unitário"
-                                     Min="0m" Step="0.01m" Format="N2" Culture="@Format.Culture" />
+                    <MudNumericField T="decimal" @ref="_precoField"
+                                     @bind-Value="_novoPreco" Label="Preço unitário"
+                                     Min="0m" Step="0.01m" Format="N2" Culture="@Format.Culture"
+                                     Immediate="true" HideSpinButtons="true"
+                                     OnKeyUp="OnPrecoKeyUp" />
                 </MudItem>
                 <MudItem xs="12" sm="2">
                     <MudButton Variant="Variant.Filled" Color="Color.Secondary"
@@ -43,6 +51,7 @@
         <MudPaper Class="mb-4">
             <MudTable Items="_cart" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm">
                 <HeaderContent>
+                    <MudTh Style="width:64px">Foto</MudTh>
                     <MudTh>Insumo</MudTh>
                     <MudTh Style="text-align:right">Qtd</MudTh>
                     <MudTh Style="text-align:right">Preço unit.</MudTh>
@@ -50,7 +59,26 @@
                     <MudTh Style="text-align:right">Ações</MudTh>
                 </HeaderContent>
                 <RowTemplate>
-                    <MudTd DataLabel="Insumo">@context.Insumo?.Nome</MudTd>
+                    <MudTd DataLabel="Foto">
+                        @if (!string.IsNullOrEmpty(context.Insumo?.FotoPath))
+                        {
+                            <MudImage Src="@context.Insumo.FotoPath" Width="40" Height="40"
+                                      ObjectFit="ObjectFit.Cover" Class="rounded" />
+                        }
+                        else
+                        {
+                            <MudIcon Icon="@Icons.Material.Filled.Memory" Color="Color.Default" />
+                        }
+                    </MudTd>
+                    <MudTd DataLabel="Insumo">
+                        @if (context.Insumo is not null)
+                        {
+                            <MudText Typo="Typo.body2">@context.Insumo.Nome</MudText>
+                            <MudText Typo="Typo.caption" Class="mud-text-secondary">
+                                @InsumoDetalhe(context.Insumo)
+                            </MudText>
+                        }
+                    </MudTd>
                     <MudTd DataLabel="Qtd" Style="text-align:right">
                         <MudNumericField T="decimal" @bind-Value="context.Qtd" Min="0.0001m"
                                          Variant="Variant.Text" Margin="Margin.Dense"
@@ -74,6 +102,7 @@
                     <MudText>Nenhum item no carrinho. Adicione insumos acima.</MudText>
                 </NoRecordsContent>
                 <FooterContent>
+                    <MudTd></MudTd>
                     <MudTd></MudTd>
                     <MudTd></MudTd>
                     <MudTd Style="text-align:right"><b>Total</b></MudTd>
@@ -123,21 +152,79 @@
 </MudTabs>
 
 @code {
+    private MudAutocomplete<Insumo>? _insumoSearch;
+    private MudNumericField<decimal>? _qtdField;
+    private MudNumericField<decimal>? _precoField;
     private List<Insumo> _insumos = new();
-    private List<CartLine> _cart = new();
     private List<EntradaEstoque> _historico = new();
     private bool _loadingHistorico = true;
+    private string? _pendingFocus; // "qtd" | "preco" | "insumo"
+    private bool _enterOnInsumo;
 
     private Insumo? _novoInsumo;
     private decimal _novaQtd = 1m;
     private decimal _novoPreco;
 
+    private List<EntradaCartState.CartLine> _cart => CartState.Lines;
     private decimal TotalCart => _cart.Sum(c => c.Qtd * c.PrecoUnitario);
+
+    private static bool IsEnter(KeyboardEventArgs e)
+        => e.Key is "Enter" or "NumpadEnter";
 
     protected override async Task OnInitializedAsync()
     {
         _insumos = await InsumoService.GetAllAsync();
+        RehydrateCart();
         await LoadHistorico();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_pendingFocus is null)
+        {
+            return;
+        }
+
+        var target = _pendingFocus;
+        _pendingFocus = null;
+
+        switch (target)
+        {
+            case "qtd" when _qtdField is not null:
+                await _qtdField.FocusAsync();
+                await _qtdField.SelectAsync();
+                break;
+            case "preco" when _precoField is not null:
+                await _precoField.FocusAsync();
+                await _precoField.SelectAsync();
+                break;
+            case "insumo" when _insumoSearch is not null:
+                await _insumoSearch.FocusAsync();
+                break;
+        }
+    }
+
+    private void RequestFocus(string target)
+    {
+        _pendingFocus = target;
+        StateHasChanged();
+    }
+
+    private void RehydrateCart()
+    {
+        for (var i = _cart.Count - 1; i >= 0; i--)
+        {
+            var line = _cart[i];
+            var fresh = _insumos.FirstOrDefault(x => x.Id == line.InsumoId);
+            if (fresh is null)
+            {
+                _cart.RemoveAt(i);
+            }
+            else
+            {
+                line.Insumo = fresh;
+            }
+        }
     }
 
     private async Task LoadHistorico()
@@ -149,46 +236,109 @@
 
     private Task<IEnumerable<Insumo>> SearchInsumos(string? value, CancellationToken token)
     {
-        IEnumerable<Insumo> result = string.IsNullOrWhiteSpace(value)
-            ? _insumos
-            : _insumos.Where(i => i.Nome.Contains(value, StringComparison.OrdinalIgnoreCase));
+        IEnumerable<Insumo> result = _insumos.Where(i => InsumoService.MatchesSearch(i, value));
         return Task.FromResult(result);
     }
 
     private static string InsumoLabel(Insumo i)
-        => $"{i.Nome} (saldo: {Format.Number(i.Saldo)} · {Format.Money(i.CustoUnitario)})";
+        => $"{i.Nome} · {InsumoDetalhe(i)} (saldo: {Format.Number(i.Saldo)} · {Format.Money(i.CustoUnitario)})";
 
-    private void AddLinha()
+    private static string InsumoDetalhe(Insumo i)
+    {
+        var parts = new List<string>();
+        if (!string.IsNullOrWhiteSpace(i.TipoInsumo?.Nome)) parts.Add(i.TipoInsumo.Nome);
+        if (!string.IsNullOrWhiteSpace(i.Valor)) parts.Add(i.Valor!);
+        if (!string.IsNullOrWhiteSpace(i.Potencia)) parts.Add(i.Potencia!);
+        if (!string.IsNullOrWhiteSpace(i.Voltagem)) parts.Add(i.Voltagem!);
+        return parts.Count == 0 ? "—" : string.Join(" · ", parts);
+    }
+
+    /// <summary>
+    /// MudAutocomplete selects on KeyUp (and reopens the menu on Enter when closed).
+    /// After that, if an item is selected, close the menu and move to quantity.
+    /// </summary>
+    private async Task OnInsumoKeyUp(KeyboardEventArgs e)
+    {
+        if (!IsEnter(e))
+        {
+            return;
+        }
+
+        _enterOnInsumo = true;
+        if (_novoInsumo is not null)
+        {
+            await AdvanceFromInsumoAsync();
+        }
+    }
+
+    private async Task AfterInsumoChanged()
+    {
+        // Selection from Enter often binds after KeyUp — advance once value arrives.
+        if (_enterOnInsumo && _novoInsumo is not null)
+        {
+            await AdvanceFromInsumoAsync();
+        }
+    }
+
+    private async Task AdvanceFromInsumoAsync()
+    {
+        _enterOnInsumo = false;
+        if (_insumoSearch is not null)
+        {
+            await _insumoSearch.CloseMenuAsync();
+        }
+
+        RequestFocus("qtd");
+    }
+
+    private Task OnQtdKeyUp(KeyboardEventArgs e)
+    {
+        if (IsEnter(e))
+        {
+            RequestFocus("preco");
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private async Task OnPrecoKeyUp(KeyboardEventArgs e)
+    {
+        if (IsEnter(e))
+        {
+            await AddLinha();
+        }
+    }
+
+    private Task AddLinha()
     {
         if (_novoInsumo is null)
         {
             Snackbar.Add("Selecione um insumo.", Severity.Warning);
-            return;
+            return Task.CompletedTask;
         }
 
         if (_novaQtd <= 0)
         {
             Snackbar.Add("A quantidade deve ser maior que zero.", Severity.Warning);
-            return;
+            return Task.CompletedTask;
         }
 
         if (_novoPreco < 0)
         {
             Snackbar.Add("O preço unitário não pode ser negativo.", Severity.Warning);
-            return;
+            return Task.CompletedTask;
         }
 
         var existing = _cart.FirstOrDefault(c => c.InsumoId == _novoInsumo.Id);
         if (existing is not null)
         {
-            // Merge into existing line using weighted average of the two prices.
             var totalQtd = existing.Qtd + _novaQtd;
             existing.PrecoUnitario = (existing.Qtd * existing.PrecoUnitario + _novaQtd * _novoPreco) / totalQtd;
             existing.Qtd = totalQtd;
         }
         else
         {
-            _cart.Add(new CartLine
+            _cart.Add(new EntradaCartState.CartLine
             {
                 InsumoId = _novoInsumo.Id,
                 Insumo = _novoInsumo,
@@ -200,11 +350,13 @@
         _novoInsumo = null;
         _novaQtd = 1m;
         _novoPreco = 0m;
+        RequestFocus("insumo");
+        return Task.CompletedTask;
     }
 
-    private void RemoverLinha(CartLine line) => _cart.Remove(line);
+    private void RemoverLinha(EntradaCartState.CartLine line) => _cart.Remove(line);
 
-    private void LimparCart() => _cart.Clear();
+    private void LimparCart() => CartState.Clear();
 
     private async Task Finalizar()
     {
@@ -243,7 +395,7 @@
 
             await EntradaService.FinalizarAsync(itens);
             Snackbar.Add("Entrada de estoque finalizada.", Severity.Success);
-            _cart.Clear();
+            CartState.Clear();
             _insumos = await InsumoService.GetAllAsync();
             await LoadHistorico();
         }
@@ -261,13 +413,5 @@
         };
         await DialogService.ShowAsync<EntradaDetalheDialog>(
             $"Entrada #{entrada.Id} — {Format.Date(entrada.Data)}", parameters);
-    }
-
-    private sealed class CartLine
-    {
-        public int InsumoId { get; set; }
-        public Insumo? Insumo { get; set; }
-        public decimal Qtd { get; set; }
-        public decimal PrecoUnitario { get; set; }
     }
 }

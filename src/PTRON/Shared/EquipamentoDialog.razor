@@ -130,9 +130,7 @@
 
     private Task<IEnumerable<Insumo>> SearchInsumos(string? value, CancellationToken token)
     {
-        IEnumerable<Insumo> result = string.IsNullOrWhiteSpace(value)
-            ? _insumos
-            : _insumos.Where(i => i.Nome.Contains(value, StringComparison.OrdinalIgnoreCase));
+        IEnumerable<Insumo> result = _insumos.Where(i => InsumoService.MatchesSearch(i, value));
         return Task.FromResult(result);
     }
 

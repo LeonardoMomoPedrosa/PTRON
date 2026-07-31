@@ -26,6 +26,7 @@ builder.Services.AddScoped<TipoInsumoService>();
 builder.Services.AddScoped<InsumoService>();
 builder.Services.AddScoped<EquipamentoService>();
 builder.Services.AddScoped<EntradaEstoqueService>();
+builder.Services.AddScoped<EntradaCartState>();
 builder.Services.AddScoped<ProducaoService>();
 builder.Services.AddScoped<ProdutoService>();
 builder.Services.AddScoped<SqlConsoleService>();
