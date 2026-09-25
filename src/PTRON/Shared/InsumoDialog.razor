@@ -4,7 +4,7 @@
 
 <MudDialog OnKeyUp="OnDialogKeyUp">
     <DialogContent>
-        <MudForm @ref="_form" Model="_model">
+        <MudForm @ref="_form" Model="_model" Class="insumo-flow-dialog">
             <MudGrid>
                 <MudItem xs="12" sm="8">
                     <MudTextField @bind-Value="_model.Nome"
@@ -47,7 +47,7 @@
                 </MudItem>
 
                 <MudItem xs="12">
-                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="4">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="4" Class="insumo-photo-row">
                         <MudFileUpload T="IBrowserFile" Accept=".jpg,.jpeg,.png,.gif,.webp"
                                        FilesChanged="UploadFile">
                             <CustomContent Context="fileUpload">
