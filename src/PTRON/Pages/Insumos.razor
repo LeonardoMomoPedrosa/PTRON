@@ -19,18 +19,18 @@
 
 <MudPaper Class="pa-4 mb-4">
     <MudGrid>
-        <MudItem xs="12" sm="7">
+        <MudItem xs="12" sm="5">
             <MudTextField @bind-Value="_search"
                           Label="Buscar por nome"
                           Adornment="Adornment.Start"
                           AdornmentIcon="@Icons.Material.Filled.Search"
                           Immediate="true"
                           DebounceInterval="300"
-                          OnDebounceIntervalElapsed="Load"
+                          OnDebounceIntervalElapsed="ReloadFromStart"
                           Clearable="true" />
         </MudItem>
-        <MudItem xs="12" sm="5">
-            <MudSelect T="int?" @bind-Value="_tipoFiltro" @bind-Value:after="Load"
+        <MudItem xs="12" sm="4">
+            <MudSelect T="int?" @bind-Value="_tipoFiltro" @bind-Value:after="ReloadFromStart"
                        Label="Filtrar por tipo"
                        Clearable="true" AnchorOrigin="Origin.BottomCenter">
                 @foreach (var tipo in _tipos)
@@ -39,12 +39,17 @@
                 }
             </MudSelect>
         </MudItem>
+        <MudItem xs="12" sm="3">
+            <MudNumericField T="int" Value="_pageSize" ValueChanged="OnPageSizeChanged"
+                             Label="Itens por página" Min="1" Max="@InsumoService.MaxPageSize"
+                             Variant="Variant.Text" />
+        </MudItem>
     </MudGrid>
 </MudPaper>
 
 <MudPaper>
-    <MudTable Items="_insumos"
-              Loading="_loading"
+    <MudTable @ref="_table" T="Insumo" ServerData="LoadPage"
+              RowsPerPage="@_pageSize"
               Hover="true"
               Dense="true"
               Breakpoint="Breakpoint.Sm"
@@ -85,28 +90,53 @@
         <NoRecordsContent>
             <MudText>Nenhum insumo encontrado.</MudText>
         </NoRecordsContent>
+        <PagerContent>
+            <MudTablePager HideRowsPerPage="true"
+                           InfoFormat="{first_item}-{last_item} de {all_items}" />
+        </PagerContent>
     </MudTable>
 </MudPaper>
 
 @code {
-    private List<Insumo> _insumos = new();
+    private const int DefaultPageSize = 25;
+
+    private MudTable<Insumo> _table = null!;
     private List<TipoInsumo> _tipos = new();
     private string? _search;
     private int? _tipoFiltro;
-    private bool _loading = true;
+    private int _pageSize = DefaultPageSize;
 
     protected override async Task OnInitializedAsync()
     {
         _tipos = await TipoService.GetAllAsync();
-        await Load();
     }
 
-    private async Task Load()
+    private async Task<TableData<Insumo>> LoadPage(TableState state, CancellationToken cancellationToken)
     {
-        _loading = true;
-        _insumos = await InsumoService.GetAllAsync(_search, _tipoFiltro);
-        _loading = false;
+        var page = await InsumoService.GetPageAsync(
+            _search, _tipoFiltro, state.Page, state.PageSize, cancellationToken);
+        return new TableData<Insumo> { Items = page.Items, TotalItems = page.TotalCount };
     }
+
+    private Task OnPageSizeChanged(int size)
+    {
+        _pageSize = Math.Clamp(size, 1, InsumoService.MaxPageSize);
+        _table.SetRowsPerPage(_pageSize);
+        return Task.CompletedTask;
+    }
+
+    private async Task ReloadFromStart()
+    {
+        if (_table.CurrentPage != 0)
+        {
+            _table.NavigateTo(0);
+            return;
+        }
+
+        await _table.ReloadServerData();
+    }
+
+    private Task Reload() => _table.ReloadServerData();
 
     private static string Especificacoes(Insumo i)
     {
@@ -137,7 +167,7 @@
             {
                 await InsumoService.CreateAsync(novo);
                 Snackbar.Add("Insumo criado.", Severity.Success);
-                await Load();
+                await Reload();
             }
             catch (Exception ex)
             {
@@ -167,7 +197,7 @@
                     Snackbar.Add("Insumo atualizado.", Severity.Success);
                 }
 
-                await Load();
+                await Reload();
             }
             catch (Exception ex)
             {
@@ -191,7 +221,7 @@
             {
                 await InsumoService.DeleteAsync(insumo.Id);
                 Snackbar.Add("Insumo excluído.", Severity.Success);
-                await Load();
+                await Reload();
             }
             catch (Exception ex)
             {
