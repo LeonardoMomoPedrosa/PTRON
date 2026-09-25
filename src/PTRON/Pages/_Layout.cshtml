@@ -28,7 +28,29 @@
         <a class="dismiss">🗙</a>
     </div>
 
-    <script src="_framework/blazor.server.js"></script>
+    <div id="components-reconnect-modal">
+        <div class="reconnect-box">
+            <p class="reconnect-pending">Conectando ao servidor novamente…</p>
+            <p class="reconnect-failed">Não foi possível reconectar. <a href="">Recarregar</a></p>
+        </div>
+    </div>
+
+    <script src="_framework/blazor.server.js" autostart="false"></script>
     <script src="_content/MudBlazor/MudBlazor.min.js"></script>
+    <script>
+        Blazor.start({
+            configureSignalR: function (builder) {
+                builder.withServerTimeout(120000).withKeepAliveInterval(15000);
+            },
+            reconnectionOptions: {
+                maxRetries: 40,
+                retryIntervalMilliseconds: function (previousAttempts) {
+                    if (previousAttempts < 10) return 500;
+                    if (previousAttempts < 25) return 2000;
+                    return 5000;
+                }
+            }
+        });
+    </script>
 </body>
 </html>
