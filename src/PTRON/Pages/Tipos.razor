@@ -5,46 +5,86 @@
 
 <PageTitle>Tipos</PageTitle>
 
-<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4">
-    <MudText Typo="Typo.h5">Tipos</MudText>
-    <MudSpacer />
-    <MudButton StartIcon="@Icons.Material.Filled.Add"
-               Color="Color.Primary"
-               Variant="Variant.Filled"
-               OnClick="OpenCreate">
-        Novo tipo
-    </MudButton>
-</MudStack>
+<div class="tipos-page">
+    <div class="tipos-toolbar mb-4">
+        <MudText Typo="Typo.h5">Tipos</MudText>
+        <MudButton StartIcon="@Icons.Material.Filled.Add"
+                   Color="Color.Primary"
+                   Variant="Variant.Filled"
+                   Class="tipos-add"
+                   OnClick="OpenCreate">
+            Novo tipo
+        </MudButton>
+    </div>
 
-<MudPaper>
-    <MudTable Items="_tipos"
-              Loading="_loading"
-              Hover="true"
-              Dense="true"
-              Breakpoint="Breakpoint.Sm"
-              LoadingProgressColor="Color.Primary">
-        <HeaderContent>
-            <MudTh>Nome</MudTh>
-            <MudTh Style="text-align:right">Ações</MudTh>
-        </HeaderContent>
-        <RowTemplate>
-            <MudTd DataLabel="Nome">@context.Nome</MudTd>
-            <MudTd DataLabel="Ações" Style="text-align:right">
-                <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                               Size="Size.Small"
-                               Color="Color.Primary"
-                               OnClick="@(() => OpenEdit(context))" />
-                <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                               Size="Size.Small"
-                               Color="Color.Error"
-                               OnClick="@(() => Delete(context))" />
-            </MudTd>
-        </RowTemplate>
-        <NoRecordsContent>
-            <MudText>Nenhum tipo cadastrado.</MudText>
-        </NoRecordsContent>
-    </MudTable>
-</MudPaper>
+    <div class="tipos-phone">
+        @if (_loading)
+        {
+            <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mb-2" />
+        }
+        else if (_tipos.Count == 0)
+        {
+            <MudPaper Class="pa-4">
+                <MudText>Nenhum tipo cadastrado.</MudText>
+            </MudPaper>
+        }
+        else
+        {
+            <MudPaper Class="tipos-list" Elevation="1">
+                @foreach (var tipo in _tipos)
+                {
+                    <div class="tipos-row">
+                        <span class="tipos-nome">@tipo.Nome</span>
+                        <span class="tipos-actions">
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                           Size="Size.Large"
+                                           Color="Color.Primary"
+                                           aria-label="@($"Editar {tipo.Nome}")"
+                                           OnClick="@(() => OpenEdit(tipo))" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                           Size="Size.Large"
+                                           Color="Color.Error"
+                                           aria-label="@($"Excluir {tipo.Nome}")"
+                                           OnClick="@(() => Delete(tipo))" />
+                        </span>
+                    </div>
+                }
+            </MudPaper>
+        }
+    </div>
+
+    <MudPaper Class="tipos-desktop">
+        <MudTable Items="_tipos"
+                  Loading="_loading"
+                  Hover="true"
+                  Dense="true"
+                  Breakpoint="Breakpoint.None"
+                  LoadingProgressColor="Color.Primary">
+            <HeaderContent>
+                <MudTh>Nome</MudTh>
+                <MudTh Style="text-align:right">Ações</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Nome">@context.Nome</MudTd>
+                <MudTd DataLabel="Ações" Style="text-align:right">
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                   Size="Size.Small"
+                                   Color="Color.Primary"
+                                   aria-label="@($"Editar {context.Nome}")"
+                                   OnClick="@(() => OpenEdit(context))" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                   Size="Size.Small"
+                                   Color="Color.Error"
+                                   aria-label="@($"Excluir {context.Nome}")"
+                                   OnClick="@(() => Delete(context))" />
+                </MudTd>
+            </RowTemplate>
+            <NoRecordsContent>
+                <MudText>Nenhum tipo cadastrado.</MudText>
+            </NoRecordsContent>
+        </MudTable>
+    </MudPaper>
+</div>
 
 @code {
     private List<TipoInsumo> _tipos = new();
@@ -112,7 +152,8 @@
         var parameters = new DialogParameters<ConfirmDialog>
         {
             { x => x.Message, $"Excluir o tipo \"{tipo.Nome}\"?" },
-            { x => x.ConfirmText, "Excluir" }
+            { x => x.ConfirmText, "Excluir" },
+            { x => x.MarkerClass, "tipo-flow-dialog" }
         };
         var dialog = await DialogService.ShowAsync<ConfirmDialog>("Confirmar exclusão", parameters);
         var result = await dialog.Result;
