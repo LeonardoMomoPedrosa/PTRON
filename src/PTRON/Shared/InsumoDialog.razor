@@ -22,7 +22,10 @@
                                Required="true"
                                RequiredError="O tipo é obrigatório."
                                Clearable="false"
-                               AnchorOrigin="Origin.BottomCenter">
+                               PopoverFixed="true"
+                               MaxHeight="240"
+                               AnchorOrigin="Origin.BottomLeft"
+                               TransformOrigin="Origin.TopLeft">
                         @foreach (var tipo in _tipos)
                         {
                             <MudSelectItem T="int?" Value="tipo.Id">@tipo.Nome</MudSelectItem>

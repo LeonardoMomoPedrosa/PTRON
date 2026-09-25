@@ -63,6 +63,55 @@ a, .btn-link {
     content: "An error has occurred."
 }
 
+/* Shown only if a quiet reconnect is still running after 10s. */
+#components-reconnect-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(255, 255, 255, 0.92);
+    text-align: center;
+}
+
+#components-reconnect-modal.components-reconnect-show {
+    display: flex;
+    opacity: 0;
+    pointer-events: none;
+    animation: ptron-reconnect-in 0.2s ease 10s forwards;
+}
+
+#components-reconnect-modal.components-reconnect-failed,
+#components-reconnect-modal.components-reconnect-rejected {
+    display: flex;
+    opacity: 1;
+    pointer-events: auto;
+    animation: none;
+}
+
+#components-reconnect-modal .reconnect-failed {
+    display: none;
+}
+
+#components-reconnect-modal.components-reconnect-failed .reconnect-pending,
+#components-reconnect-modal.components-reconnect-rejected .reconnect-pending {
+    display: none;
+}
+
+#components-reconnect-modal.components-reconnect-failed .reconnect-failed,
+#components-reconnect-modal.components-reconnect-rejected .reconnect-failed {
+    display: block;
+}
+
+@keyframes ptron-reconnect-in {
+    to {
+        opacity: 1;
+        pointer-events: auto;
+    }
+}
+
 /* Tipos: desktop keeps the table; phones (Samsung A55 portrait is ~360–412px) get a tappable list. */
 .tipos-toolbar {
     display: flex;
@@ -255,9 +304,16 @@ a, .btn-link {
 
     .mud-dialog:has(.tipo-flow-dialog),
     .mud-dialog:has(.insumo-flow-dialog) {
-        width: calc(100% - 24px);
-        max-width: calc(100% - 24px);
+        width: auto;
+        max-width: none;
+        align-self: stretch;
         margin: 12px;
+    }
+
+    /* Keep an open list inside the screen so it cannot grow the page and bounce. */
+    .mud-popover.mud-popover-open {
+        max-height: min(240px, calc(100dvh - 96px));
+        overscroll-behavior: contain;
     }
 
     .mud-dialog:has(.tipo-flow-dialog) .mud-dialog-actions,

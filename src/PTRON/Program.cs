@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using MudBlazor;
 using MudBlazor.Services;
 using PTRON.Api;
 using PTRON.Data;
@@ -18,7 +19,21 @@ CultureInfo.DefaultThreadCurrentUICulture = ptBr;
 
 // Add services to the container.
 builder.Services.AddRazorPages();
-builder.Services.AddServerSideBlazor();
+builder.Services.AddServerSideBlazor()
+    .AddCircuitOptions(options =>
+    {
+        // Keep the session after the phone sleeps or the user switches apps.
+        options.DisconnectedCircuitRetentionPeriod = TimeSpan.FromMinutes(15);
+        options.JSInteropDefaultCallTimeout = TimeSpan.FromMinutes(2);
+    })
+    .AddHubOptions(options =>
+    {
+        // A backgrounded phone stops sending pings. Wait longer before
+        // treating that pause as a dead connection.
+        options.ClientTimeoutInterval = TimeSpan.FromMinutes(2);
+        options.KeepAliveInterval = TimeSpan.FromSeconds(15);
+        options.HandshakeTimeout = TimeSpan.FromSeconds(30);
+    });
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -29,7 +44,12 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.SlidingExpiration = true;
     });
 builder.Services.AddAuthorization();
-builder.Services.AddMudServices();
+builder.Services.AddMudServices(config =>
+{
+    // FlipAlways refits the menu on every viewport change. On a phone in
+    // portrait the menu and the browser chrome resize each other in a loop.
+    config.PopoverOptions.OverflowBehavior = OverflowBehavior.FlipOnOpen;
+});
 builder.Services.AddHealthChecks();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.Configure<ApiAuthOptions>(builder.Configuration.GetSection(ApiAuthOptions.SectionName));
