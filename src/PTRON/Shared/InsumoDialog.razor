@@ -1,6 +1,7 @@
 @inject TipoInsumoService TipoService
 @inject ImageUploadService Images
 @inject ISnackbar Snackbar
+@inject IDialogService DialogService
 
 <MudDialog OnKeyUp="OnDialogKeyUp">
     <DialogContent>
@@ -124,6 +125,7 @@
     private List<TipoInsumo> _tipos = new();
     private int? _tipoId;
     private bool _isCopyMode;
+    private bool _confirming;
 
     protected override async Task OnInitializedAsync()
     {
@@ -195,6 +197,11 @@
 
     private async Task Submit()
     {
+        if (_confirming)
+        {
+            return;
+        }
+
         await _form.ValidateAsync();
         if (!_form.IsValid || _tipoId is null)
         {
@@ -206,6 +213,34 @@
         }
 
         _model.TipoInsumoId = _tipoId.Value;
+
+        // Updating an existing insumo asks first. A new one, including
+        // "Criar cópia com outro valor", is saved without this prompt.
+        if (!_isCopyMode && _model.Id != 0)
+        {
+            _confirming = true;
+            try
+            {
+                var parameters = new DialogParameters<ConfirmDialog>
+                {
+                    { x => x.Message, $"Salvar as alterações em \"{_model.Nome}\"?" },
+                    { x => x.ConfirmText, "Salvar" },
+                    { x => x.Color, Color.Primary },
+                    { x => x.MarkerClass, "insumo-flow-dialog" }
+                };
+                var confirm = await DialogService.ShowAsync<ConfirmDialog>("Confirmar atualização", parameters);
+                var confirmResult = await confirm.Result;
+                if (confirmResult is null || confirmResult.Canceled)
+                {
+                    return;
+                }
+            }
+            finally
+            {
+                _confirming = false;
+            }
+        }
+
         MudDialog.Close(DialogResult.Ok(_model));
     }
 
