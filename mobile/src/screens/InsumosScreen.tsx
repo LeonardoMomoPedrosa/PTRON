@@ -12,9 +12,15 @@ import type { RootStackParamList } from '../navigation/types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Insumos'>;
 
+const DEFAULT_PAGE_SIZE = 25;
+const MAX_PAGE_SIZE = 500;
+
 export function InsumosScreen({ navigation }: Props) {
   const [search, setSearch] = useState('');
   const [query, setQuery] = useState('');
+  const [page, setPage] = useState(0);
+  const [pageSizeInput, setPageSizeInput] = useState(String(DEFAULT_PAGE_SIZE));
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 
   const loader = useCallback(
     (cfg: Parameters<typeof api.getInsumos>[0]) => api.getInsumos(cfg, { search: query || undefined }),
@@ -43,24 +49,60 @@ export function InsumosScreen({ navigation }: Props) {
     });
   };
 
+  const items = data ?? [];
+  const pageCount = Math.max(1, Math.ceil(items.length / pageSize));
+  const safePage = Math.min(page, pageCount - 1);
+  const pageItems = items.slice(safePage * pageSize, (safePage + 1) * pageSize);
+  const rangeStart = items.length === 0 ? 0 : safePage * pageSize + 1;
+  const rangeEnd = Math.min(items.length, (safePage + 1) * pageSize);
+
+  const applySearch = () => {
+    setPage(0);
+    setQuery(search.trim());
+  };
+
+  const applyPageSize = () => {
+    const parsed = Number.parseInt(pageSizeInput, 10);
+    const next = Number.isFinite(parsed) ? Math.min(MAX_PAGE_SIZE, Math.max(1, parsed)) : DEFAULT_PAGE_SIZE;
+    setPageSize(next);
+    setPageSizeInput(String(next));
+    setPage(0);
+  };
+
   const header = useMemo(
     () => (
-      <View style={styles.searchWrap}>
-        <TextInput
-          value={search}
-          onChangeText={setSearch}
-          placeholder="Buscar por nome, tipo, valor…"
-          placeholderTextColor={colors.textMuted}
-          style={styles.search}
-          returnKeyType="search"
-          onSubmitEditing={() => setQuery(search.trim())}
-        />
-        <Pressable style={styles.searchBtn} onPress={() => setQuery(search.trim())}>
-          <Text style={styles.searchBtnText}>Buscar</Text>
-        </Pressable>
+      <View>
+        <View style={styles.searchWrap}>
+          <TextInput
+            value={search}
+            onChangeText={setSearch}
+            placeholder="Buscar por nome, tipo, valor…"
+            placeholderTextColor={colors.textMuted}
+            style={styles.search}
+            returnKeyType="search"
+            onSubmitEditing={applySearch}
+          />
+          <Pressable style={styles.searchBtn} onPress={applySearch}>
+            <Text style={styles.searchBtnText}>Buscar</Text>
+          </Pressable>
+        </View>
+        <View style={styles.pageSizeWrap}>
+          <Text style={styles.pageSizeLabel}>Itens por página</Text>
+          <TextInput
+            value={pageSizeInput}
+            onChangeText={setPageSizeInput}
+            keyboardType="number-pad"
+            style={styles.pageSizeInput}
+            returnKeyType="done"
+            onSubmitEditing={applyPageSize}
+          />
+          <Pressable style={styles.searchBtn} onPress={applyPageSize}>
+            <Text style={styles.searchBtnText}>Aplicar</Text>
+          </Pressable>
+        </View>
       </View>
     ),
-    [search],
+    [search, pageSizeInput],
   );
 
   if (loading && !data) return <Loading />;
@@ -69,12 +111,35 @@ export function InsumosScreen({ navigation }: Props) {
     <Screen>
       {error ? <ErrorBanner message={error} /> : null}
       <FlatList
-        data={data ?? []}
+        data={pageItems}
         keyExtractor={(item) => String(item.id)}
         refreshing={loading}
         onRefresh={reload}
         ListHeaderComponent={header}
-        contentContainerStyle={!data?.length ? styles.flex : { paddingBottom: spacing.xl }}
+        ListFooterComponent={
+          items.length === 0 ? null : (
+            <View style={styles.pager}>
+              <Pressable
+                disabled={safePage === 0}
+                onPress={() => setPage(safePage - 1)}
+                style={[styles.pageBtn, safePage === 0 && styles.pageBtnDisabled]}
+              >
+                <Text style={styles.pageBtnText}>Anterior</Text>
+              </Pressable>
+              <Text style={styles.pageInfo}>
+                {rangeStart}-{rangeEnd} de {items.length}
+              </Text>
+              <Pressable
+                disabled={safePage >= pageCount - 1}
+                onPress={() => setPage(safePage + 1)}
+                style={[styles.pageBtn, safePage >= pageCount - 1 && styles.pageBtnDisabled]}
+              >
+                <Text style={styles.pageBtnText}>Próxima</Text>
+              </Pressable>
+            </View>
+          )
+        }
+        contentContainerStyle={!items.length ? styles.flex : { paddingBottom: spacing.xl }}
         ListEmptyComponent={<EmptyState title="Nenhum insumo encontrado" />}
         renderItem={({ item }) => {
           const uri = photoUrl(config, item.fotoPath);
@@ -142,6 +207,42 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   searchBtnText: { color: '#fff', fontWeight: '700' },
+  pageSizeWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.sm,
+  },
+  pageSizeLabel: { color: colors.textMuted, fontSize: 13 },
+  pageSizeInput: {
+    width: 72,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    color: colors.text,
+    textAlign: 'center',
+  },
+  pager: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
+    gap: spacing.sm,
+  },
+  pageBtn: {
+    backgroundColor: colors.primary,
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  pageBtnDisabled: { opacity: 0.4 },
+  pageBtnText: { color: '#fff', fontWeight: '700' },
+  pageInfo: { color: colors.text, fontWeight: '600' },
   row: { flexDirection: 'row', gap: spacing.md },
   thumb: { width: 56, height: 56, borderRadius: 8, backgroundColor: colors.chip },
   thumbEmpty: { borderWidth: 1, borderColor: colors.border },
