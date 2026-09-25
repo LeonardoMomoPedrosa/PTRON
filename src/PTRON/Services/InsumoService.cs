@@ -4,6 +4,8 @@ using PTRON.Models;
 
 namespace PTRON.Services;
 
+public sealed record InsumoPage(IReadOnlyList<Insumo> Items, int TotalCount);
+
 public class InsumoService
 {
     private readonly IDbContextFactory<AppDbContext> _factory;
@@ -18,10 +20,40 @@ public class InsumoService
     public async Task<List<Insumo>> GetAllAsync(string? search = null, int? tipoId = null)
     {
         await using var db = await _factory.CreateDbContextAsync();
-        var query = db.Insumos
-            .Include(i => i.TipoInsumo)
-            .AsNoTracking()
-            .AsQueryable();
+        return await Ordered(Filtered(db.Insumos.AsQueryable(), search, tipoId))
+            .ToListAsync();
+    }
+
+    /// <summary>
+    /// One page of insumos matching the same filters as <see cref="GetAllAsync"/>.
+    /// <paramref name="page"/> is zero-based.
+    /// </summary>
+    public async Task<InsumoPage> GetPageAsync(
+        string? search,
+        int? tipoId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default)
+    {
+        page = Math.Max(0, page);
+        pageSize = Math.Clamp(pageSize, 1, MaxPageSize);
+
+        await using var db = await _factory.CreateDbContextAsync(cancellationToken);
+        var filtered = Filtered(db.Insumos.AsQueryable(), search, tipoId);
+        var total = await filtered.CountAsync(cancellationToken);
+        var items = await Ordered(filtered)
+            .Skip(page * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return new InsumoPage(items, total);
+    }
+
+    public const int MaxPageSize = 500;
+
+    private static IQueryable<Insumo> Filtered(IQueryable<Insumo> query, string? search, int? tipoId)
+    {
+        query = query.Include(i => i.TipoInsumo).AsNoTracking();
 
         if (!string.IsNullOrWhiteSpace(search))
         {
@@ -43,13 +75,15 @@ public class InsumoService
             query = query.Where(i => i.TipoInsumoId == tipoId);
         }
 
-        return await query
+        return query;
+    }
+
+    private static IQueryable<Insumo> Ordered(IQueryable<Insumo> query)
+        => query
             .OrderBy(i => i.Nome)
             .ThenBy(i => i.Valor)
             .ThenBy(i => i.Potencia)
-            .ThenBy(i => i.Voltagem)
-            .ToListAsync();
-    }
+            .ThenBy(i => i.Voltagem);
 
     /// <summary>
     /// Matches when every whitespace-separated token appears in nome, tipo, valor, potência or voltagem.
