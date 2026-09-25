@@ -59,6 +59,98 @@ a, .btn-link {
     color: white;
 }
 
-    .blazor-error-boundary::after {
-        content: "An error has occurred."
+.blazor-error-boundary::after {
+    content: "An error has occurred."
+}
+
+/* Tipos: desktop keeps the table; phones (Samsung A55 portrait is ~360–412px) get a tappable list. */
+.tipos-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.tipos-add {
+    margin-left: auto;
+}
+
+.tipos-phone {
+    display: none;
+}
+
+.tipos-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 56px;
+    padding: 4px 4px 4px 16px;
+    border-bottom: 1px solid var(--mud-palette-table-lines);
+}
+
+.tipos-row:last-child {
+    border-bottom: none;
+}
+
+.tipos-nome {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    font-size: 1rem;
+    line-height: 1.3;
+}
+
+.tipos-actions {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+}
+
+@media (max-width: 599.98px) {
+    .tipos-page {
+        margin-top: -1.5rem;
     }
+
+    .tipos-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .tipos-add {
+        margin-left: 0;
+        width: 100%;
+        min-height: 48px;
+    }
+
+    .tipos-phone {
+        display: block;
+    }
+
+    .tipos-desktop {
+        display: none;
+    }
+
+    .mud-dialog-container:has(.tipo-flow-dialog) {
+        align-items: flex-start;
+        padding-top: max(12px, env(safe-area-inset-top));
+    }
+
+    .mud-dialog:has(.tipo-flow-dialog) {
+        width: calc(100% - 24px);
+        max-width: calc(100% - 24px);
+        margin: 12px;
+    }
+
+    .mud-dialog:has(.tipo-flow-dialog) .mud-dialog-actions {
+        flex-direction: column-reverse;
+        align-items: stretch;
+        gap: 8px;
+        padding: 8px 16px calc(12px + env(safe-area-inset-bottom));
+    }
+
+    .mud-dialog:has(.tipo-flow-dialog) .mud-dialog-actions .mud-button-root {
+        margin: 0;
+        width: 100%;
+        min-height: 48px;
+    }
+}
