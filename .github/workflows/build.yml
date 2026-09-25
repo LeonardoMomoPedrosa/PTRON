@@ -1,10 +1,11 @@
 name: Build PTRON (.NET 8)
 
+# Run once, when commits land on main or develop.
+# A pull request already builds again on the merge push, and this workflow
+# also deploys, so a pull_request trigger would publish the same change twice.
 on:
   push:
     branches: [ main, develop ]
-  pull_request:
-    branches: [ main ]
 
 jobs:
 
