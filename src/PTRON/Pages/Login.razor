@@ -1,0 +1,54 @@
+@page "/login"
+@layout LoginLayout
+@attribute [AllowAnonymous]
+
+<PageTitle>PTRON — Entrar</PageTitle>
+
+<MudPaper Class="pa-6" Elevation="3">
+    <MudText Typo="Typo.h4" GutterBottom="true">PTRON</MudText>
+    <MudText Typo="Typo.body2" Class="mb-4">Entre para continuar.</MudText>
+
+    @if (_showError)
+    {
+        <MudAlert Severity="Severity.Error" Class="mb-4" Dense="true">
+            Usuário ou senha inválidos.
+        </MudAlert>
+    }
+
+    <form method="post" action="/account/login">
+        <input type="hidden" name="returnUrl" value="@_returnUrl" />
+
+        <MudText Typo="Typo.caption" Class="mud-input-label mud-input-label-inputcontrol">Usuário</MudText>
+        <input name="username" type="text" autocomplete="username" required
+               class="mud-input mud-input-outlined mud-input-outlined-border pa-3 mb-3"
+               style="width:100%; box-sizing:border-box; border:1px solid var(--mud-palette-lines-inputs); border-radius:4px; background:transparent; color:inherit;" />
+
+        <MudText Typo="Typo.caption">Senha</MudText>
+        <input name="password" type="password" autocomplete="current-password" required
+               class="mud-input mud-input-outlined mud-input-outlined-border pa-3 mb-4"
+               style="width:100%; box-sizing:border-box; border:1px solid var(--mud-palette-lines-inputs); border-radius:4px; background:transparent; color:inherit;" />
+
+        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
+                   FullWidth="true" Size="Size.Large">
+            Entrar
+        </MudButton>
+    </form>
+</MudPaper>
+
+@code {
+    [SupplyParameterFromQuery(Name = "error")]
+    public string? Error { get; set; }
+
+    [SupplyParameterFromQuery(Name = "returnUrl")]
+    public string? ReturnUrl { get; set; }
+
+    private bool _showError;
+    private string _returnUrl = "/";
+
+    protected override void OnInitialized()
+    {
+        _showError = Error == "1";
+        if (!string.IsNullOrWhiteSpace(ReturnUrl) && ReturnUrl.StartsWith('/'))
+            _returnUrl = ReturnUrl;
+    }
+}
