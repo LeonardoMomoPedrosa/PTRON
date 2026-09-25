@@ -20,3 +20,8 @@ src/PTRON/wwwroot/uploads/
 # OS files
 Thumbs.db
 .DS_Store
+
+# Mobile (Expo / Node)
+mobile/node_modules/
+mobile/.expo/
+mobile/dist/

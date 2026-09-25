@@ -1,0 +1,229 @@
+name: Build PTRON (.NET 8)
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+
+  pre-actions:
+    name: Pre Actions
+    runs-on: ubuntu-latest
+    steps:
+      - name: Contexto
+        run: |
+          echo "🔧 Iniciando pipeline PTRON..."
+
+  open-ssh-port:
+    name: Abrir porta SSH AWS (22)
+    runs-on: ubuntu-latest
+    needs: pre-actions
+    steps:
+      - name: Configurar credenciais AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Abrir porta SSH temporariamente
+        run: |
+          aws ec2 authorize-security-group-ingress \
+            --group-id ${{ secrets.LINUX_SG_ID }} \
+            --protocol tcp --port 22 --cidr 0.0.0.0/0 || echo "⚠️ Regra já existente"
+
+  build:
+    name: Build (.NET 8)
+    runs-on: ubuntu-latest
+    needs: pre-actions
+    steps:
+      - name: Checkout do PTRON
+        uses: actions/checkout@v4
+
+      - name: Instalar .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restaurar dependências
+        run: dotnet restore PTRON.sln
+
+      - name: Compilar o projeto
+        run: dotnet build PTRON.sln --configuration Release --no-restore
+
+      - name: Publicar (Linux - framework-dependent)
+        run: dotnet publish src/PTRON/PTRON.csproj -c Release -r linux-x64 -o publish --self-contained false
+
+      - name: Remover appsettings de desenvolvimento
+        run: |
+          if [ -f "publish/appsettings.Development.json" ]; then
+            rm -f publish/appsettings.Development.json
+          fi
+
+      - name: Compactar o resultado
+        run: |
+          cd publish
+          zip -r ../ptron.zip .
+
+      - name: Armazenar artefato no GitHub
+        uses: actions/upload-artifact@v4
+        with:
+          name: PTRON
+          path: ptron.zip
+
+  transfer-linux:
+    name: Transfer Linux Server
+    runs-on: ubuntu-latest
+    needs: [ build, open-ssh-port ]
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: PTRON
+
+      - name: Debug SSH Key
+        run: |
+          if [ -z "${{ secrets.LINUX_SSH_KEY }}" ]; then
+            echo "❌ LINUX_SSH_KEY secret is empty or not set"
+            exit 1
+          fi
+          echo "✅ LINUX_SSH_KEY secret is configured"
+
+      - name: Criar diretório de upload no Linux Server
+        uses: appleboy/ssh-action@v1.1.0
+        with:
+          host: ${{ secrets.LINUX_HOST }}
+          username: ${{ secrets.LINUX_SSH_USER || 'ec2-user' }}
+          key: ${{ secrets.LINUX_SSH_KEY }}
+          script_stop: false
+          script: |
+            UPLOAD_DIR="${{ secrets.LINUX_UPLOAD_PATH || '/home/ec2-user/deploys' }}"
+            sudo mkdir -p "$UPLOAD_DIR"
+            sudo chown $(whoami):$(whoami) "$UPLOAD_DIR"
+
+      - name: Enviar artefato para o Linux Server
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.LINUX_HOST }}
+          username: ${{ secrets.LINUX_SSH_USER || 'ec2-user' }}
+          key: ${{ secrets.LINUX_SSH_KEY }}
+          source: "ptron.zip"
+          target: "${{ secrets.LINUX_UPLOAD_PATH || '/home/ec2-user/deploys' }}/"
+
+  deploy-linux:
+    name: Deploy no Linux Server
+    runs-on: ubuntu-latest
+    needs: transfer-linux
+    steps:
+      - name: Executar deploy Linux
+        uses: appleboy/ssh-action@v1.1.0
+        with:
+          host: ${{ secrets.LINUX_HOST }}
+          username: ${{ secrets.LINUX_SSH_USER || 'ec2-user' }}
+          key: ${{ secrets.LINUX_SSH_KEY }}
+          script_stop: false
+          script: |
+            set -e
+            echo "Iniciando deploy PTRON no Linux Server..."
+
+            LINUX_SSH_USER="${{ secrets.LINUX_SSH_USER || 'ec2-user' }}"
+            LINUX_UPLOAD_DIR="${{ secrets.LINUX_UPLOAD_PATH || '/home/ec2-user/deploys' }}"
+            LINUX_TARGET_DIR="${{ secrets.LINUX_APP_PATH || '/opt/ptron' }}"
+            LINUX_SERVICE_NAME="${{ secrets.LINUX_SERVICE_NAME || 'ptron' }}"
+
+            if [ -z "${{ secrets.LINUX_HOST }}" ]; then
+              echo "❌ Secret LINUX_HOST não definido."
+              exit 1
+            fi
+
+            sudo mkdir -p "${LINUX_UPLOAD_DIR}" "${LINUX_TARGET_DIR}"
+            if [ ! -f "${LINUX_UPLOAD_DIR}/ptron.zip" ]; then
+              echo "❌ Artefato não encontrado: ${LINUX_UPLOAD_DIR}/ptron.zip"
+              exit 1
+            fi
+
+            echo "Parando serviço ${LINUX_SERVICE_NAME} (se existir)..."
+            sudo systemctl stop "${LINUX_SERVICE_NAME}" 2>/dev/null || true
+
+            # Preserve SQLite DB and uploaded photos across deploys
+            BACKUP_DIR=$(mktemp -d)
+            echo "Preservando dados em ${BACKUP_DIR} ..."
+            for f in "${LINUX_TARGET_DIR}"/ptron.db "${LINUX_TARGET_DIR}"/ptron.db-wal "${LINUX_TARGET_DIR}"/ptron.db-shm; do
+              if [ -f "$f" ]; then
+                sudo cp -a "$f" "${BACKUP_DIR}/"
+              fi
+            done
+            if [ -d "${LINUX_TARGET_DIR}/wwwroot/uploads" ]; then
+              sudo mkdir -p "${BACKUP_DIR}/uploads"
+              sudo cp -a "${LINUX_TARGET_DIR}/wwwroot/uploads/." "${BACKUP_DIR}/uploads/"
+            fi
+            # Keep production overrides if present
+            if [ -f "${LINUX_TARGET_DIR}/appsettings.Production.json" ]; then
+              sudo cp -a "${LINUX_TARGET_DIR}/appsettings.Production.json" "${BACKUP_DIR}/"
+            fi
+
+            echo "Limpando ${LINUX_TARGET_DIR} ..."
+            sudo rm -rf "${LINUX_TARGET_DIR}"/*
+            sudo mkdir -p "${LINUX_TARGET_DIR}"
+
+            echo "Extraindo pacote para ${LINUX_TARGET_DIR} ..."
+            sudo unzip -o "${LINUX_UPLOAD_DIR}/ptron.zip" -d "${LINUX_TARGET_DIR}"
+
+            echo "Removendo appsettings.Development.json..."
+            sudo rm -f "${LINUX_TARGET_DIR}/appsettings.Development.json"
+
+            echo "Restaurando dados preservados..."
+            for f in ptron.db ptron.db-wal ptron.db-shm appsettings.Production.json; do
+              if [ -f "${BACKUP_DIR}/$f" ]; then
+                sudo cp -a "${BACKUP_DIR}/$f" "${LINUX_TARGET_DIR}/"
+              fi
+            done
+            if [ -d "${BACKUP_DIR}/uploads" ]; then
+              sudo mkdir -p "${LINUX_TARGET_DIR}/wwwroot/uploads"
+              sudo cp -a "${BACKUP_DIR}/uploads/." "${LINUX_TARGET_DIR}/wwwroot/uploads/"
+            fi
+            sudo rm -rf "${BACKUP_DIR}"
+
+            echo "Ajustando permissões..."
+            sudo chown -R "${LINUX_SSH_USER}:${LINUX_SSH_USER}" "${LINUX_TARGET_DIR}"
+
+            echo "Iniciando serviço ${LINUX_SERVICE_NAME}..."
+            sudo systemctl start "${LINUX_SERVICE_NAME}" 2>/dev/null || true
+            sudo systemctl enable "${LINUX_SERVICE_NAME}" 2>/dev/null || true
+
+            echo "✅ Deploy Linux concluído com sucesso."
+
+  close-ssh-port:
+    name: Fechar porta SSH AWS (22)
+    runs-on: ubuntu-latest
+    needs: [ open-ssh-port, deploy-linux ]
+    if: always()
+    steps:
+      - name: Configurar credenciais AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Fechar porta SSH
+        run: |
+          aws ec2 revoke-security-group-ingress \
+            --group-id ${{ secrets.LINUX_SG_ID }} \
+            --protocol tcp --port 22 --cidr 0.0.0.0/0 || echo "⚠️ Regra já removida"
+
+  post-actions:
+    name: Post Actions
+    runs-on: ubuntu-latest
+    needs: [ build, transfer-linux, deploy-linux, close-ssh-port ]
+    if: always()
+    steps:
+      - name: Resumo
+        run: |
+          echo "🏁 Pipeline finalizado..."
+          echo "build: ${{ needs.build.result }}"
+          echo "transfer-linux: ${{ needs['transfer-linux'].result }}"
+          echo "deploy-linux: ${{ needs['deploy-linux'].result }}"
+          echo "close-ssh-port: ${{ needs['close-ssh-port'].result }}"

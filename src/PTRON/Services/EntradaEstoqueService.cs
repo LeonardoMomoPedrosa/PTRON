@@ -18,7 +18,8 @@ public class EntradaEstoqueService
         await using var db = await _factory.CreateDbContextAsync();
         return await db.EntradasEstoque
             .Include(e => e.Itens)
-                .ThenInclude(i => i.Insumo)
+                .ThenInclude(i => i.Insumo!)
+                    .ThenInclude(ins => ins.TipoInsumo)
             .AsNoTracking()
             .OrderByDescending(e => e.Data)
             .ThenByDescending(e => e.Id)
@@ -30,7 +31,8 @@ public class EntradaEstoqueService
         await using var db = await _factory.CreateDbContextAsync();
         return await db.EntradasEstoque
             .Include(e => e.Itens)
-                .ThenInclude(i => i.Insumo)
+                .ThenInclude(i => i.Insumo!)
+                    .ThenInclude(ins => ins.TipoInsumo)
             .AsNoTracking()
             .FirstOrDefaultAsync(e => e.Id == id);
     }
@@ -40,7 +42,7 @@ public class EntradaEstoqueService
     /// weighted-average unit cost for each affected insumo inside a transaction.
     /// Formula: novoCusto = (Saldo*CustoUnitario + Σ qtd*preço) / (Saldo + Σ qtd)
     /// </summary>
-    public async Task FinalizarAsync(IReadOnlyList<EntradaEstoqueItem> itens)
+    public async Task<EntradaEstoque> FinalizarAsync(IReadOnlyList<EntradaEstoqueItem> itens)
     {
         if (itens is null || itens.Count == 0)
         {
@@ -102,6 +104,7 @@ public class EntradaEstoqueService
 
             await db.SaveChangesAsync();
             await tx.CommitAsync();
+            return entrada;
         }
         catch
         {

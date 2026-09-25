@@ -46,11 +46,22 @@
                                      @bind-Value="_novoInsumo"
                                      Label="Insumo"
                                      SearchFunc="SearchInsumos"
-                                     ToStringFunc="@(i => i?.Nome ?? string.Empty)"
+                                     ToStringFunc="@(i => i is null ? string.Empty : InsumoLabel(i))"
                                      ResetValueOnEmptyText="true"
                                      CoerceText="true"
                                      Clearable="true"
-                                     AnchorOrigin="Origin.BottomCenter" />
+                                     AnchorOrigin="Origin.BottomCenter">
+                        <ItemTemplate Context="insumo">
+                            <MudStack Spacing="0">
+                                <MudText Typo="Typo.body2">@insumo.Nome</MudText>
+                                <MudText Typo="Typo.caption" Class="mud-text-secondary">
+                                    @InsumoDetalhe(insumo)
+                                    · saldo @Format.Number(insumo.Saldo)
+                                    · @Format.Money(insumo.CustoUnitario)
+                                </MudText>
+                            </MudStack>
+                        </ItemTemplate>
+                    </MudAutocomplete>
                 </MudItem>
                 <MudItem xs="8" sm="3">
                     <MudNumericField T="decimal" @bind-Value="_novaQtd" Label="Qtd"
@@ -65,14 +76,22 @@
                 </MudItem>
             </MudGrid>
 
-            <MudTable Items="_bom" Dense="true" Class="mt-2" Elevation="0">
+            <MudTable Items="_bom" Dense="true" Hover="true" Class="mt-2" Elevation="0" Breakpoint="Breakpoint.Sm">
                 <HeaderContent>
                     <MudTh>Insumo</MudTh>
+                    <MudTh>Tipo</MudTh>
+                    <MudTh>Especificações</MudTh>
+                    <MudTh Style="text-align:right">Custo unit.</MudTh>
                     <MudTh Style="text-align:right">Qtd</MudTh>
                     <MudTh Style="text-align:right"></MudTh>
                 </HeaderContent>
                 <RowTemplate>
                     <MudTd DataLabel="Insumo">@context.Insumo?.Nome</MudTd>
+                    <MudTd DataLabel="Tipo">@(context.Insumo?.TipoInsumo?.Nome ?? "—")</MudTd>
+                    <MudTd DataLabel="Especificações">@Especificacoes(context.Insumo)</MudTd>
+                    <MudTd DataLabel="Custo unit." Style="text-align:right">
+                        @(context.Insumo is null ? "—" : Format.Money(context.Insumo.CustoUnitario))
+                    </MudTd>
                     <MudTd DataLabel="Qtd" Style="text-align:right">@Format.Number(context.Qtd)</MudTd>
                     <MudTd Style="text-align:right">
                         <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small"
@@ -132,6 +151,33 @@
     {
         IEnumerable<Insumo> result = _insumos.Where(i => InsumoService.MatchesSearch(i, value));
         return Task.FromResult(result);
+    }
+
+    private static string InsumoLabel(Insumo i)
+        => $"{i.Nome} · {InsumoDetalhe(i)} (saldo: {Format.Number(i.Saldo)} · {Format.Money(i.CustoUnitario)})";
+
+    private static string InsumoDetalhe(Insumo i)
+    {
+        var parts = new List<string>();
+        if (!string.IsNullOrWhiteSpace(i.TipoInsumo?.Nome)) parts.Add(i.TipoInsumo.Nome);
+        if (!string.IsNullOrWhiteSpace(i.Valor)) parts.Add(i.Valor!);
+        if (!string.IsNullOrWhiteSpace(i.Potencia)) parts.Add(i.Potencia!);
+        if (!string.IsNullOrWhiteSpace(i.Voltagem)) parts.Add(i.Voltagem!);
+        return parts.Count == 0 ? "—" : string.Join(" · ", parts);
+    }
+
+    private static string Especificacoes(Insumo? i)
+    {
+        if (i is null)
+        {
+            return "—";
+        }
+
+        var parts = new List<string>();
+        if (!string.IsNullOrWhiteSpace(i.Valor)) parts.Add(i.Valor!);
+        if (!string.IsNullOrWhiteSpace(i.Potencia)) parts.Add(i.Potencia!);
+        if (!string.IsNullOrWhiteSpace(i.Voltagem)) parts.Add(i.Voltagem!);
+        return parts.Count == 0 ? "—" : string.Join(" · ", parts);
     }
 
     private void AddInsumo()

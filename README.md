@@ -24,6 +24,7 @@ Especificação completa em [`especificacao.md`](especificacao.md). Plano de imp
 ### Stack
 
 - **Blazor Server** (.NET 8) — C# full-stack, sem JavaScript.
+- **REST API** em `/api` (JSON camelCase) para clientes externos, inclusive Android.
 - **Entity Framework Core** + **SQLite** (arquivo `ptron.db`, criado em `src/PTRON/` ao executar).
 - **MudBlazor** — biblioteca de componentes de UI.
 - Fotos salvas em `wwwroot/uploads/`.
@@ -52,6 +53,53 @@ Se o certificado HTTPS de desenvolvimento pedir confiança:
 
 ```bash
 dotnet dev-certs https --trust
+```
+
+### API REST (Android)
+
+Base URL de desenvolvimento: `http://localhost:5083`. JSON em camelCase. Erros: `{ "error": "mensagem" }`.
+
+Autenticação: envie o token de `Api:Token` em `appsettings.json` (padrão `ptron-dev-token-8f4c2a91`) em todo pedido `/api`:
+
+```http
+Authorization: Bearer ptron-dev-token-8f4c2a91
+```
+
+Alternativa: cabeçalho `X-Api-Key: ptron-dev-token-8f4c2a91`. Sem token a API responde `401`. A UI Blazor não usa esse token.
+
+| Método | Caminho | Descrição |
+|--------|---------|-----------|
+| GET | `/api` | Ping (`name`, `version`) |
+| GET/POST | `/api/tipos` | Listar / criar tipo |
+| GET/PUT/DELETE | `/api/tipos/{id}` | Obter / alterar / excluir tipo |
+| GET/POST | `/api/insumos` | Listar (`?search=&tipoId=`) / criar insumo |
+| GET/PUT/DELETE | `/api/insumos/{id}` | Obter / alterar / excluir insumo |
+| GET/POST | `/api/equipamentos` | Listar / criar equipamento (BOM no body) |
+| GET/PUT/DELETE | `/api/equipamentos/{id}` | Detalhe com BOM / alterar / excluir |
+| GET/POST | `/api/entradas` | Histórico / finalizar entrada |
+| GET | `/api/entradas/{id}` | Detalhe da entrada |
+| GET | `/api/producao/preview/{equipamentoId}` | Preview (faltantes, custo estimado) |
+| POST | `/api/producao` | Produzir `{ equipamentoId, descricaoAdicional }` |
+| GET | `/api/produtos` | Listar produtos |
+| GET/DELETE | `/api/produtos/{id}` | Detalhe (snapshot) / excluir (devolve estoque) |
+| POST | `/api/uploads` | Multipart campo `file` → `{ "fotoPath": "/uploads/..." }` |
+
+Fotos: `fotoPath` é relativo (ex. `/uploads/abc.png`). No Android use `baseUrl + fotoPath`. Swagger em desenvolvimento: `http://localhost:5083/swagger`.
+
+Emulador Android: `http://10.0.2.2:5083`. Celular na mesma rede:
+
+```bash
+dotnet run --project src/PTRON --launch-profile PTRON-LAN
+```
+
+Use o IP da máquina, por exemplo `http://192.168.0.10:5083`. No Swagger, clique em **Authorize** e cole o token.
+
+App mobile (Expo) em [`mobile/`](mobile/README.md):
+
+```bash
+cd mobile
+npm install
+npm start
 ```
 
 ### Backup
@@ -97,6 +145,7 @@ Full specification in [`especificacao.md`](especificacao.md). Implementation pla
 ### Stack
 
 - **Blazor Server** (.NET 8) — full-stack C#, no JavaScript.
+- **REST API** at `/api` (camelCase JSON) for external clients, including Android.
 - **Entity Framework Core** + **SQLite** (`ptron.db` file, created under `src/PTRON/` when you run).
 - **MudBlazor** — UI component library.
 - Photos stored in `wwwroot/uploads/`.
@@ -125,6 +174,53 @@ If the HTTPS development certificate needs to be trusted:
 
 ```bash
 dotnet dev-certs https --trust
+```
+
+### REST API (Android)
+
+Development base URL: `http://localhost:5083`. camelCase JSON. Errors: `{ "error": "message" }`.
+
+Auth: send the `Api:Token` value from `appsettings.json` (default `ptron-dev-token-8f4c2a91`) on every `/api` request:
+
+```http
+Authorization: Bearer ptron-dev-token-8f4c2a91
+```
+
+Alternatively: header `X-Api-Key: ptron-dev-token-8f4c2a91`. Missing token → `401`. The Blazor UI does not use this token.
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api` | Ping (`name`, `version`) |
+| GET/POST | `/api/tipos` | List / create component type |
+| GET/PUT/DELETE | `/api/tipos/{id}` | Get / update / delete type |
+| GET/POST | `/api/insumos` | List (`?search=&tipoId=`) / create component |
+| GET/PUT/DELETE | `/api/insumos/{id}` | Get / update / delete component |
+| GET/POST | `/api/equipamentos` | List / create equipment (BOM in body) |
+| GET/PUT/DELETE | `/api/equipamentos/{id}` | Detail with BOM / update / delete |
+| GET/POST | `/api/entradas` | History / finalize stock entry |
+| GET | `/api/entradas/{id}` | Stock-entry detail |
+| GET | `/api/producao/preview/{equipamentoId}` | Preview (shortages, estimated cost) |
+| POST | `/api/producao` | Produce `{ equipamentoId, descricaoAdicional }` |
+| GET | `/api/produtos` | List products |
+| GET/DELETE | `/api/produtos/{id}` | Detail (snapshot) / delete (returns stock) |
+| POST | `/api/uploads` | Multipart field `file` → `{ "fotoPath": "/uploads/..." }` |
+
+Photos: `fotoPath` is relative (e.g. `/uploads/abc.png`). On Android use `baseUrl + fotoPath`. Swagger in Development: `http://localhost:5083/swagger`.
+
+Android emulator: `http://10.0.2.2:5083`. Physical device on the same LAN:
+
+```bash
+dotnet run --project src/PTRON --launch-profile PTRON-LAN
+```
+
+Use the PC's IP, e.g. `http://192.168.0.10:5083`. In Swagger, click **Authorize** and paste the token.
+
+Mobile app (Expo) in [`mobile/`](mobile/README.md):
+
+```bash
+cd mobile
+npm install
+npm start
 ```
 
 ### Backup

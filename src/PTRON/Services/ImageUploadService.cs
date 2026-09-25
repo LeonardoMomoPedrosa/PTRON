@@ -20,14 +20,30 @@ public class ImageUploadService
     /// </summary>
     public async Task<string> SaveAsync(IBrowserFile file, CancellationToken cancellationToken = default)
     {
-        var extension = Path.GetExtension(file.Name).ToLowerInvariant();
+        await using var stream = file.OpenReadStream(MaxFileSize, cancellationToken);
+        return await SaveAsync(stream, file.Name, file.Size, cancellationToken);
+    }
+
+    /// <summary>
+    /// Saves an HTTP multipart upload (Android / REST clients).
+    /// </summary>
+    public async Task<string> SaveAsync(IFormFile file, CancellationToken cancellationToken = default)
+    {
+        await using var stream = file.OpenReadStream();
+        return await SaveAsync(stream, file.FileName, file.Length, cancellationToken);
+    }
+
+    public async Task<string> SaveAsync(
+        Stream stream, string fileName, long length, CancellationToken cancellationToken = default)
+    {
+        var extension = Path.GetExtension(fileName).ToLowerInvariant();
         if (!AllowedExtensions.Contains(extension))
         {
             throw new InvalidOperationException(
                 $"Formato de imagem não suportado ({extension}). Use JPG, PNG, GIF ou WEBP.");
         }
 
-        if (file.Size > MaxFileSize)
+        if (length > MaxFileSize)
         {
             throw new InvalidOperationException("A imagem excede o tamanho máximo de 5 MB.");
         }
@@ -35,15 +51,15 @@ public class ImageUploadService
         var uploadsRoot = Path.Combine(_env.WebRootPath, "uploads");
         Directory.CreateDirectory(uploadsRoot);
 
-        var fileName = $"{Guid.NewGuid():N}{extension}";
-        var fullPath = Path.Combine(uploadsRoot, fileName);
+        var storedName = $"{Guid.NewGuid():N}{extension}";
+        var fullPath = Path.Combine(uploadsRoot, storedName);
 
-        await using (var stream = File.Create(fullPath))
+        await using (var output = File.Create(fullPath))
         {
-            await file.OpenReadStream(MaxFileSize, cancellationToken).CopyToAsync(stream, cancellationToken);
+            await stream.CopyToAsync(output, cancellationToken);
         }
 
-        return $"/uploads/{fileName}";
+        return $"/uploads/{storedName}";
     }
 
     /// <summary>

@@ -8,7 +8,15 @@
                 <MudTh Style="text-align:right">Subtotal</MudTh>
             </HeaderContent>
             <RowTemplate>
-                <MudTd DataLabel="Insumo">@context.Insumo?.Nome</MudTd>
+                <MudTd DataLabel="Insumo">
+                    @if (context.Insumo is not null)
+                    {
+                        <MudText Typo="Typo.body2">@context.Insumo.Nome</MudText>
+                        <MudText Typo="Typo.caption" Class="mud-text-secondary">
+                            @InsumoDetalhe(context.Insumo)
+                        </MudText>
+                    }
+                </MudTd>
                 <MudTd DataLabel="Qtd" Style="text-align:right">@Format.Number(context.Qtd)</MudTd>
                 <MudTd DataLabel="Preço unit." Style="text-align:right">@Format.Money(context.PrecoUnitario)</MudTd>
                 <MudTd DataLabel="Subtotal" Style="text-align:right">
@@ -37,4 +45,14 @@
     [Parameter] public EntradaEstoque Entrada { get; set; } = default!;
 
     private void Close() => MudDialog.Close();
+
+    private static string InsumoDetalhe(Insumo i)
+    {
+        var parts = new List<string>();
+        if (!string.IsNullOrWhiteSpace(i.TipoInsumo?.Nome)) parts.Add(i.TipoInsumo.Nome);
+        if (!string.IsNullOrWhiteSpace(i.Valor)) parts.Add(i.Valor!);
+        if (!string.IsNullOrWhiteSpace(i.Potencia)) parts.Add(i.Potencia!);
+        if (!string.IsNullOrWhiteSpace(i.Voltagem)) parts.Add(i.Voltagem!);
+        return parts.Count == 0 ? "—" : string.Join(" · ", parts);
+    }
 }

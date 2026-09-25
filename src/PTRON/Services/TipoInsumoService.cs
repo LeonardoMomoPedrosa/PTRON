@@ -34,6 +34,15 @@ public class TipoInsumoService
         return await db.Insumos.CountAsync(i => i.TipoInsumoId == tipoId);
     }
 
+    public async Task<Dictionary<int, int>> CountInsumosByTipoAsync()
+    {
+        await using var db = await _factory.CreateDbContextAsync();
+        return await db.Insumos
+            .GroupBy(i => i.TipoInsumoId)
+            .Select(g => new { g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.Key, x => x.Count);
+    }
+
     public async Task CreateAsync(TipoInsumo tipo)
     {
         await using var db = await _factory.CreateDbContextAsync();

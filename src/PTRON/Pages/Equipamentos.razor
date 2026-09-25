@@ -58,6 +58,12 @@
 </MudPaper>
 
 @code {
+    private static readonly DialogOptions DialogOptions = new()
+    {
+        MaxWidth = MaxWidth.Medium,
+        FullWidth = true
+    };
+
     private List<Equipamento> _equipamentos = new();
     private bool _loading = true;
 
@@ -78,7 +84,7 @@
             return;
         }
 
-        var dialog = await DialogService.ShowAsync<EquipamentoDialog>("Novo equipamento");
+        var dialog = await DialogService.ShowAsync<EquipamentoDialog>("Novo equipamento", DialogOptions);
         var result = await dialog.Result;
         if (result is { Canceled: false, Data: Equipamento novo })
         {
@@ -106,7 +112,7 @@
         }
 
         var parameters = new DialogParameters<EquipamentoDialog> { { x => x.Equipamento, full } };
-        var dialog = await DialogService.ShowAsync<EquipamentoDialog>("Editar equipamento", parameters);
+        var dialog = await DialogService.ShowAsync<EquipamentoDialog>("Editar equipamento", parameters, DialogOptions);
         var result = await dialog.Result;
         if (result is { Canceled: false, Data: Equipamento editado })
         {
