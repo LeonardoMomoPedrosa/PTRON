@@ -105,6 +105,95 @@ a, .btn-link {
     align-items: center;
 }
 
+/* Insumos: same split as Tipos. The desktop table stays; phones get a card list. */
+.insumos-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.insumos-add {
+    margin-left: auto;
+}
+
+.insumos-phone {
+    display: none;
+}
+
+.insumos-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 4px 10px 12px;
+    border-bottom: 1px solid var(--mud-palette-table-lines);
+}
+
+.insumos-row:last-child {
+    border-bottom: none;
+}
+
+.insumos-main {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.insumos-foto {
+    flex: 0 0 auto;
+    width: 48px;
+    height: 48px;
+}
+
+.insumos-foto-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    background: var(--mud-palette-background-grey);
+}
+
+.insumos-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.insumos-nome {
+    overflow-wrap: anywhere;
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.3;
+}
+
+.insumos-meta {
+    overflow-wrap: anywhere;
+    font-size: 0.8125rem;
+    line-height: 1.3;
+    color: var(--mud-palette-text-secondary);
+}
+
+.insumos-actions {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+}
+
+.insumos-pager {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.insumos-pager-label {
+    text-align: center;
+    font-size: 0.875rem;
+}
+
 @media (max-width: 599.98px) {
     .tipos-page {
         margin-top: -1.5rem;
@@ -130,27 +219,79 @@ a, .btn-link {
         display: none;
     }
 
-    .mud-dialog-container:has(.tipo-flow-dialog) {
+    .insumos-page {
+        margin-top: -1.5rem;
+    }
+
+    .insumos-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .insumos-add {
+        margin-left: 0;
+        width: 100%;
+        min-height: 48px;
+    }
+
+    .insumos-filters {
+        padding: 12px !important;
+    }
+
+    .insumos-phone {
+        display: block;
+    }
+
+    .insumos-desktop {
+        display: none;
+    }
+
+    .mud-dialog-container:has(.tipo-flow-dialog),
+    .mud-dialog-container:has(.insumo-flow-dialog) {
         align-items: flex-start;
         padding-top: max(12px, env(safe-area-inset-top));
     }
 
-    .mud-dialog:has(.tipo-flow-dialog) {
+    .mud-dialog:has(.tipo-flow-dialog),
+    .mud-dialog:has(.insumo-flow-dialog) {
         width: calc(100% - 24px);
         max-width: calc(100% - 24px);
         margin: 12px;
     }
 
-    .mud-dialog:has(.tipo-flow-dialog) .mud-dialog-actions {
+    .mud-dialog:has(.tipo-flow-dialog) .mud-dialog-actions,
+    .mud-dialog:has(.insumo-flow-dialog) .mud-dialog-actions {
         flex-direction: column-reverse;
         align-items: stretch;
         gap: 8px;
         padding: 8px 16px calc(12px + env(safe-area-inset-bottom));
     }
 
-    .mud-dialog:has(.tipo-flow-dialog) .mud-dialog-actions .mud-button-root {
+    .mud-dialog:has(.tipo-flow-dialog) .mud-dialog-actions .mud-button-root,
+    .mud-dialog:has(.insumo-flow-dialog) .mud-dialog-actions .mud-button-root {
         margin: 0;
+        margin-left: 0 !important;
         width: 100%;
         min-height: 48px;
+    }
+
+    .mud-dialog:has(.insumo-flow-dialog) .mud-dialog-actions .mud-spacer {
+        display: none;
+    }
+
+    .mud-dialog:has(.insumo-flow-dialog) .insumo-photo-row {
+        flex-wrap: wrap;
+    }
+
+    .mud-dialog:has(.insumo-flow-dialog) .insumo-photo-row .mud-file-upload,
+    .mud-dialog:has(.insumo-flow-dialog) .insumo-photo-row .mud-button-root {
+        width: 100%;
+        min-height: 48px;
+    }
+
+    .mud-dialog:has(.insumo-flow-dialog) .insumo-photo-row .mud-icon-button {
+        width: 48px;
+        height: 48px;
     }
 }
