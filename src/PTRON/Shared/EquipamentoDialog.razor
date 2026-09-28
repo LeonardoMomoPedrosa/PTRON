@@ -16,25 +16,30 @@
                                   DebounceInterval="0" />
                 </MudItem>
                 <MudItem xs="12">
-                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="equipamento-photo-row">
-                        <MudButton HtmlTag="label"
-                                   Variant="Variant.Outlined"
-                                   Color="Color.Primary"
-                                   StartIcon="@Icons.Material.Filled.Image"
-                                   Disabled="_enviandoFoto"
-                                   Class="equipamento-photo-trigger">
-                            <InputFile @key="_photoInputKey"
-                                       OnChange="OnPhotoSelected"
-                                       accept=".jpg,.jpeg,.png,.gif,.webp,image/jpeg,image/png,image/gif,image/webp"
-                                       class="equipamento-photo-file" />
-                            @PhotoButtonText
-                        </MudButton>
+                    <MudStack Spacing="2" Class="equipamento-photo-block">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="equipamento-photo-row">
+                            <MudButton HtmlTag="label"
+                                       Variant="Variant.Outlined"
+                                       Color="Color.Primary"
+                                       StartIcon="@Icons.Material.Filled.Image"
+                                       Disabled="_enviandoFoto"
+                                       Class="equipamento-photo-trigger">
+                                <InputFile @key="_photoInputKey"
+                                           OnChange="OnPhotoSelected"
+                                           accept=".jpg,.jpeg,.png,.gif,.webp,image/jpeg,image/png,image/gif,image/webp"
+                                           class="equipamento-photo-file" />
+                                @PhotoButtonText
+                            </MudButton>
+                            @if (!string.IsNullOrEmpty(_model.FotoPath))
+                            {
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
+                                               Size="Size.Medium" aria-label="Remover foto" OnClick="RemovePhoto" />
+                            }
+                        </MudStack>
                         @if (!string.IsNullOrEmpty(_model.FotoPath))
                         {
-                            <MudImage @key="_model.FotoPath" Src="@_model.FotoPath" Width="56" Height="56"
-                                      ObjectFit="ObjectFit.Cover" Class="rounded" />
-                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
-                                           Size="Size.Medium" aria-label="Remover foto" OnClick="RemovePhoto" />
+                            <img @key="_model.FotoPath" src="@_model.FotoPath" alt="Foto do equipamento"
+                                 class="rounded equipamento-photo-preview" />
                         }
                     </MudStack>
                     @if (!string.IsNullOrEmpty(_fotoErro))

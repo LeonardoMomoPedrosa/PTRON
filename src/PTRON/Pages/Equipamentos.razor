@@ -38,8 +38,8 @@
                         <div class="equipamentos-main">
                             @if (!string.IsNullOrEmpty(equipamento.FotoPath))
                             {
-                                <MudImage @key="equipamento.FotoPath" Src="@equipamento.FotoPath" Width="48" Height="48"
-                                          ObjectFit="ObjectFit.Cover" Class="rounded equipamentos-foto" />
+                                <img @key="equipamento.FotoPath" src="@equipamento.FotoPath" alt=""
+                                     class="rounded equipamentos-foto" />
                             }
                             else
                             {
@@ -87,8 +87,8 @@
                 <MudTd DataLabel="Foto">
                     @if (!string.IsNullOrEmpty(context.FotoPath))
                     {
-                        <MudImage @key="context.FotoPath" Src="@context.FotoPath" Width="40" Height="40"
-                                  ObjectFit="ObjectFit.Cover" Class="rounded" />
+                        <img @key="context.FotoPath" src="@context.FotoPath" alt=""
+                             class="rounded equipamentos-foto" />
                     }
                     else
                     {
