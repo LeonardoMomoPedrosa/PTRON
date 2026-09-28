@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import * as ImagePicker from 'expo-image-picker';
 import { api } from '../api';
+import { photoUrl } from '../api/client';
 import type { Insumo } from '../api/types';
 import { FormField, Loading, PrimaryButton, Screen, SecondaryButton } from '../components/ui';
 import { useSettings } from '../context/SettingsContext';
@@ -20,6 +22,8 @@ export function EquipamentoFormScreen({ navigation, route }: Props) {
   const [saving, setSaving] = useState(false);
   const [nome, setNome] = useState('');
   const [fotoPath, setFotoPath] = useState<string | null>(null);
+  const [previewUri, setPreviewUri] = useState<string | null>(null);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [insumos, setInsumos] = useState<Insumo[]>([]);
   const [bom, setBom] = useState<BomLine[]>([]);
   const [pickId, setPickId] = useState(0);
@@ -82,7 +86,58 @@ export function EquipamentoFormScreen({ navigation, route }: Props) {
     setInsumoSearch('');
   };
 
+  const uploadAsset = async (asset: ImagePicker.ImagePickerAsset) => {
+    const file = photoFile(asset);
+    setUploadingPhoto(true);
+    try {
+      const uploaded = await api.uploadFoto(config, {
+        uri: asset.uri,
+        name: file.name,
+        type: file.type,
+      });
+      setFotoPath(uploaded.fotoPath);
+      setPreviewUri(asset.uri);
+    } catch (e) {
+      showError(e);
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const pickFromLibrary = async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert('Permissão', 'Permita o acesso às fotos para atualizar a imagem do equipamento.');
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      quality: 0.7,
+    });
+    if (!result.canceled && result.assets[0]) {
+      await uploadAsset(result.assets[0]);
+    }
+  };
+
+  const takePhoto = async () => {
+    const permission = await ImagePicker.requestCameraPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert('Permissão', 'Permita o uso da câmera para fotografar o equipamento.');
+      return;
+    }
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ['images'],
+      quality: 0.7,
+    });
+    if (!result.canceled && result.assets[0]) {
+      await uploadAsset(result.assets[0]);
+    }
+  };
+
   const onSave = async () => {
+    if (uploadingPhoto) {
+      return;
+    }
     if (!nome.trim()) {
       Alert.alert('Validação', 'Informe o nome.');
       return;
@@ -108,10 +163,43 @@ export function EquipamentoFormScreen({ navigation, route }: Props) {
 
   if (loading) return <Loading />;
 
+  const shownPhoto = previewUri ?? photoUrl(config, fotoPath);
+
   return (
     <Screen>
       <ScrollView contentContainerStyle={styles.content}>
         <FormField label="Nome" value={nome} onChangeText={setNome} />
+        <Text style={styles.section}>Foto</Text>
+        {shownPhoto ? (
+          <Image source={{ uri: shownPhoto }} style={styles.photo} />
+        ) : (
+          <View style={[styles.photo, styles.photoEmpty]}>
+            <Text style={styles.hint}>Sem foto</Text>
+          </View>
+        )}
+        <View style={styles.photoActions}>
+          <SecondaryButton
+            title={uploadingPhoto ? 'Enviando foto…' : 'Galeria'}
+            onPress={pickFromLibrary}
+            disabled={uploadingPhoto || saving}
+          />
+          <SecondaryButton
+            title="Câmera"
+            onPress={takePhoto}
+            disabled={uploadingPhoto || saving}
+          />
+        </View>
+        {fotoPath ? (
+          <Pressable
+            disabled={uploadingPhoto || saving}
+            onPress={() => {
+              setFotoPath(null);
+              setPreviewUri(null);
+            }}
+          >
+            <Text style={styles.danger}>Remover foto</Text>
+          </Pressable>
+        ) : null}
         <Text style={styles.section}>BOM</Text>
         {bom.map((line) => (
           <View key={line.insumoId} style={styles.bomRow}>
@@ -156,9 +244,9 @@ export function EquipamentoFormScreen({ navigation, route }: Props) {
         <SecondaryButton title="Adicionar à BOM" onPress={addBom} />
         <View style={styles.gap} />
         <PrimaryButton
-          title={saving ? 'Salvando…' : editing ? 'Salvar' : 'Criar'}
+          title={uploadingPhoto ? 'Enviando foto…' : saving ? 'Salvando…' : editing ? 'Salvar' : 'Criar'}
           onPress={onSave}
-          disabled={saving}
+          disabled={saving || uploadingPhoto}
         />
         {bom.length > 0 ? (
           <Text style={styles.hint}>{bom.length} itens · qtds: {bom.map((b) => numberPt(Number(b.qtd.replace(',', '.')))).join(', ')}</Text>
@@ -206,4 +294,27 @@ const styles = StyleSheet.create({
   chipTextActive: { color: '#fff', fontWeight: '700' },
   gap: { height: spacing.md },
   hint: { marginTop: spacing.sm, color: colors.textMuted, fontSize: 12 },
+  photo: {
+    width: 120,
+    height: 120,
+    borderRadius: 12,
+    backgroundColor: colors.chip,
+    marginBottom: spacing.sm,
+  },
+  photoEmpty: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  photoActions: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.sm },
 });
+
+function photoFile(asset: ImagePicker.ImagePickerAsset): { name: string; type: string } {
+  const mime = (asset.mimeType ?? '').toLowerCase();
+  const name = (asset.fileName ?? '').toLowerCase();
+  if (mime.includes('png') || name.endsWith('.png')) return { name: 'photo.png', type: 'image/png' };
+  if (mime.includes('webp') || name.endsWith('.webp')) return { name: 'photo.webp', type: 'image/webp' };
+  if (mime.includes('gif') || name.endsWith('.gif')) return { name: 'photo.gif', type: 'image/gif' };
+  return { name: 'photo.jpg', type: 'image/jpeg' };
+}

@@ -27,6 +27,16 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "O PTRON usa suas fotos para a imagem do equipamento.",
+          "cameraPermission": "O PTRON usa a c\u00e2mera para fotografar o equipamento.",
+          "microphonePermission": false
+        }
+      ]
+    ]
   }
 }

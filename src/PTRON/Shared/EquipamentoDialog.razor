@@ -4,9 +4,9 @@
 
 <MudDialog OnKeyUp="OnDialogKeyUp">
     <DialogContent>
-            <MudForm @ref="_form" Model="_model">
+            <MudForm @ref="_form" Model="_model" Class="equipamento-flow-dialog">
                 <MudGrid>
-                <MudItem xs="12" sm="8">
+                <MudItem xs="12">
                     <MudTextField @bind-Value="_model.Nome"
                                   Label="Nome"
                                   Required="true"
@@ -15,26 +15,32 @@
                                   Immediate="true"
                                   DebounceInterval="0" />
                 </MudItem>
-                <MudItem xs="12" sm="4">
-                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
-                        <MudFileUpload T="IBrowserFile" Accept=".jpg,.jpeg,.png,.gif,.webp"
-                                       FilesChanged="UploadFile">
-                            <CustomContent Context="fileUpload">
-                                <MudButton Variant="Variant.Outlined"
-                                           StartIcon="@Icons.Material.Filled.Image"
-                                           OnClick="@fileUpload.OpenFilePickerAsync">
-                                    @(string.IsNullOrEmpty(_model.FotoPath) ? "Foto" : "Trocar")
-                                </MudButton>
-                            </CustomContent>
-                        </MudFileUpload>
+                <MudItem xs="12">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="equipamento-photo-row">
+                        <MudButton HtmlTag="label"
+                                   Variant="Variant.Outlined"
+                                   Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.Image"
+                                   Disabled="_enviandoFoto"
+                                   Class="equipamento-photo-trigger">
+                            <InputFile @key="_photoInputKey"
+                                       OnChange="OnPhotoSelected"
+                                       accept=".jpg,.jpeg,.png,.gif,.webp,image/jpeg,image/png,image/gif,image/webp"
+                                       class="equipamento-photo-file" />
+                            @PhotoButtonText
+                        </MudButton>
                         @if (!string.IsNullOrEmpty(_model.FotoPath))
                         {
-                            <MudImage Src="@_model.FotoPath" Width="48" Height="48"
+                            <MudImage @key="_model.FotoPath" Src="@_model.FotoPath" Width="56" Height="56"
                                       ObjectFit="ObjectFit.Cover" Class="rounded" />
                             <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
-                                           Size="Size.Small" OnClick="@(() => _model.FotoPath = null)" />
+                                           Size="Size.Medium" aria-label="Remover foto" OnClick="RemovePhoto" />
                         }
                     </MudStack>
+                    @if (!string.IsNullOrEmpty(_fotoErro))
+                    {
+                        <MudText Typo="Typo.caption" Color="Color.Error" Class="mt-1">@_fotoErro</MudText>
+                    }
                 </MudItem>
             </MudGrid>
 
@@ -50,7 +56,10 @@
                                      ResetValueOnEmptyText="true"
                                      CoerceText="true"
                                      Clearable="true"
-                                     AnchorOrigin="Origin.BottomCenter">
+                                     PopoverFixed="true"
+                                     MaxHeight="240"
+                                     AnchorOrigin="Origin.BottomLeft"
+                                     TransformOrigin="Origin.TopLeft">
                         <ItemTemplate Context="insumo">
                             <MudStack Spacing="0">
                                 <MudText Typo="Typo.body2">@insumo.Nome</MudText>
@@ -63,20 +72,48 @@
                         </ItemTemplate>
                     </MudAutocomplete>
                 </MudItem>
-                <MudItem xs="8" sm="3">
+                <MudItem xs="12" sm="3">
                     <MudNumericField T="decimal" @bind-Value="_novaQtd" Label="Qtd"
                                      Min="0" Step="1"
                                      Immediate="true" DebounceInterval="0" />
                 </MudItem>
-                <MudItem xs="4" sm="2">
+                <MudItem xs="12" sm="2">
                     <MudButton Variant="Variant.Filled" Color="Color.Secondary"
-                               StartIcon="@Icons.Material.Filled.Add" OnClick="AddInsumo" FullWidth="true">
+                               StartIcon="@Icons.Material.Filled.Add" OnClick="AddInsumo" FullWidth="true"
+                               Class="equipamento-add-insumo">
                         Add
                     </MudButton>
                 </MudItem>
             </MudGrid>
 
-            <MudTable Items="_bom" Dense="true" Hover="true" Class="mt-2" Elevation="0" Breakpoint="Breakpoint.Sm">
+            <div class="equipamentos-bom-phone mt-2">
+                @if (_bom.Count == 0)
+                {
+                    <MudText Typo="Typo.body2">Nenhum insumo adicionado.</MudText>
+                }
+                else
+                {
+                    <MudPaper Class="equipamentos-bom-list" Elevation="0">
+                        @foreach (var row in _bom)
+                        {
+                            <div class="equipamentos-bom-row">
+                                <div class="equipamentos-bom-text">
+                                    <span class="equipamentos-nome">@row.Insumo?.Nome</span>
+                                    <span class="equipamentos-meta">@(row.Insumo?.TipoInsumo?.Nome ?? "—")</span>
+                                    <span class="equipamentos-meta">@Especificacoes(row.Insumo) · @Format.Number(row.Qtd)</span>
+                                </div>
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                               Size="Size.Large"
+                                               Color="Color.Error"
+                                               aria-label="@($"Remover {row.Insumo?.Nome}")"
+                                               OnClick="@(() => RemoveRow(row))" />
+                            </div>
+                        }
+                    </MudPaper>
+                }
+            </div>
+
+            <MudTable Items="_bom" Dense="true" Hover="true" Class="mt-2 equipamentos-bom-desktop" Elevation="0" Breakpoint="Breakpoint.None">
                 <HeaderContent>
                     <MudTh>Insumo</MudTh>
                     <MudTh>Tipo</MudTh>
@@ -105,8 +142,10 @@
             </MudForm>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel">Cancelar</MudButton>
-        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit">Salvar</MudButton>
+        <MudButton OnClick="Cancel" Disabled="_enviandoFoto">Cancelar</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="_enviandoFoto" OnClick="Submit">
+            @(_enviandoFoto ? "Enviando foto…" : "Salvar")
+        </MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -123,6 +162,15 @@
 
     private Insumo? _novoInsumo;
     private decimal _novaQtd = 1m;
+    private string? _fotoOriginal;
+    private string? _uploadedFoto;
+    private string? _fotoErro;
+    private bool _enviandoFoto;
+    private int _photoInputKey;
+
+    private string PhotoButtonText => _enviandoFoto
+        ? "Enviando…"
+        : string.IsNullOrEmpty(_model.FotoPath) ? "Selecionar foto" : "Trocar foto";
 
     protected override async Task OnInitializedAsync()
     {
@@ -145,6 +193,8 @@
                 })
                 .ToList();
         }
+
+        _fotoOriginal = _model.FotoPath;
     }
 
     private Task<IEnumerable<Insumo>> SearchInsumos(string? value, CancellationToken token)
@@ -215,26 +265,55 @@
 
     private void RemoveRow(EquipamentoInsumo row) => _bom.Remove(row);
 
-    private async Task UploadFile(IBrowserFile? file)
+    private async Task OnPhotoSelected(InputFileChangeEventArgs args)
     {
+        var file = args.File;
+        _photoInputKey++;
         if (file is null)
         {
             return;
         }
 
+        _enviandoFoto = true;
+        _fotoErro = null;
         try
         {
-            _model.FotoPath = await Images.SaveAsync(file);
+            var path = await Images.SaveAsync(file);
+            DiscardPendingUpload();
+            _uploadedFoto = path;
+            _model.FotoPath = path;
         }
         catch (Exception ex)
         {
+            _fotoErro = ex.Message;
             Snackbar.Add(ex.Message, Severity.Error);
         }
+        finally
+        {
+            _enviandoFoto = false;
+        }
+    }
+
+    private void RemovePhoto()
+    {
+        DiscardPendingUpload();
+        _model.FotoPath = null;
+        _fotoErro = null;
+    }
+
+    private void DiscardPendingUpload()
+    {
+        if (!string.IsNullOrEmpty(_uploadedFoto) && _uploadedFoto != _fotoOriginal)
+        {
+            Images.Delete(_uploadedFoto);
+        }
+
+        _uploadedFoto = null;
     }
 
     private async Task OnDialogKeyUp(KeyboardEventArgs e)
     {
-        if (e.Key != "Enter")
+        if (e.Key != "Enter" || _enviandoFoto)
         {
             return;
         }
@@ -251,6 +330,11 @@
 
     private async Task Submit()
     {
+        if (_enviandoFoto)
+        {
+            return;
+        }
+
         await _form.ValidateAsync();
         if (!_form.IsValid)
         {
@@ -261,5 +345,9 @@
         MudDialog.Close(DialogResult.Ok(_model));
     }
 
-    private void Cancel() => MudDialog.Cancel();
+    private void Cancel()
+    {
+        DiscardPendingUpload();
+        MudDialog.Cancel();
+    }
 }

@@ -106,7 +106,7 @@ public sealed class BomItemWriteDto
     [Range(1, int.MaxValue, ErrorMessage = "Selecione o insumo.")]
     public int InsumoId { get; set; }
 
-    [Range(typeof(decimal), "0.0001", "79228162514264337593543950335", ErrorMessage = "A quantidade deve ser maior que zero.")]
+    [Range(typeof(decimal), "0.0001", "79228162514264337593543950335", ParseLimitsInInvariantCulture = true, ErrorMessage = "A quantidade deve ser maior que zero.")]
     public decimal Qtd { get; set; }
 }
 

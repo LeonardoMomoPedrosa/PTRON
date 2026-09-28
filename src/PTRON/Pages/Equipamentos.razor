@@ -6,62 +6,121 @@
 
 <PageTitle>Equipamentos</PageTitle>
 
-<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4">
-    <MudText Typo="Typo.h5">Equipamentos</MudText>
-    <MudSpacer />
-    <MudButton StartIcon="@Icons.Material.Filled.Add"
-               Color="Color.Primary"
-               Variant="Variant.Filled"
-               OnClick="OpenCreate">
-        Novo equipamento
-    </MudButton>
-</MudStack>
+<div class="equipamentos-page">
+    <div class="equipamentos-toolbar mb-4">
+        <MudText Typo="Typo.h5">Equipamentos</MudText>
+        <MudButton StartIcon="@Icons.Material.Filled.Add"
+                   Color="Color.Primary"
+                   Variant="Variant.Filled"
+                   Class="equipamentos-add"
+                   OnClick="OpenCreate">
+            Novo equipamento
+        </MudButton>
+    </div>
 
-<MudPaper>
-    <MudTable Items="_equipamentos"
-              Loading="_loading"
-              Hover="true"
-              Dense="true"
-              Breakpoint="Breakpoint.Sm"
-              LoadingProgressColor="Color.Primary">
-        <HeaderContent>
-            <MudTh Style="width:64px">Foto</MudTh>
-            <MudTh>Nome</MudTh>
-            <MudTh Style="text-align:right">Insumos</MudTh>
-            <MudTh Style="text-align:right">Ações</MudTh>
-        </HeaderContent>
-        <RowTemplate>
-            <MudTd DataLabel="Foto">
-                @if (!string.IsNullOrEmpty(context.FotoPath))
+    <div class="equipamentos-phone">
+        @if (_loading)
+        {
+            <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mb-2" />
+        }
+        else if (_equipamentos.Count == 0)
+        {
+            <MudPaper Class="pa-4">
+                <MudText>Nenhum equipamento cadastrado.</MudText>
+            </MudPaper>
+        }
+        else
+        {
+            <MudPaper Class="equipamentos-list" Elevation="1">
+                @foreach (var equipamento in _equipamentos)
                 {
-                    <MudImage Src="@context.FotoPath" Width="40" Height="40"
-                              ObjectFit="ObjectFit.Cover" Class="rounded" />
+                    <div class="equipamentos-row">
+                        <div class="equipamentos-main">
+                            @if (!string.IsNullOrEmpty(equipamento.FotoPath))
+                            {
+                                <MudImage @key="equipamento.FotoPath" Src="@equipamento.FotoPath" Width="48" Height="48"
+                                          ObjectFit="ObjectFit.Cover" Class="rounded equipamentos-foto" />
+                            }
+                            else
+                            {
+                                <span class="equipamentos-foto equipamentos-foto-empty">
+                                    <MudIcon Icon="@Icons.Material.Filled.DeveloperBoard" />
+                                </span>
+                            }
+                            <div class="equipamentos-text">
+                                <span class="equipamentos-nome">@equipamento.Nome</span>
+                                <span class="equipamentos-meta">@equipamento.Insumos.Count insumos</span>
+                            </div>
+                        </div>
+                        <span class="equipamentos-actions">
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                           Size="Size.Large"
+                                           Color="Color.Primary"
+                                           aria-label="@($"Editar {equipamento.Nome}")"
+                                           OnClick="@(() => OpenEdit(equipamento))" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                           Size="Size.Large"
+                                           Color="Color.Error"
+                                           aria-label="@($"Excluir {equipamento.Nome}")"
+                                           OnClick="@(() => Delete(equipamento))" />
+                        </span>
+                    </div>
                 }
-                else
-                {
-                    <MudIcon Icon="@Icons.Material.Filled.DeveloperBoard" Color="Color.Default" />
-                }
-            </MudTd>
-            <MudTd DataLabel="Nome">@context.Nome</MudTd>
-            <MudTd DataLabel="Insumos" Style="text-align:right">@context.Insumos.Count</MudTd>
-            <MudTd DataLabel="Ações" Style="text-align:right">
-                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small"
-                               Color="Color.Primary" OnClick="@(() => OpenEdit(context))" />
-                <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small"
-                               Color="Color.Error" OnClick="@(() => Delete(context))" />
-            </MudTd>
-        </RowTemplate>
-        <NoRecordsContent>
-            <MudText>Nenhum equipamento cadastrado.</MudText>
-        </NoRecordsContent>
-    </MudTable>
-</MudPaper>
+            </MudPaper>
+        }
+    </div>
+
+    <MudPaper Class="equipamentos-desktop">
+        <MudTable Items="_equipamentos"
+                  Loading="_loading"
+                  Hover="true"
+                  Dense="true"
+                  Breakpoint="Breakpoint.None"
+                  LoadingProgressColor="Color.Primary">
+            <HeaderContent>
+                <MudTh Style="width:64px">Foto</MudTh>
+                <MudTh>Nome</MudTh>
+                <MudTh Style="text-align:right">Insumos</MudTh>
+                <MudTh Style="text-align:right">Ações</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Foto">
+                    @if (!string.IsNullOrEmpty(context.FotoPath))
+                    {
+                        <MudImage @key="context.FotoPath" Src="@context.FotoPath" Width="40" Height="40"
+                                  ObjectFit="ObjectFit.Cover" Class="rounded" />
+                    }
+                    else
+                    {
+                        <MudIcon Icon="@Icons.Material.Filled.DeveloperBoard" Color="Color.Default" />
+                    }
+                </MudTd>
+                <MudTd DataLabel="Nome">@context.Nome</MudTd>
+                <MudTd DataLabel="Insumos" Style="text-align:right">@context.Insumos.Count</MudTd>
+                <MudTd DataLabel="Ações" Style="text-align:right">
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small"
+                                   Color="Color.Primary"
+                                   aria-label="@($"Editar {context.Nome}")"
+                                   OnClick="@(() => OpenEdit(context))" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small"
+                                   Color="Color.Error"
+                                   aria-label="@($"Excluir {context.Nome}")"
+                                   OnClick="@(() => Delete(context))" />
+                </MudTd>
+            </RowTemplate>
+            <NoRecordsContent>
+                <MudText>Nenhum equipamento cadastrado.</MudText>
+            </NoRecordsContent>
+        </MudTable>
+    </MudPaper>
+</div>
 
 @code {
     private static readonly DialogOptions DialogOptions = new()
     {
         MaxWidth = MaxWidth.Medium,
-        FullWidth = true
+        FullWidth = true,
+        CloseOnEscapeKey = true
     };
 
     private List<Equipamento> _equipamentos = new();
@@ -134,7 +193,8 @@
         var parameters = new DialogParameters<ConfirmDialog>
         {
             { x => x.Message, $"Excluir o equipamento \"{equipamento.Nome}\" e sua lista de insumos?" },
-            { x => x.ConfirmText, "Excluir" }
+            { x => x.ConfirmText, "Excluir" },
+            { x => x.MarkerClass, "equipamento-flow-dialog" }
         };
         var dialog = await DialogService.ShowAsync<ConfirmDialog>("Confirmar exclusão", parameters);
         var result = await dialog.Result;

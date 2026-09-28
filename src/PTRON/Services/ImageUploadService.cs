@@ -4,7 +4,8 @@ namespace PTRON.Services;
 
 public class ImageUploadService
 {
-    private const long MaxFileSize = 5 * 1024 * 1024; // 5 MB
+    // Camera photos are often well above 5 MB.
+    private const long MaxFileSize = 20 * 1024 * 1024;
     private static readonly string[] AllowedExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
 
     private readonly IWebHostEnvironment _env;
@@ -21,7 +22,7 @@ public class ImageUploadService
     public async Task<string> SaveAsync(IBrowserFile file, CancellationToken cancellationToken = default)
     {
         await using var stream = file.OpenReadStream(MaxFileSize, cancellationToken);
-        return await SaveAsync(stream, file.Name, file.Size, cancellationToken);
+        return await SaveAsync(stream, file.Name, file.Size, file.ContentType, cancellationToken);
     }
 
     /// <summary>
@@ -30,22 +31,21 @@ public class ImageUploadService
     public async Task<string> SaveAsync(IFormFile file, CancellationToken cancellationToken = default)
     {
         await using var stream = file.OpenReadStream();
-        return await SaveAsync(stream, file.FileName, file.Length, cancellationToken);
+        return await SaveAsync(stream, file.FileName, file.Length, file.ContentType, cancellationToken);
     }
 
-    public async Task<string> SaveAsync(
+    public Task<string> SaveAsync(
         Stream stream, string fileName, long length, CancellationToken cancellationToken = default)
+        => SaveAsync(stream, fileName, length, contentType: null, cancellationToken);
+
+    public async Task<string> SaveAsync(
+        Stream stream, string fileName, long length, string? contentType, CancellationToken cancellationToken = default)
     {
-        var extension = Path.GetExtension(fileName).ToLowerInvariant();
-        if (!AllowedExtensions.Contains(extension))
-        {
-            throw new InvalidOperationException(
-                $"Formato de imagem não suportado ({extension}). Use JPG, PNG, GIF ou WEBP.");
-        }
+        var extension = ResolveExtension(fileName, contentType);
 
         if (length > MaxFileSize)
         {
-            throw new InvalidOperationException("A imagem excede o tamanho máximo de 5 MB.");
+            throw new InvalidOperationException("A imagem excede o tamanho máximo de 20 MB.");
         }
 
         var uploadsRoot = Path.Combine(_env.WebRootPath, "uploads");
@@ -60,6 +60,38 @@ public class ImageUploadService
         }
 
         return $"/uploads/{storedName}";
+    }
+
+    /// <summary>
+    /// Phone pickers sometimes hand back a name with no extension (or a generic one).
+    /// Fall back to the MIME type so a JPEG from the camera is still stored.
+    /// </summary>
+    private static string ResolveExtension(string fileName, string? contentType)
+    {
+        var extension = Path.GetExtension(fileName).ToLowerInvariant();
+        if (AllowedExtensions.Contains(extension))
+        {
+            return extension;
+        }
+
+        var fromType = contentType?.Split(';', 2)[0].Trim().ToLowerInvariant() switch
+        {
+            "image/jpeg" or "image/jpg" => ".jpg",
+            "image/png" => ".png",
+            "image/gif" => ".gif",
+            "image/webp" => ".webp",
+            _ => null
+        };
+
+        if (fromType is not null)
+        {
+            return fromType;
+        }
+
+        throw new InvalidOperationException(
+            string.IsNullOrEmpty(extension)
+                ? "Formato de imagem não suportado. Use JPG, PNG, GIF ou WEBP."
+                : $"Formato de imagem não suportado ({extension}). Use JPG, PNG, GIF ou WEBP.");
     }
 
     /// <summary>
