@@ -10,7 +10,20 @@ public static class Format
     public static readonly CultureInfo Culture = CultureInfo.GetCultureInfo("pt-BR");
 
     /// <summary>Formats a value as Brazilian currency, e.g. "R$ 1.234,56".</summary>
-    public static string Money(decimal value) => value.ToString("C", Culture);
+    public static string Money(decimal value) => Money(value, Moedas.Brl);
+
+    /// <summary>Formats a value in the entry currency (R$ or US$).</summary>
+    public static string Money(decimal value, string? moeda)
+    {
+        if (Moedas.Normalize(moeda) == Moedas.Usd)
+        {
+            return "US$ " + value.ToString("N2", Culture);
+        }
+
+        return value.ToString("C", Culture);
+    }
+
+    public static string Percent(decimal ratio) => ratio.ToString("P2", Culture);
 
     /// <summary>Formats a number with up to 4 decimals, trimming trailing zeros.</summary>
     public static string Number(decimal value) => value.ToString("0.####", Culture);

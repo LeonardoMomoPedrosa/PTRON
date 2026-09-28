@@ -10,7 +10,23 @@ public class EntradaCartState
 {
     public List<CartLine> Lines { get; } = new();
 
-    public void Clear() => Lines.Clear();
+    public string Moeda { get; set; } = Moedas.Brl;
+
+    /// <summary>Reais per 1 US$. Used only when <see cref="Moeda"/> is USD.</summary>
+    public decimal Cambio { get; set; }
+
+    public decimal Frete { get; set; }
+
+    public decimal Impostos { get; set; }
+
+    public void Clear()
+    {
+        Lines.Clear();
+        Moeda = Moedas.Brl;
+        Cambio = 0m;
+        Frete = 0m;
+        Impostos = 0m;
+    }
 
     public sealed class CartLine
     {

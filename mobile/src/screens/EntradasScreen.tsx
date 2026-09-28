@@ -42,7 +42,9 @@ export function EntradasScreen({ navigation }: Props) {
               <Text style={styles.title}>Entrada #{item.id}</Text>
               <Text style={styles.meta}>{dateTimePt(item.data)}</Text>
               <View style={styles.row}>
-                <Text style={styles.meta}>{item.itens?.length ?? 0} itens</Text>
+                <Text style={styles.meta}>
+                  {item.itens?.length ?? 0} itens · {item.moeda === 'USD' ? 'US$' : 'R$'}
+                </Text>
                 <Text style={styles.total}>{money(item.total)}</Text>
               </View>
             </Pressable>

@@ -71,6 +71,11 @@ export const api = {
   getEntradas: (cfg: ApiConfig) => apiRequest<EntradaEstoque[]>(cfg, '/api/entradas'),
   getEntrada: (cfg: ApiConfig, id: number) =>
     apiRequest<EntradaEstoque>(cfg, `/api/entradas/${id}`),
+  previewEntrada: (cfg: ApiConfig, body: EntradaWrite) =>
+    apiRequest<EntradaEstoque>(cfg, '/api/entradas/preview', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
   finalizarEntrada: (cfg: ApiConfig, body: EntradaWrite) =>
     apiRequest<EntradaEstoque>(cfg, '/api/entradas', {
       method: 'POST',
