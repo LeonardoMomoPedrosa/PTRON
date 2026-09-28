@@ -7,6 +7,13 @@ on:
   push:
     branches: [ main, develop ]
 
+# Two merges close together used to deploy at the same time and overwrite the
+# same ptron.zip on the server, so an older build could end up in production.
+# Queue runs instead; the latest pending run always deploys last.
+concurrency:
+  group: ptron-deploy
+  cancel-in-progress: false
+
 jobs:
 
   pre-actions:
