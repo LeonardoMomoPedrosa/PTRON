@@ -148,10 +148,10 @@ public sealed class EntradaEstoqueWriteDto : IValidatableObject
 
     public decimal Cambio { get; set; }
 
-    [Range(typeof(decimal), "0", "79228162514264337593543950335", ErrorMessage = "O frete não pode ser negativo.")]
+    [Range(typeof(decimal), "0", "79228162514264337593543950335", ParseLimitsInInvariantCulture = true, ErrorMessage = "O frete não pode ser negativo.")]
     public decimal Frete { get; set; }
 
-    [Range(typeof(decimal), "0", "79228162514264337593543950335", ErrorMessage = "Os impostos não podem ser negativos.")]
+    [Range(typeof(decimal), "0", "79228162514264337593543950335", ParseLimitsInInvariantCulture = true, ErrorMessage = "Os impostos não podem ser negativos.")]
     public decimal Impostos { get; set; }
 
     [MinLength(1, ErrorMessage = "Adicione ao menos um item à entrada.")]
@@ -176,10 +176,10 @@ public sealed class EntradaEstoqueItemWriteDto
     [Range(1, int.MaxValue, ErrorMessage = "Selecione o insumo.")]
     public int InsumoId { get; set; }
 
-    [Range(typeof(decimal), "0.0001", "79228162514264337593543950335", ErrorMessage = "A quantidade deve ser maior que zero.")]
+    [Range(typeof(decimal), "0.0001", "79228162514264337593543950335", ParseLimitsInInvariantCulture = true, ErrorMessage = "A quantidade deve ser maior que zero.")]
     public decimal Qtd { get; set; }
 
-    [Range(typeof(decimal), "0", "79228162514264337593543950335", ErrorMessage = "O preço não pode ser negativo.")]
+    [Range(typeof(decimal), "0", "79228162514264337593543950335", ParseLimitsInInvariantCulture = true, ErrorMessage = "O preço não pode ser negativo.")]
     public decimal PrecoUnitario { get; set; }
 }
 
