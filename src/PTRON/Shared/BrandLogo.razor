@@ -1,0 +1,8 @@
+<span class="brand-logo @Class" style="height:@(Height)px">
+    <img src="logo.png" alt="PTRON" />
+</span>
+
+@code {
+    [Parameter] public int Height { get; set; } = 36;
+    [Parameter] public string? Class { get; set; }
+}

@@ -494,3 +494,23 @@ a, .btn-link {
         height: 48px;
     }
 }
+
+.brand-logo {
+    display: inline-flex;
+    align-items: center;
+    line-height: 0;
+    flex: 0 0 auto;
+}
+
+.brand-logo img {
+    height: 100%;
+    width: auto;
+    display: block;
+}
+
+/* Official wordmark is navy, so keep it on a light chip in dark mode. */
+html.mud-theme-dark .brand-logo {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 4px 8px;
+}
