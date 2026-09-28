@@ -7,6 +7,7 @@
 <MudDialogProvider />
 <MudSnackbarProvider />
 
+<CascadingValue Name="IsDarkMode" Value="_isDarkMode">
 <MudLayout>
     <MudAppBar Elevation="1" Color="Color.Surface">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start"
@@ -31,6 +32,7 @@
         </MudContainer>
     </MudMainContent>
 </MudLayout>
+</CascadingValue>
 
 @code {
     private bool _drawerOpen = true;
