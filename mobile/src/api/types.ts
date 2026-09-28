@@ -64,16 +64,31 @@ export type EntradaItem = {
   qtd: number;
   precoUnitario: number;
   subtotal: number;
+  proporcao: number;
+  freteRateado: number;
+  impostoRateado: number;
+  custoUnitario: number;
+  subtotalBrl: number;
 };
 
 export type EntradaEstoque = {
   id: number;
   data: string;
+  moeda: string;
+  cambio: number;
+  frete: number;
+  impostos: number;
+  totalProdutos: number;
+  totalMoeda: number;
   total: number;
   itens: EntradaItem[];
 };
 
 export type EntradaWrite = {
+  moeda: 'BRL' | 'USD';
+  cambio: number;
+  frete: number;
+  impostos: number;
   itens: { insumoId: number; qtd: number; precoUnitario: number }[];
 };
 

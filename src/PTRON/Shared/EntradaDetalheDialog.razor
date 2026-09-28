@@ -1,35 +1,88 @@
 <MudDialog>
     <DialogContent>
-        <MudTable Items="Entrada.Itens" Dense="true" Hover="true" Elevation="0">
+        <MudGrid Class="mb-2">
+            <MudItem xs="6" sm="3">
+                <MudText Typo="Typo.caption" Class="mud-text-secondary">Moeda</MudText>
+                <MudText>@Moedas.Symbol(Entrada.Moeda)</MudText>
+            </MudItem>
+            @if (Entrada.Moeda == Moedas.Usd)
+            {
+                <MudItem xs="6" sm="3">
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">Câmbio</MudText>
+                    <MudText>@Format.Money(Entrada.Cambio) / US$ 1</MudText>
+                </MudItem>
+            }
+            <MudItem xs="6" sm="3">
+                <MudText Typo="Typo.caption" Class="mud-text-secondary">Frete</MudText>
+                <MudText>@Format.Money(Entrada.Frete, Entrada.Moeda)</MudText>
+            </MudItem>
+            <MudItem xs="6" sm="3">
+                <MudText Typo="Typo.caption" Class="mud-text-secondary">Impostos</MudText>
+                <MudText>@Format.Money(Entrada.Impostos, Entrada.Moeda)</MudText>
+            </MudItem>
+            <MudItem xs="6" sm="3">
+                <MudText Typo="Typo.caption" Class="mud-text-secondary">Produtos</MudText>
+                <MudText>@Format.Money(Entrada.TotalProdutos, Entrada.Moeda)</MudText>
+            </MudItem>
+            <MudItem xs="6" sm="3">
+                <MudText Typo="Typo.caption" Class="mud-text-secondary">Total em R$</MudText>
+                <MudText Typo="Typo.subtitle1"><b>@Format.Money(Entrada.TotalBrl)</b></MudText>
+            </MudItem>
+        </MudGrid>
+
+        <MudTable Items="Linhas" Dense="true" Hover="true" Elevation="0" Breakpoint="Breakpoint.Md">
             <HeaderContent>
                 <MudTh>Insumo</MudTh>
                 <MudTh Style="text-align:right">Qtd</MudTh>
                 <MudTh Style="text-align:right">Preço unit.</MudTh>
                 <MudTh Style="text-align:right">Subtotal</MudTh>
+                <MudTh Style="text-align:right">Proporção</MudTh>
+                <MudTh Style="text-align:right">Frete</MudTh>
+                <MudTh Style="text-align:right">Impostos</MudTh>
+                <MudTh Style="text-align:right">Custo unit. (R$)</MudTh>
+                <MudTh Style="text-align:right">Total (R$)</MudTh>
             </HeaderContent>
             <RowTemplate>
                 <MudTd DataLabel="Insumo">
-                    @if (context.Insumo is not null)
+                    @if (context.Item.Insumo is not null)
                     {
-                        <MudText Typo="Typo.body2">@context.Insumo.Nome</MudText>
+                        <MudText Typo="Typo.body2">@context.Item.Insumo.Nome</MudText>
                         <MudText Typo="Typo.caption" Class="mud-text-secondary">
-                            @InsumoDetalhe(context.Insumo)
+                            @InsumoDetalhe(context.Item.Insumo)
                         </MudText>
                     }
                 </MudTd>
-                <MudTd DataLabel="Qtd" Style="text-align:right">@Format.Number(context.Qtd)</MudTd>
-                <MudTd DataLabel="Preço unit." Style="text-align:right">@Format.Money(context.PrecoUnitario)</MudTd>
-                <MudTd DataLabel="Subtotal" Style="text-align:right">
-                    @Format.Money(context.Qtd * context.PrecoUnitario)
+                <MudTd DataLabel="Qtd" Style="text-align:right">@Format.Number(context.Item.Qtd)</MudTd>
+                <MudTd DataLabel="Preço unit." Style="text-align:right">
+                    @Format.Money(context.Item.PrecoUnitario, Entrada.Moeda)
                 </MudTd>
+                <MudTd DataLabel="Subtotal" Style="text-align:right">
+                    @Format.Money(context.Subtotal, Entrada.Moeda)
+                </MudTd>
+                <MudTd DataLabel="Proporção" Style="text-align:right">@Format.Percent(context.Proporcao)</MudTd>
+                <MudTd DataLabel="Frete" Style="text-align:right">
+                    @Format.Money(context.Item.FreteRateado, Entrada.Moeda)
+                </MudTd>
+                <MudTd DataLabel="Impostos" Style="text-align:right">
+                    @Format.Money(context.Item.ImpostoRateado, Entrada.Moeda)
+                </MudTd>
+                <MudTd DataLabel="Custo unit. (R$)" Style="text-align:right">
+                    @Format.Money(context.Item.CustoUnitario)
+                </MudTd>
+                <MudTd DataLabel="Total (R$)" Style="text-align:right">@Format.Money(context.SubtotalBrl)</MudTd>
             </RowTemplate>
             <FooterContent>
                 <MudTd></MudTd>
                 <MudTd></MudTd>
                 <MudTd Style="text-align:right"><b>Total</b></MudTd>
                 <MudTd Style="text-align:right">
-                    <b>@Format.Money(Entrada.Itens.Sum(i => i.Qtd * i.PrecoUnitario))</b>
+                    <b>@Format.Money(Entrada.TotalProdutos, Entrada.Moeda)</b>
                 </MudTd>
+                <MudTd></MudTd>
+                <MudTd Style="text-align:right"><b>@Format.Money(Entrada.Frete, Entrada.Moeda)</b></MudTd>
+                <MudTd Style="text-align:right"><b>@Format.Money(Entrada.Impostos, Entrada.Moeda)</b></MudTd>
+                <MudTd></MudTd>
+                <MudTd Style="text-align:right"><b>@Format.Money(Entrada.TotalBrl)</b></MudTd>
             </FooterContent>
         </MudTable>
     </DialogContent>
@@ -44,6 +97,22 @@
 
     [Parameter] public EntradaEstoque Entrada { get; set; } = default!;
 
+    private IEnumerable<Linha> Linhas => Entrada.Itens.Select(item =>
+    {
+        var subtotal = item.Qtd * item.PrecoUnitario;
+        return new Linha
+        {
+            Item = item,
+            Subtotal = subtotal,
+            Proporcao = EntradaCustoCalculator.Proporcao(
+                subtotal,
+                Entrada.TotalProdutos,
+                item.Qtd,
+                Entrada.Itens.Sum(i => i.Qtd)),
+            SubtotalBrl = (subtotal + item.FreteRateado + item.ImpostoRateado) * Entrada.FatorCambio
+        };
+    });
+
     private void Close() => MudDialog.Close();
 
     private static string InsumoDetalhe(Insumo i)
@@ -54,5 +123,13 @@
         if (!string.IsNullOrWhiteSpace(i.Potencia)) parts.Add(i.Potencia!);
         if (!string.IsNullOrWhiteSpace(i.Voltagem)) parts.Add(i.Voltagem!);
         return parts.Count == 0 ? "—" : string.Join(" · ", parts);
+    }
+
+    private sealed class Linha
+    {
+        public EntradaEstoqueItem Item { get; init; } = default!;
+        public decimal Subtotal { get; init; }
+        public decimal Proporcao { get; init; }
+        public decimal SubtotalBrl { get; init; }
     }
 }
