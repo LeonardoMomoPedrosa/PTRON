@@ -33,6 +33,9 @@ builder.Services.AddServerSideBlazor()
         options.ClientTimeoutInterval = TimeSpan.FromMinutes(2);
         options.KeepAliveInterval = TimeSpan.FromSeconds(15);
         options.HandshakeTimeout = TimeSpan.FromSeconds(30);
+        // Camera photos are streamed through the circuit. The 32 KB default
+        // drops the connection before a phone picture finishes uploading.
+        options.MaximumReceiveMessageSize = 2 * 1024 * 1024;
     });
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)

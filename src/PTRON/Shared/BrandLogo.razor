@@ -1,0 +1,11 @@
+<span class="brand-logo @(IsDark ? "brand-logo-ondark" : null) @Class" style="height:@(Height)px">
+    <img src="logo.png" alt="Makelectron" />
+</span>
+
+@code {
+    [Parameter] public int Height { get; set; } = 36;
+    [Parameter] public string? Class { get; set; }
+
+    [CascadingParameter(Name = "IsDarkMode")]
+    public bool IsDark { get; set; }
+}

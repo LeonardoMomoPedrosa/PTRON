@@ -54,11 +54,7 @@ public class EquipamentoService
             .FirstOrDefaultAsync(e => e.Id == equipamento.Id)
             ?? throw new InvalidOperationException("Equipamento não encontrado.");
 
-        if (!string.IsNullOrEmpty(existing.FotoPath) && existing.FotoPath != equipamento.FotoPath)
-        {
-            _images.Delete(existing.FotoPath);
-        }
-
+        var previousPhoto = existing.FotoPath;
         existing.Nome = Validation.RequireName(equipamento.Nome);
         existing.FotoPath = equipamento.FotoPath;
 
@@ -76,6 +72,13 @@ public class EquipamentoService
         }
 
         await db.SaveChangesAsync();
+
+        // Only drop the previous file after the new path is committed. Deleting
+        // first left a broken photo whenever the BOM save failed.
+        if (!string.IsNullOrEmpty(previousPhoto) && previousPhoto != equipamento.FotoPath)
+        {
+            _images.Delete(previousPhoto);
+        }
     }
 
     /// <summary>

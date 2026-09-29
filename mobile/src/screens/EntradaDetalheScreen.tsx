@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { api } from '../api';
 import { Card, EmptyState, ErrorBanner, Loading, Screen } from '../components/ui';
-import { dateTimePt, money, numberPt } from '../format';
+import { dateTimePt, money, moneyCurrency, numberPt, percentPt } from '../format';
 import { useApiLoader } from '../hooks';
 import { colors, spacing } from '../theme';
 import type { RootStackParamList } from '../navigation/types';
@@ -33,6 +33,13 @@ export function EntradaDetalheScreen({ route }: Props) {
         <Card>
           <Text style={styles.title}>Entrada #{data.id}</Text>
           <Text style={styles.meta}>{dateTimePt(data.data)}</Text>
+          <Text style={styles.meta}>Moeda: {data.moeda === 'USD' ? 'US$' : 'R$'}</Text>
+          {data.moeda === 'USD' ? (
+            <Text style={styles.meta}>Câmbio: {money(data.cambio)} / US$ 1</Text>
+          ) : null}
+          <Text style={styles.meta}>Produtos: {moneyCurrency(data.totalProdutos, data.moeda)}</Text>
+          <Text style={styles.meta}>Frete: {moneyCurrency(data.frete, data.moeda)}</Text>
+          <Text style={styles.meta}>Impostos: {moneyCurrency(data.impostos, data.moeda)}</Text>
           <Text style={styles.total}>{money(data.total)}</Text>
         </Card>
         {data.itens.map((item, idx) => (
@@ -41,10 +48,16 @@ export function EntradaDetalheScreen({ route }: Props) {
             <Text style={styles.meta}>{item.tipoNome}</Text>
             <View style={styles.row}>
               <Text style={styles.meta}>
-                {numberPt(item.qtd)} × {money(item.precoUnitario)}
+                {numberPt(item.qtd)} × {moneyCurrency(item.precoUnitario, data.moeda)}
               </Text>
-              <Text style={styles.sub}>{money(item.subtotal)}</Text>
+              <Text style={styles.sub}>{moneyCurrency(item.subtotal, data.moeda)}</Text>
             </View>
+            <Text style={styles.meta}>Proporção: {percentPt(item.proporcao)}</Text>
+            <Text style={styles.meta}>
+              Frete {moneyCurrency(item.freteRateado, data.moeda)} · Impostos{' '}
+              {moneyCurrency(item.impostoRateado, data.moeda)}
+            </Text>
+            <Text style={styles.sub}>Custo unit. {money(item.custoUnitario)}</Text>
           </Card>
         ))}
       </ScrollView>

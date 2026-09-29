@@ -75,19 +75,72 @@ internal static class DtoMapper
             .ToList()
     };
 
-    public static EntradaEstoqueDto ToDto(EntradaEstoque entrada) => new()
+    public static EntradaEstoqueDto ToDto(EntradaEstoque entrada)
     {
-        Id = entrada.Id,
-        Data = entrada.Data,
-        Total = entrada.Itens.Sum(i => i.Qtd * i.PrecoUnitario),
-        Itens = entrada.Itens
-            .Select(i => new EntradaEstoqueItemDto
+        var totalProdutos = entrada.TotalProdutos;
+        var totalQtd = entrada.Itens.Sum(i => i.Qtd);
+        var fator = entrada.FatorCambio;
+        return new EntradaEstoqueDto
+        {
+            Id = entrada.Id,
+            Data = entrada.Data,
+            Moeda = entrada.Moeda,
+            Cambio = entrada.Cambio,
+            Frete = entrada.Frete,
+            Impostos = entrada.Impostos,
+            TotalProdutos = totalProdutos,
+            TotalMoeda = entrada.TotalMoeda,
+            Total = entrada.TotalBrl,
+            Itens = entrada.Itens
+                .Select(i =>
+                {
+                    var subtotal = i.Qtd * i.PrecoUnitario;
+                    return new EntradaEstoqueItemDto
+                    {
+                        InsumoId = i.InsumoId,
+                        InsumoNome = i.Insumo?.Nome ?? string.Empty,
+                        TipoNome = i.Insumo?.TipoInsumo?.Nome,
+                        Qtd = i.Qtd,
+                        PrecoUnitario = i.PrecoUnitario,
+                        Subtotal = subtotal,
+                        Proporcao = EntradaCustoCalculator.Proporcao(subtotal, totalProdutos, i.Qtd, totalQtd),
+                        FreteRateado = i.FreteRateado,
+                        ImpostoRateado = i.ImpostoRateado,
+                        CustoUnitario = i.CustoUnitario,
+                        SubtotalBrl = (subtotal + i.FreteRateado + i.ImpostoRateado) * fator
+                    };
+                })
+                .ToList()
+        };
+    }
+
+    public static EntradaEstoqueDto ToDto(EntradaRateio rateio, IReadOnlyDictionary<int, Insumo> insumos) => new()
+    {
+        Moeda = rateio.Moeda,
+        Cambio = rateio.Cambio,
+        Frete = rateio.Frete,
+        Impostos = rateio.Impostos,
+        TotalProdutos = rateio.TotalProdutos,
+        TotalMoeda = rateio.TotalMoeda,
+        Total = rateio.TotalBrl,
+        Itens = rateio.Linhas
+            .Select(i =>
             {
-                InsumoId = i.InsumoId,
-                InsumoNome = i.Insumo?.Nome ?? string.Empty,
-                TipoNome = i.Insumo?.TipoInsumo?.Nome,
-                Qtd = i.Qtd,
-                PrecoUnitario = i.PrecoUnitario
+                insumos.TryGetValue(i.InsumoId, out var insumo);
+                return new EntradaEstoqueItemDto
+                {
+                    InsumoId = i.InsumoId,
+                    InsumoNome = insumo?.Nome ?? string.Empty,
+                    TipoNome = insumo?.TipoInsumo?.Nome,
+                    Qtd = i.Qtd,
+                    PrecoUnitario = i.PrecoUnitario,
+                    Subtotal = i.Subtotal,
+                    Proporcao = i.Proporcao,
+                    FreteRateado = i.FreteRateado,
+                    ImpostoRateado = i.ImpostoRateado,
+                    CustoUnitario = i.CustoUnitarioBrl,
+                    SubtotalBrl = i.SubtotalBrl
+                };
             })
             .ToList()
     };

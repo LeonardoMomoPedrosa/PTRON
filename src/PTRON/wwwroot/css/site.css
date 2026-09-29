@@ -258,6 +258,115 @@ a, .btn-link {
     font-size: 0.875rem;
 }
 
+/* Equipamentos: same split as Insumos. Desktop keeps the table; phones get a card list. */
+.equipamentos-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.equipamentos-add {
+    margin-left: auto;
+}
+
+.equipamentos-phone,
+.equipamentos-bom-phone {
+    display: none;
+}
+
+.equipamentos-row,
+.equipamentos-bom-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 4px 10px 12px;
+    border-bottom: 1px solid var(--mud-palette-table-lines);
+}
+
+.equipamentos-row:last-child,
+.equipamentos-bom-row:last-child {
+    border-bottom: none;
+}
+
+.equipamentos-main {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.equipamentos-foto {
+    flex: 0 0 auto;
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+    background: var(--mud-palette-background-grey);
+}
+
+.equipamento-photo-preview {
+    display: block;
+    width: min(100%, 280px);
+    max-height: 220px;
+    height: auto;
+    object-fit: contain;
+    background: var(--mud-palette-background-grey);
+}
+
+.equipamentos-foto-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    background: var(--mud-palette-background-grey);
+}
+
+.equipamentos-text,
+.equipamentos-bom-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.equipamentos-nome {
+    overflow-wrap: anywhere;
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.3;
+}
+
+.equipamentos-meta {
+    overflow-wrap: anywhere;
+    font-size: 0.8125rem;
+    line-height: 1.3;
+    color: var(--mud-palette-text-secondary);
+}
+
+.equipamentos-actions {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+}
+
+/* The file input sits on top of the button so the tap is a real user gesture.
+   Opening the picker after a server round-trip is blocked on phones. */
+.equipamento-photo-trigger {
+    position: relative;
+    overflow: hidden;
+}
+
+.equipamento-photo-file {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
 @media (max-width: 599.98px) {
     .tipos-page {
         margin-top: -1.5rem;
@@ -311,14 +420,42 @@ a, .btn-link {
         display: none;
     }
 
+    .equipamentos-page {
+        margin-top: -1.5rem;
+    }
+
+    .equipamentos-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .equipamentos-add {
+        margin-left: 0;
+        width: 100%;
+        min-height: 48px;
+    }
+
+    .equipamentos-phone,
+    .equipamentos-bom-phone {
+        display: block;
+    }
+
+    .equipamentos-desktop,
+    .equipamentos-bom-desktop {
+        display: none;
+    }
+
     .mud-dialog-container:has(.tipo-flow-dialog),
-    .mud-dialog-container:has(.insumo-flow-dialog) {
+    .mud-dialog-container:has(.insumo-flow-dialog),
+    .mud-dialog-container:has(.equipamento-flow-dialog) {
         align-items: flex-start;
         padding-top: max(12px, env(safe-area-inset-top));
     }
 
     .mud-dialog:has(.tipo-flow-dialog),
-    .mud-dialog:has(.insumo-flow-dialog) {
+    .mud-dialog:has(.insumo-flow-dialog),
+    .mud-dialog:has(.equipamento-flow-dialog) {
         width: auto;
         max-width: none;
         align-self: stretch;
@@ -332,7 +469,8 @@ a, .btn-link {
     }
 
     .mud-dialog:has(.tipo-flow-dialog) .mud-dialog-actions,
-    .mud-dialog:has(.insumo-flow-dialog) .mud-dialog-actions {
+    .mud-dialog:has(.insumo-flow-dialog) .mud-dialog-actions,
+    .mud-dialog:has(.equipamento-flow-dialog) .mud-dialog-actions {
         flex-direction: column-reverse;
         align-items: stretch;
         gap: 8px;
@@ -340,7 +478,8 @@ a, .btn-link {
     }
 
     .mud-dialog:has(.tipo-flow-dialog) .mud-dialog-actions .mud-button-root,
-    .mud-dialog:has(.insumo-flow-dialog) .mud-dialog-actions .mud-button-root {
+    .mud-dialog:has(.insumo-flow-dialog) .mud-dialog-actions .mud-button-root,
+    .mud-dialog:has(.equipamento-flow-dialog) .mud-dialog-actions .mud-button-root {
         margin: 0;
         margin-left: 0 !important;
         width: 100%;
@@ -365,4 +504,49 @@ a, .btn-link {
         width: 48px;
         height: 48px;
     }
+
+    .equipamentos-phone .equipamentos-foto {
+        width: 72px;
+        height: 72px;
+    }
+
+    .mud-dialog:has(.equipamento-flow-dialog) .equipamento-photo-preview {
+        width: 100%;
+        max-height: min(240px, 42dvh);
+    }
+
+    .mud-dialog:has(.equipamento-flow-dialog) .equipamento-photo-row {
+        flex-wrap: wrap;
+    }
+
+    .mud-dialog:has(.equipamento-flow-dialog) .equipamento-photo-trigger,
+    .mud-dialog:has(.equipamento-flow-dialog) .equipamento-add-insumo {
+        width: 100%;
+        min-height: 48px;
+    }
+
+    .mud-dialog:has(.equipamento-flow-dialog) .equipamento-photo-row .mud-icon-button {
+        width: 48px;
+        height: 48px;
+    }
+}
+
+.brand-logo {
+    display: inline-flex;
+    align-items: center;
+    line-height: 0;
+    flex: 0 0 auto;
+}
+
+.brand-logo img {
+    height: 100%;
+    width: auto;
+    display: block;
+}
+
+/* Official wordmark is navy, so keep it on a light chip in dark mode. */
+.brand-logo-ondark {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 4px 8px;
 }

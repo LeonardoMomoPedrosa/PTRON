@@ -48,4 +48,4 @@ dotnet run --project src/PTRON --launch-profile PTRON-LAN
 ## Observações
 
 - Tráfego HTTP (não HTTPS) está liberado no Android (`usesCleartextTraffic`) para desenvolvimento na rede local.
-- Upload de foto pelo app ainda não está na UI; o campo `fotoPath` pode ser preenchido pela API/web.
+- A foto do equipamento é escolhida no celular e enviada para `POST /api/uploads`. O aparelho não guarda o arquivo.

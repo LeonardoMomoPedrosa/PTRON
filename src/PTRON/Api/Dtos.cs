@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using PTRON.Services;
 
 namespace PTRON.Api;
 
@@ -106,7 +107,7 @@ public sealed class BomItemWriteDto
     [Range(1, int.MaxValue, ErrorMessage = "Selecione o insumo.")]
     public int InsumoId { get; set; }
 
-    [Range(typeof(decimal), "0.0001", "79228162514264337593543950335", ErrorMessage = "A quantidade deve ser maior que zero.")]
+    [Range(typeof(decimal), "0.0001", "79228162514264337593543950335", ParseLimitsInInvariantCulture = true, ErrorMessage = "A quantidade deve ser maior que zero.")]
     public decimal Qtd { get; set; }
 }
 
@@ -114,6 +115,14 @@ public sealed class EntradaEstoqueDto
 {
     public int Id { get; set; }
     public DateTime Data { get; set; }
+    public string Moeda { get; set; } = "BRL";
+    public decimal Cambio { get; set; } = 1m;
+    public decimal Frete { get; set; }
+    public decimal Impostos { get; set; }
+    public decimal TotalProdutos { get; set; }
+    public decimal TotalMoeda { get; set; }
+
+    /// <summary>Landed total in BRL (products + shipment + taxes, converted when the entry is in USD).</summary>
     public decimal Total { get; set; }
     public List<EntradaEstoqueItemDto> Itens { get; set; } = new();
 }
@@ -125,13 +134,41 @@ public sealed class EntradaEstoqueItemDto
     public string? TipoNome { get; set; }
     public decimal Qtd { get; set; }
     public decimal PrecoUnitario { get; set; }
-    public decimal Subtotal => Qtd * PrecoUnitario;
+    public decimal Subtotal { get; set; }
+    public decimal Proporcao { get; set; }
+    public decimal FreteRateado { get; set; }
+    public decimal ImpostoRateado { get; set; }
+    public decimal CustoUnitario { get; set; }
+    public decimal SubtotalBrl { get; set; }
 }
 
-public sealed class EntradaEstoqueWriteDto
+public sealed class EntradaEstoqueWriteDto : IValidatableObject
 {
+    public string Moeda { get; set; } = "BRL";
+
+    public decimal Cambio { get; set; }
+
+    [Range(typeof(decimal), "0", "79228162514264337593543950335", ParseLimitsInInvariantCulture = true, ErrorMessage = "O frete não pode ser negativo.")]
+    public decimal Frete { get; set; }
+
+    [Range(typeof(decimal), "0", "79228162514264337593543950335", ParseLimitsInInvariantCulture = true, ErrorMessage = "Os impostos não podem ser negativos.")]
+    public decimal Impostos { get; set; }
+
     [MinLength(1, ErrorMessage = "Adicione ao menos um item à entrada.")]
     public List<EntradaEstoqueItemWriteDto> Itens { get; set; } = new();
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        var moeda = Moedas.Normalize(Moeda);
+        if (!Moedas.IsValid(moeda))
+        {
+            yield return new ValidationResult("Selecione a moeda R$ ou US$.", new[] { nameof(Moeda) });
+        }
+        else if (moeda == Moedas.Usd && Cambio <= 0)
+        {
+            yield return new ValidationResult("Informe o câmbio (quantos R$ valem 1 US$).", new[] { nameof(Cambio) });
+        }
+    }
 }
 
 public sealed class EntradaEstoqueItemWriteDto
@@ -139,10 +176,10 @@ public sealed class EntradaEstoqueItemWriteDto
     [Range(1, int.MaxValue, ErrorMessage = "Selecione o insumo.")]
     public int InsumoId { get; set; }
 
-    [Range(typeof(decimal), "0.0001", "79228162514264337593543950335", ErrorMessage = "A quantidade deve ser maior que zero.")]
+    [Range(typeof(decimal), "0.0001", "79228162514264337593543950335", ParseLimitsInInvariantCulture = true, ErrorMessage = "A quantidade deve ser maior que zero.")]
     public decimal Qtd { get; set; }
 
-    [Range(typeof(decimal), "0", "79228162514264337593543950335", ErrorMessage = "O preço não pode ser negativo.")]
+    [Range(typeof(decimal), "0", "79228162514264337593543950335", ParseLimitsInInvariantCulture = true, ErrorMessage = "O preço não pode ser negativo.")]
     public decimal PrecoUnitario { get; set; }
 }
 

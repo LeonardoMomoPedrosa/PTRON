@@ -18,7 +18,7 @@
       "package": "com.ptron.mobile",
       "usesCleartextTraffic": true,
       "adaptiveIcon": {
-        "backgroundColor": "#0F6B5C",
+        "backgroundColor": "#FFFFFF",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -27,6 +27,16 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "O PTRON usa suas fotos para a imagem do equipamento.",
+          "cameraPermission": "O PTRON usa a c\u00e2mera para fotografar o equipamento.",
+          "microphonePermission": false
+        }
+      ]
+    ]
   }
 }

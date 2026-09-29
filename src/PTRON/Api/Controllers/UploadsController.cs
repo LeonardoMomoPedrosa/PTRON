@@ -15,12 +15,14 @@ public sealed class UploadsController : ControllerBase
     }
 
     /// <summary>
-    /// Upload a photo (JPG, PNG, GIF or WEBP, max 5 MB).
+    /// Upload a photo (JPG, PNG, GIF or WEBP, max 20 MB).
     /// Multipart field name: file.
     /// Returns a relative path to store in insumo/equipamento fotoPath.
+    /// The phone sends the bytes here; it does not host the file itself.
     /// </summary>
     [HttpPost]
-    [RequestSizeLimit(6 * 1024 * 1024)]
+    [RequestSizeLimit(22 * 1024 * 1024)]
+    [RequestFormLimits(MultipartBodyLengthLimit = 22 * 1024 * 1024)]
     [Consumes("multipart/form-data")]
     public async Task<ActionResult<UploadDto>> Upload(IFormFile? file, CancellationToken cancellationToken)
     {

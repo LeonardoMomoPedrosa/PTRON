@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using PTRON.Models;
+using Microsoft.EntityFrameworkCore;
+using PTRON.Data;
 using PTRON.Services;
 
 namespace PTRON.Api.Controllers;
@@ -9,10 +10,12 @@ namespace PTRON.Api.Controllers;
 public sealed class EntradasEstoqueController : ControllerBase
 {
     private readonly EntradaEstoqueService _service;
+    private readonly IDbContextFactory<AppDbContext> _dbFactory;
 
-    public EntradasEstoqueController(EntradaEstoqueService service)
+    public EntradasEstoqueController(EntradaEstoqueService service, IDbContextFactory<AppDbContext> dbFactory)
     {
         _service = service;
+        _dbFactory = dbFactory;
     }
 
     [HttpGet]
@@ -34,18 +37,45 @@ public sealed class EntradasEstoqueController : ControllerBase
         return Ok(DtoMapper.ToDto(entrada));
     }
 
+    [HttpPost("preview")]
+    public async Task<ActionResult<EntradaEstoqueDto>> Preview(EntradaEstoqueWriteDto dto)
+    {
+        var rateio = _service.Preview(ToCommand(dto));
+        var insumos = await LoadInsumosAsync(rateio.Linhas.Select(l => l.InsumoId));
+        return Ok(DtoMapper.ToDto(rateio, insumos));
+    }
+
     [HttpPost]
     public async Task<ActionResult<EntradaEstoqueDto>> Finalizar(EntradaEstoqueWriteDto dto)
     {
-        var itens = dto.Itens.Select(i => new EntradaEstoqueItem
+        var entrada = await _service.FinalizarAsync(ToCommand(dto));
+        var created = await _service.GetAsync(entrada.Id) ?? entrada;
+        return CreatedAtAction(nameof(GetById), new { id = entrada.Id }, DtoMapper.ToDto(created));
+    }
+
+    private static EntradaCommand ToCommand(EntradaEstoqueWriteDto dto) => new()
+    {
+        Moeda = dto.Moeda,
+        Cambio = dto.Cambio,
+        Frete = dto.Frete,
+        Impostos = dto.Impostos,
+        Itens = dto.Itens.Select(i => new EntradaLinhaInput
         {
             InsumoId = i.InsumoId,
             Qtd = i.Qtd,
             PrecoUnitario = i.PrecoUnitario
-        }).ToList();
+        }).ToList()
+    };
 
-        var entrada = await _service.FinalizarAsync(itens);
-        var created = await _service.GetAsync(entrada.Id) ?? entrada;
-        return CreatedAtAction(nameof(GetById), new { id = entrada.Id }, DtoMapper.ToDto(created));
+    private async Task<IReadOnlyDictionary<int, Models.Insumo>> LoadInsumosAsync(IEnumerable<int> ids)
+    {
+        var idList = ids.Distinct().ToList();
+        await using var db = await _dbFactory.CreateDbContextAsync();
+        var insumos = await db.Insumos
+            .Include(i => i.TipoInsumo)
+            .AsNoTracking()
+            .Where(i => idList.Contains(i.Id))
+            .ToListAsync();
+        return insumos.ToDictionary(i => i.Id);
     }
 }

@@ -2,16 +2,17 @@
 
 <PageTitle>Makelectron</PageTitle>
 
-<MudThemeProvider Theme="_theme" @bind-IsDarkMode="_isDarkMode" />
+<MudThemeProvider Theme="PtronTheme.Theme" @bind-IsDarkMode="_isDarkMode" />
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
 
+<CascadingValue Name="IsDarkMode" Value="_isDarkMode">
 <MudLayout>
-    <MudAppBar Elevation="1">
+    <MudAppBar Elevation="1" Color="Color.Surface">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start"
                        OnClick="@ToggleDrawer" />
-        <img src="logo.png" alt="Makelectron" class="brand-logo ml-3 @(_isDarkMode ? "brand-logo-invert" : null)" />
+        <BrandLogo Height="32" Class="ml-2" />
         <MudSpacer />
         <MudTooltip Text="Alternar tema claro/escuro">
             <MudIconButton Icon="@(_isDarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)"
@@ -31,23 +32,11 @@
         </MudContainer>
     </MudMainContent>
 </MudLayout>
+</CascadingValue>
 
 @code {
     private bool _drawerOpen = true;
     private bool _isDarkMode = false;
-    private readonly MudTheme _theme = new()
-    {
-        PaletteLight = new PaletteLight
-        {
-            AppbarBackground = "#FFFFFF",
-            AppbarText = "#0B1F4D",
-        },
-        PaletteDark = new PaletteDark
-        {
-            AppbarBackground = "#121212",
-            AppbarText = "#FFFFFF",
-        },
-    };
 
     private void ToggleDrawer() => _drawerOpen = !_drawerOpen;
 }

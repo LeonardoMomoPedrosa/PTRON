@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { api } from '../api';
 import { ApiError } from '../api/client';
@@ -46,7 +46,7 @@ export function HomeScreen({ navigation }: Props) {
   return (
     <Screen>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.brand}>Makelectron</Text>
+        <Image source={require('../../assets/logo.png')} style={styles.logo} accessibilityLabel="Makelectron" />
         <Text style={styles.tagline}>Controle de produção no celular</Text>
 
         <Card style={styles.statusCard}>
@@ -98,13 +98,14 @@ export function HomeScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   content: { paddingBottom: spacing.xl },
-  brand: {
+  logo: {
+    width: 240,
+    height: 80,
     marginTop: spacing.lg,
-    marginHorizontal: spacing.md,
-    fontSize: 34,
-    fontWeight: '800',
-    color: colors.primaryDark,
-    letterSpacing: 1,
+    marginLeft: spacing.md,
+    marginBottom: spacing.xs,
+    resizeMode: 'contain',
+    alignSelf: 'flex-start',
   },
   tagline: {
     marginHorizontal: spacing.md,

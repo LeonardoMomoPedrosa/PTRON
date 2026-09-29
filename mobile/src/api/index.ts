@@ -58,9 +58,24 @@ export const api = {
   deleteEquipamento: (cfg: ApiConfig, id: number) =>
     apiRequest<void>(cfg, `/api/equipamentos/${id}`, { method: 'DELETE' }),
 
+  uploadFoto: (cfg: ApiConfig, file: { uri: string; name: string; type: string }) => {
+    const body = new FormData();
+    body.append('file', {
+      uri: file.uri,
+      name: file.name,
+      type: file.type,
+    } as unknown as Blob);
+    return apiRequest<{ fotoPath: string }>(cfg, '/api/uploads', { method: 'POST', body });
+  },
+
   getEntradas: (cfg: ApiConfig) => apiRequest<EntradaEstoque[]>(cfg, '/api/entradas'),
   getEntrada: (cfg: ApiConfig, id: number) =>
     apiRequest<EntradaEstoque>(cfg, `/api/entradas/${id}`),
+  previewEntrada: (cfg: ApiConfig, body: EntradaWrite) =>
+    apiRequest<EntradaEstoque>(cfg, '/api/entradas/preview', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
   finalizarEntrada: (cfg: ApiConfig, body: EntradaWrite) =>
     apiRequest<EntradaEstoque>(cfg, '/api/entradas', {
       method: 'POST',
