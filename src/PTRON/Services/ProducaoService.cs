@@ -8,6 +8,7 @@ public class BomLinhaPreview
 {
     public int InsumoId { get; set; }
     public string InsumoNome { get; set; } = string.Empty;
+    public string InsumoDetalhe { get; set; } = string.Empty;
     public decimal QtdNecessaria { get; set; }
     public decimal SaldoDisponivel { get; set; }
     public decimal CustoUnitario { get; set; }
@@ -41,6 +42,7 @@ public class ProducaoService
         var equipamento = await db.Equipamentos
             .Include(e => e.Insumos)
                 .ThenInclude(ei => ei.Insumo)
+                    .ThenInclude(i => i!.TipoInsumo)
             .AsNoTracking()
             .FirstOrDefaultAsync(e => e.Id == equipamentoId);
 
@@ -59,6 +61,7 @@ public class ProducaoService
                 {
                     InsumoId = ei.InsumoId,
                     InsumoNome = ei.Insumo!.Nome,
+                    InsumoDetalhe = Format.InsumoDetalhe(ei.Insumo),
                     QtdNecessaria = ei.Qtd,
                     SaldoDisponivel = ei.Insumo.Saldo,
                     CustoUnitario = ei.Insumo.CustoUnitario
@@ -81,6 +84,7 @@ public class ProducaoService
             var equipamento = await db.Equipamentos
                 .Include(e => e.Insumos)
                     .ThenInclude(ei => ei.Insumo)
+                        .ThenInclude(i => i!.TipoInsumo)
                 .FirstOrDefaultAsync(e => e.Id == equipamentoId)
                 ?? throw new InvalidOperationException("Equipamento não encontrado.");
 
@@ -96,8 +100,10 @@ public class ProducaoService
                 var insumo = bom.Insumo!;
                 if (insumo.Saldo < bom.Qtd)
                 {
+                    var detalhe = Format.InsumoDetalhe(insumo);
+                    var sufixo = detalhe.Length > 0 ? " (" + detalhe + ")" : string.Empty;
                     faltantes.Add(
-                        $"{insumo.Nome}: necessário {bom.Qtd:0.####}, disponível {insumo.Saldo:0.####}");
+                        $"{insumo.Nome}{sufixo}: necessário {bom.Qtd:0.####}, disponível {insumo.Saldo:0.####}");
                 }
             }
 

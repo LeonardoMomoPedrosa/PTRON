@@ -28,5 +28,16 @@ public static class Format
     /// <summary>Formats a number with up to 4 decimals, trimming trailing zeros.</summary>
     public static string Number(decimal value) => value.ToString("0.####", Culture);
 
+    /// <summary>Tipo, valor, potência and voltagem of an insumo, joined by " · " (empty when none is set).</summary>
+    public static string InsumoDetalhe(Models.Insumo insumo)
+    {
+        var parts = new List<string>();
+        if (!string.IsNullOrWhiteSpace(insumo.TipoInsumo?.Nome)) parts.Add(insumo.TipoInsumo.Nome);
+        if (!string.IsNullOrWhiteSpace(insumo.Valor)) parts.Add(insumo.Valor!);
+        if (!string.IsNullOrWhiteSpace(insumo.Potencia)) parts.Add(insumo.Potencia!);
+        if (!string.IsNullOrWhiteSpace(insumo.Voltagem)) parts.Add(insumo.Voltagem!);
+        return string.Join(" · ", parts);
+    }
+
     public static string Date(DateTime value) => value.ToString("dd/MM/yyyy HH:mm", Culture);
 }

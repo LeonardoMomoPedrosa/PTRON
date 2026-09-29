@@ -197,6 +197,7 @@ public sealed class BomLinhaPreviewDto
 {
     public int InsumoId { get; set; }
     public string InsumoNome { get; set; } = string.Empty;
+    public string InsumoDetalhe { get; set; } = string.Empty;
     public decimal QtdNecessaria { get; set; }
     public decimal SaldoDisponivel { get; set; }
     public decimal CustoUnitario { get; set; }

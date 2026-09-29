@@ -159,6 +159,7 @@ internal static class DtoMapper
     {
         InsumoId = linha.InsumoId,
         InsumoNome = linha.InsumoNome,
+        InsumoDetalhe = linha.InsumoDetalhe,
         QtdNecessaria = linha.QtdNecessaria,
         SaldoDisponivel = linha.SaldoDisponivel,
         CustoUnitario = linha.CustoUnitario,
