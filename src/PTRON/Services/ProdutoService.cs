@@ -35,6 +35,19 @@ public class ProdutoService
             .FirstOrDefaultAsync(p => p.Id == id);
     }
 
+    public async Task<Produto> UpdateDescricaoAsync(int id, string? descricaoAdicional)
+    {
+        await using var db = await _factory.CreateDbContextAsync();
+        var produto = await db.Produtos.FirstOrDefaultAsync(p => p.Id == id)
+            ?? throw new InvalidOperationException("Produto não encontrado.");
+
+        produto.DescricaoAdicional = string.IsNullOrWhiteSpace(descricaoAdicional)
+            ? null
+            : descricaoAdicional.Trim();
+        await db.SaveChangesAsync();
+        return produto;
+    }
+
     /// <summary>
     /// Deletes a produced product and returns its consumed insumos to stock (quantity only).
     /// The product cost snapshot is discarded with the product; existing averages are left unchanged.

@@ -1,0 +1,41 @@
+@inject ProdutoService ProdutoService
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudTextField @bind-Value="Descricao"
+                      Label="Descrição adicional do produto"
+                      MaxLength="1000"
+                      Lines="3"
+                      Immediate="true"
+                      HelperText="Ex.: número de série, lote, observação" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancelar</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit">Salvar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter] public int ProdutoId { get; set; }
+    [Parameter] public string? Descricao { get; set; }
+
+    private async Task Submit()
+    {
+        try
+        {
+            await ProdutoService.UpdateDescricaoAsync(ProdutoId, Descricao);
+            Snackbar.Add("Descrição atualizada.", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

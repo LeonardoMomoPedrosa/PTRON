@@ -82,6 +82,7 @@ Alternativa: cabeçalho `X-Api-Key: ptron-dev-token-8f4c2a91`. Sem token a API r
 | POST | `/api/producao` | Produzir `{ equipamentoId, descricaoAdicional }` |
 | GET | `/api/produtos` | Listar produtos |
 | GET/DELETE | `/api/produtos/{id}` | Detalhe (snapshot) / excluir (devolve estoque) |
+| PUT | `/api/produtos/{id}/descricao` | Atualizar a descrição adicional do produto |
 | POST | `/api/uploads` | Multipart campo `file` → `{ "fotoPath": "/uploads/..." }` |
 
 Fotos: `fotoPath` é relativo (ex. `/uploads/abc.png`). No Android use `baseUrl + fotoPath`. Swagger em desenvolvimento: `http://localhost:5083/swagger`.
@@ -203,6 +204,7 @@ Alternatively: header `X-Api-Key: ptron-dev-token-8f4c2a91`. Missing token → `
 | POST | `/api/producao` | Produce `{ equipamentoId, descricaoAdicional }` |
 | GET | `/api/produtos` | List products |
 | GET/DELETE | `/api/produtos/{id}` | Detail (snapshot) / delete (returns stock) |
+| PUT | `/api/produtos/{id}/descricao` | Update the product's additional description |
 | POST | `/api/uploads` | Multipart field `file` → `{ "fotoPath": "/uploads/..." }` |
 
 Photos: `fotoPath` is relative (e.g. `/uploads/abc.png`). On Android use `baseUrl + fotoPath`. Swagger in Development: `http://localhost:5083/swagger`.

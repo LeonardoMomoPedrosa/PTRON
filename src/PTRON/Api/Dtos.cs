@@ -214,6 +214,12 @@ public sealed class ProduzirDto
     public string? DescricaoAdicional { get; set; }
 }
 
+public sealed class ProdutoDescricaoDto
+{
+    [MaxLength(1000)]
+    public string? DescricaoAdicional { get; set; }
+}
+
 public sealed class ProdutoListDto
 {
     public int Id { get; set; }
