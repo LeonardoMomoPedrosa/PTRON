@@ -92,6 +92,11 @@ export const api = {
 
   getProdutos: (cfg: ApiConfig) => apiRequest<ProdutoList[]>(cfg, '/api/produtos'),
   getProduto: (cfg: ApiConfig, id: number) => apiRequest<Produto>(cfg, `/api/produtos/${id}`),
+  updateProdutoDescricao: (cfg: ApiConfig, id: number, descricaoAdicional: string | null) =>
+    apiRequest<Produto>(cfg, `/api/produtos/${id}/descricao`, {
+      method: 'PUT',
+      body: JSON.stringify({ descricaoAdicional }),
+    }),
   deleteProduto: (cfg: ApiConfig, id: number) =>
     apiRequest<void>(cfg, `/api/produtos/${id}`, { method: 'DELETE' }),
 };

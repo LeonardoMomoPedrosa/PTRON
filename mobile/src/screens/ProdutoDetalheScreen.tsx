@@ -1,8 +1,17 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { api } from '../api';
-import { Card, EmptyState, ErrorBanner, Loading, PrimaryButton, Screen } from '../components/ui';
+import {
+  Card,
+  EmptyState,
+  ErrorBanner,
+  FormField,
+  Loading,
+  PrimaryButton,
+  Screen,
+  SecondaryButton,
+} from '../components/ui';
 import { dateTimePt, money, numberPt } from '../format';
 import { confirmDelete, showError, useApiLoader } from '../hooks';
 import { colors, spacing } from '../theme';
@@ -15,7 +24,28 @@ export function ProdutoDetalheScreen({ navigation, route }: Props) {
     (cfg: Parameters<typeof api.getProduto>[0]) => api.getProduto(cfg, route.params.id),
     [route.params.id],
   );
-  const { data, loading, error, config } = useApiLoader(loader);
+  const { data, loading, error, config, reload } = useApiLoader(loader);
+  const [editing, setEditing] = useState(false);
+  const [descricao, setDescricao] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (data) setDescricao(data.descricaoAdicional ?? '');
+  }, [data]);
+
+  const onSaveDescricao = async () => {
+    if (!data) return;
+    setSaving(true);
+    try {
+      await api.updateProdutoDescricao(config, data.id, descricao.trim() || null);
+      setEditing(false);
+      await reload();
+    } catch (e) {
+      showError(e);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const onDelete = () => {
     if (!data) return;
@@ -46,10 +76,40 @@ export function ProdutoDetalheScreen({ navigation, route }: Props) {
           <Text style={styles.title}>
             #{data.id} · {data.equipamentoNome}
           </Text>
-          {data.descricaoAdicional ? <Text style={styles.meta}>{data.descricaoAdicional}</Text> : null}
+          {!editing && data.descricaoAdicional ? (
+            <Text style={styles.meta}>{data.descricaoAdicional}</Text>
+          ) : null}
           <Text style={styles.meta}>{dateTimePt(data.data)}</Text>
           <Text style={styles.total}>{money(data.custoTotal)}</Text>
         </Card>
+
+        {editing ? (
+          <View style={styles.pad}>
+            <FormField
+              label="Descrição adicional"
+              value={descricao}
+              onChangeText={setDescricao}
+              placeholder="Opcional"
+              multiline
+            />
+            <PrimaryButton
+              title={saving ? 'Salvando…' : 'Salvar descrição'}
+              onPress={onSaveDescricao}
+              disabled={saving}
+            />
+            <SecondaryButton
+              title="Cancelar"
+              onPress={() => {
+                setDescricao(data.descricaoAdicional ?? '');
+                setEditing(false);
+              }}
+            />
+          </View>
+        ) : (
+          <View style={styles.pad}>
+            <SecondaryButton title="Editar descrição" onPress={() => setEditing(true)} />
+          </View>
+        )}
 
         <Text style={styles.section}>Insumos (snapshot)</Text>
         {data.insumos.map((item, idx) => (

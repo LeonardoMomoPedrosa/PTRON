@@ -39,6 +39,8 @@
             <MudTd DataLabel="Ações" Style="text-align:right">
                 <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small"
                                Color="Color.Primary" OnClick="@(() => VerDetalhe(context))" />
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small"
+                               Color="Color.Default" OnClick="@(() => EditarDescricao(context))" />
                 <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small"
                                Color="Color.Error" OnClick="@(() => Delete(context))" />
             </MudTd>
@@ -78,6 +80,22 @@
         };
         await DialogService.ShowAsync<ProdutoDetalheDialog>(
             $"Produto #{full.Id}", parameters);
+    }
+
+    private async Task EditarDescricao(Produto produto)
+    {
+        var parameters = new DialogParameters<ProdutoDescricaoDialog>
+        {
+            { x => x.ProdutoId, produto.Id },
+            { x => x.Descricao, produto.DescricaoAdicional }
+        };
+        var dialog = await DialogService.ShowAsync<ProdutoDescricaoDialog>(
+            $"Descrição do produto #{produto.Id}", parameters);
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await Load();
+        }
     }
 
     private async Task Delete(Produto produto)

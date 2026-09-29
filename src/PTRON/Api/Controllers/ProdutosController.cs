@@ -33,6 +33,16 @@ public sealed class ProdutosController : ControllerBase
         return Ok(DtoMapper.ToDto(produto));
     }
 
+    [HttpPut("{id:int}/descricao")]
+    public async Task<ActionResult<ProdutoDto>> UpdateDescricao(int id, ProdutoDescricaoDto dto)
+    {
+        await _service.UpdateDescricaoAsync(id, dto.DescricaoAdicional);
+        var produto = await _service.GetWithInsumosAsync(id);
+        return produto is null
+            ? NotFound(new ErrorDto { Error = "Produto não encontrado." })
+            : Ok(DtoMapper.ToDto(produto));
+    }
+
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
