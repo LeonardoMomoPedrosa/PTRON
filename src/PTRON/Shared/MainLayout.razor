@@ -1,6 +1,6 @@
 ﻿@inherits LayoutComponentBase
 
-<PageTitle>PTRON</PageTitle>
+<PageTitle>Makelectron</PageTitle>
 
 <MudThemeProvider Theme="_theme" @bind-IsDarkMode="_isDarkMode" />
 <MudPopoverProvider />
@@ -11,7 +11,7 @@
     <MudAppBar Elevation="1">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start"
                        OnClick="@ToggleDrawer" />
-        <MudText Typo="Typo.h6" Class="ml-2">PTRON</MudText>
+        <img src="logo.png" alt="Makelectron" class="brand-logo ml-3 @(_isDarkMode ? "brand-logo-invert" : null)" />
         <MudSpacer />
         <MudTooltip Text="Alternar tema claro/escuro">
             <MudIconButton Icon="@(_isDarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)"
@@ -35,7 +35,19 @@
 @code {
     private bool _drawerOpen = true;
     private bool _isDarkMode = false;
-    private readonly MudTheme _theme = new();
+    private readonly MudTheme _theme = new()
+    {
+        PaletteLight = new PaletteLight
+        {
+            AppbarBackground = "#FFFFFF",
+            AppbarText = "#0B1F4D",
+        },
+        PaletteDark = new PaletteDark
+        {
+            AppbarBackground = "#121212",
+            AppbarText = "#FFFFFF",
+        },
+    };
 
     private void ToggleDrawer() => _drawerOpen = !_drawerOpen;
 }

@@ -31,7 +31,7 @@ export function RootNavigator() {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Home" screenOptions={screenOptions}>
-        <Stack.Screen name="Home" component={HomeScreen} options={{ title: 'PTRON' }} />
+        <Stack.Screen name="Home" component={HomeScreen} options={{ title: 'Makelectron' }} />
         <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: 'Configurações' }} />
         <Stack.Screen name="Tipos" component={TiposScreen} options={{ title: 'Tipos' }} />
         <Stack.Screen

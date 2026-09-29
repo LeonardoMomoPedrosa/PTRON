@@ -46,7 +46,7 @@ export function HomeScreen({ navigation }: Props) {
   return (
     <Screen>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.brand}>PTRON</Text>
+        <Text style={styles.brand}>Makelectron</Text>
         <Text style={styles.tagline}>Controle de produção no celular</Text>
 
         <Card style={styles.statusCard}>
