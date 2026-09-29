@@ -1,6 +1,8 @@
 @inject InsumoService InsumoService
+@inject EquipamentoService EquipamentoService
 @inject ImageUploadService Images
 @inject ISnackbar Snackbar
+@implements IDisposable
 
 <MudDialog OnKeyUp="OnDialogKeyUp">
     <DialogContent>
@@ -50,6 +52,7 @@
             </MudGrid>
 
             <MudText Typo="Typo.subtitle1" Class="mt-4 mb-2">Insumos do equipamento</MudText>
+            <MudText Typo="Typo.caption" Class="mud-text-secondary mb-2">Cada insumo é salvo assim que você clica em Add.</MudText>
 
             <MudGrid Class="align-end">
                 <MudItem xs="12" sm="7">
@@ -85,6 +88,7 @@
                 <MudItem xs="12" sm="2">
                     <MudButton Variant="Variant.Filled" Color="Color.Secondary"
                                StartIcon="@Icons.Material.Filled.Add" OnClick="AddInsumo" FullWidth="true"
+                               Disabled="@(_enviandoFoto || _salvando)"
                                Class="equipamento-add-insumo">
                         Add
                     </MudButton>
@@ -111,6 +115,7 @@
                                                Size="Size.Large"
                                                Color="Color.Error"
                                                aria-label="@($"Remover {row.Insumo?.Nome}")"
+                                               Disabled="_salvando"
                                                OnClick="@(() => RemoveRow(row))" />
                             </div>
                         }
@@ -137,7 +142,7 @@
                     <MudTd DataLabel="Qtd" Style="text-align:right">@Format.Number(context.Qtd)</MudTd>
                     <MudTd Style="text-align:right">
                         <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small"
-                                       Color="Color.Error" OnClick="@(() => RemoveRow(context))" />
+                                       Color="Color.Error" Disabled="_salvando" OnClick="@(() => RemoveRow(context))" />
                     </MudTd>
                 </RowTemplate>
                 <NoRecordsContent>
@@ -147,9 +152,8 @@
             </MudForm>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel" Disabled="_enviandoFoto">Cancelar</MudButton>
-        <MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="_enviandoFoto" OnClick="Submit">
-            @(_enviandoFoto ? "Enviando foto…" : "Salvar")
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="@(_enviandoFoto || _salvando)" OnClick="Finish">
+            @(_enviandoFoto ? "Enviando foto…" : "Concluir")
         </MudButton>
     </DialogActions>
 </MudDialog>
@@ -171,6 +175,7 @@
     private string? _uploadedFoto;
     private string? _fotoErro;
     private bool _enviandoFoto;
+    private bool _salvando;
     private int _photoInputKey;
 
     private string PhotoButtonText => _enviandoFoto
@@ -235,8 +240,13 @@
         return parts.Count == 0 ? "—" : string.Join(" · ", parts);
     }
 
-    private void AddInsumo()
+    private async Task AddInsumo()
     {
+        if (_salvando || _enviandoFoto)
+        {
+            return;
+        }
+
         if (_novoInsumo is null)
         {
             Snackbar.Add("Selecione um insumo.", Severity.Warning);
@@ -249,26 +259,85 @@
             return;
         }
 
-        var existing = _bom.FirstOrDefault(b => b.InsumoId == _novoInsumo.Id);
-        if (existing is not null)
+        _salvando = true;
+        try
         {
-            existing.Qtd += _novaQtd;
-        }
-        else
-        {
-            _bom.Add(new EquipamentoInsumo
+            if (!await SaveDetailsAsync())
             {
-                InsumoId = _novoInsumo.Id,
-                Qtd = _novaQtd,
-                Insumo = _novoInsumo
-            });
-        }
+                return;
+            }
 
-        _novoInsumo = null;
-        _novaQtd = 1m;
+            await EquipamentoService.AddInsumoAsync(_model.Id, _novoInsumo.Id, _novaQtd);
+
+            var existing = _bom.FirstOrDefault(b => b.InsumoId == _novoInsumo.Id);
+            if (existing is not null)
+            {
+                existing.Qtd += _novaQtd;
+            }
+            else
+            {
+                _bom.Add(new EquipamentoInsumo
+                {
+                    InsumoId = _novoInsumo.Id,
+                    Qtd = _novaQtd,
+                    Insumo = _novoInsumo
+                });
+            }
+
+            _novoInsumo = null;
+            _novaQtd = 1m;
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _salvando = false;
+        }
     }
 
-    private void RemoveRow(EquipamentoInsumo row) => _bom.Remove(row);
+    private async Task RemoveRow(EquipamentoInsumo row)
+    {
+        if (_salvando)
+        {
+            return;
+        }
+
+        _salvando = true;
+        try
+        {
+            if (_model.Id != 0)
+            {
+                await EquipamentoService.RemoveInsumoAsync(_model.Id, row.InsumoId);
+            }
+
+            _bom.Remove(row);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _salvando = false;
+        }
+    }
+
+    /// <summary>Validates the form and persists name/photo, creating the equipamento on first use.</summary>
+    private async Task<bool> SaveDetailsAsync()
+    {
+        await _form.ValidateAsync();
+        if (!_form.IsValid)
+        {
+            return false;
+        }
+
+        _model.Id = await EquipamentoService.SaveDetailsAsync(_model);
+        _fotoOriginal = _model.FotoPath;
+        _uploadedFoto = null;
+        return true;
+    }
 
     private async Task OnPhotoSelected(InputFileChangeEventArgs args)
     {
@@ -318,41 +387,45 @@
 
     private async Task OnDialogKeyUp(KeyboardEventArgs e)
     {
-        if (e.Key != "Enter" || _enviandoFoto)
+        if (e.Key != "Enter" || _enviandoFoto || _salvando)
         {
             return;
         }
 
-        // Enter with an insumo selected adds a BOM line; otherwise saves the equipment.
+        // Enter with an insumo selected adds a BOM line; otherwise finishes.
         if (_novoInsumo is not null)
         {
-            AddInsumo();
+            await AddInsumo();
             return;
         }
 
-        await Submit();
+        await Finish();
     }
 
-    private async Task Submit()
+    private async Task Finish()
     {
-        if (_enviandoFoto)
+        if (_enviandoFoto || _salvando)
         {
             return;
         }
 
-        await _form.ValidateAsync();
-        if (!_form.IsValid)
+        _salvando = true;
+        try
         {
-            return;
+            if (await SaveDetailsAsync())
+            {
+                MudDialog.Close(DialogResult.Ok(_model));
+            }
         }
-
-        _model.Insumos = _bom;
-        MudDialog.Close(DialogResult.Ok(_model));
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _salvando = false;
+        }
     }
 
-    private void Cancel()
-    {
-        DiscardPendingUpload();
-        MudDialog.Cancel();
-    }
+    public void Dispose() => DiscardPendingUpload();
 }

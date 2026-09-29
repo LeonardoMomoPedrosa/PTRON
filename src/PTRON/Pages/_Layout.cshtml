@@ -43,15 +43,24 @@
     <script>
         Blazor.start({
             configureSignalR: function (builder) {
-                builder.withServerTimeout(120000).withKeepAliveInterval(15000);
+                builder.withServerTimeout(300000).withKeepAliveInterval(15000);
             },
             reconnectionOptions: {
-                maxRetries: 40,
+                maxRetries: 720,
                 retryIntervalMilliseconds: function (previousAttempts) {
                     if (previousAttempts < 10) return 500;
                     if (previousAttempts < 25) return 2000;
                     return 5000;
                 }
+            }
+        });
+
+        // Retry as soon as the user comes back instead of waiting for the next interval.
+        document.addEventListener("visibilitychange", function () {
+            var modal = document.getElementById("components-reconnect-modal");
+            if (document.visibilityState === "visible" && modal &&
+                modal.classList.contains("components-reconnect-failed")) {
+                Blazor.reconnect().catch(function () {});
             }
         });
     </script>

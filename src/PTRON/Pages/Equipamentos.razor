@@ -144,20 +144,8 @@
         }
 
         var dialog = await DialogService.ShowAsync<EquipamentoDialog>("Novo equipamento", DialogOptions);
-        var result = await dialog.Result;
-        if (result is { Canceled: false, Data: Equipamento novo })
-        {
-            try
-            {
-                await EquipamentoService.CreateAsync(novo);
-                Snackbar.Add("Equipamento criado.", Severity.Success);
-                await Load();
-            }
-            catch (Exception ex)
-            {
-                Snackbar.Add(ex.Message, Severity.Error);
-            }
-        }
+        await dialog.Result;
+        await Load();
     }
 
     private async Task OpenEdit(Equipamento equipamento)
@@ -172,20 +160,8 @@
 
         var parameters = new DialogParameters<EquipamentoDialog> { { x => x.Equipamento, full } };
         var dialog = await DialogService.ShowAsync<EquipamentoDialog>("Editar equipamento", parameters, DialogOptions);
-        var result = await dialog.Result;
-        if (result is { Canceled: false, Data: Equipamento editado })
-        {
-            try
-            {
-                await EquipamentoService.UpdateAsync(editado);
-                Snackbar.Add("Equipamento atualizado.", Severity.Success);
-                await Load();
-            }
-            catch (Exception ex)
-            {
-                Snackbar.Add(ex.Message, Severity.Error);
-            }
-        }
+        await dialog.Result;
+        await Load();
     }
 
     private async Task Delete(Equipamento equipamento)

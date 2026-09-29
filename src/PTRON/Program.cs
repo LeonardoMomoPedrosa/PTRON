@@ -23,14 +23,15 @@ builder.Services.AddServerSideBlazor()
     .AddCircuitOptions(options =>
     {
         // Keep the session after the phone sleeps or the user switches apps.
-        options.DisconnectedCircuitRetentionPeriod = TimeSpan.FromMinutes(15);
+        options.DisconnectedCircuitRetentionPeriod = TimeSpan.FromHours(2);
+        options.DisconnectedCircuitMaxRetained = 100;
         options.JSInteropDefaultCallTimeout = TimeSpan.FromMinutes(2);
     })
     .AddHubOptions(options =>
     {
         // A backgrounded phone stops sending pings. Wait longer before
         // treating that pause as a dead connection.
-        options.ClientTimeoutInterval = TimeSpan.FromMinutes(2);
+        options.ClientTimeoutInterval = TimeSpan.FromMinutes(5);
         options.KeepAliveInterval = TimeSpan.FromSeconds(15);
         options.HandshakeTimeout = TimeSpan.FromSeconds(30);
         // Camera photos are streamed through the circuit. The 32 KB default
