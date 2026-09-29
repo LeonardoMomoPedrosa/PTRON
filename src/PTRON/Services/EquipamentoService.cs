@@ -82,6 +82,87 @@ public class EquipamentoService
     }
 
     /// <summary>
+    /// Creates the model when it has no Id yet, otherwise updates name and photo only.
+    /// The BOM is never touched, so it can be saved line by line.
+    /// </summary>
+    public async Task<int> SaveDetailsAsync(Equipamento equipamento)
+    {
+        await using var db = await _factory.CreateDbContextAsync();
+        var nome = Validation.RequireName(equipamento.Nome);
+
+        if (equipamento.Id == 0)
+        {
+            var novo = new Equipamento { Nome = nome, FotoPath = equipamento.FotoPath };
+            db.Equipamentos.Add(novo);
+            await db.SaveChangesAsync();
+            return novo.Id;
+        }
+
+        var existing = await db.Equipamentos.FirstOrDefaultAsync(e => e.Id == equipamento.Id)
+            ?? throw new InvalidOperationException("Equipamento não encontrado.");
+
+        var previousPhoto = existing.FotoPath;
+        existing.Nome = nome;
+        existing.FotoPath = equipamento.FotoPath;
+        await db.SaveChangesAsync();
+
+        if (!string.IsNullOrEmpty(previousPhoto) && previousPhoto != equipamento.FotoPath)
+        {
+            _images.Delete(previousPhoto);
+        }
+
+        return existing.Id;
+    }
+
+    /// <summary>Adds a BOM line right away, merging with an existing line for the same insumo.</summary>
+    public async Task AddInsumoAsync(int equipamentoId, int insumoId, decimal qtd)
+    {
+        if (qtd <= 0)
+        {
+            throw new InvalidOperationException("A quantidade deve ser maior que zero.");
+        }
+
+        await using var db = await _factory.CreateDbContextAsync();
+        if (!await db.Equipamentos.AnyAsync(e => e.Id == equipamentoId))
+        {
+            throw new InvalidOperationException("Equipamento não encontrado.");
+        }
+
+        var line = await db.EquipamentoInsumos
+            .FirstOrDefaultAsync(ei => ei.EquipamentoId == equipamentoId && ei.InsumoId == insumoId);
+        if (line is null)
+        {
+            db.EquipamentoInsumos.Add(new EquipamentoInsumo
+            {
+                EquipamentoId = equipamentoId,
+                InsumoId = insumoId,
+                Qtd = qtd
+            });
+        }
+        else
+        {
+            line.Qtd += qtd;
+        }
+
+        await db.SaveChangesAsync();
+    }
+
+    public async Task RemoveInsumoAsync(int equipamentoId, int insumoId)
+    {
+        await using var db = await _factory.CreateDbContextAsync();
+        var lines = await db.EquipamentoInsumos
+            .Where(ei => ei.EquipamentoId == equipamentoId && ei.InsumoId == insumoId)
+            .ToListAsync();
+        if (lines.Count == 0)
+        {
+            return;
+        }
+
+        db.EquipamentoInsumos.RemoveRange(lines);
+        await db.SaveChangesAsync();
+    }
+
+    /// <summary>
     /// Deletes a model and its BOM. Blocked when products reference the model,
     /// so already-produced products are preserved.
     /// </summary>
