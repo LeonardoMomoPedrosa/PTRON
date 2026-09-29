@@ -95,6 +95,7 @@ export type EntradaWrite = {
 export type BomLinhaPreview = {
   insumoId: number;
   insumoNome: string;
+  insumoDetalhe?: string;
   qtdNecessaria: number;
   saldoDisponivel: number;
   custoUnitario: number;

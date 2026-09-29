@@ -51,7 +51,7 @@ else
                 @foreach (var f in _preview.Faltantes)
                 {
                     <li>
-                        <b>@f.InsumoNome</b>: necessário @Format.Number(f.QtdNecessaria),
+                        <b>@f.InsumoNome</b>@DetalheSuffix(f): necessário @Format.Number(f.QtdNecessaria),
                         disponível @Format.Number(f.SaldoDisponivel)
                         (falta @Format.Number(f.Faltante))
                     </li>
@@ -77,7 +77,13 @@ else
                 <MudTh Style="text-align:center">Status</MudTh>
             </HeaderContent>
             <RowTemplate>
-                <MudTd DataLabel="Insumo">@context.InsumoNome</MudTd>
+                <MudTd DataLabel="Insumo">
+                    @context.InsumoNome
+                    @if (!string.IsNullOrEmpty(context.InsumoDetalhe))
+                    {
+                        <MudText Typo="Typo.caption" Class="mud-text-secondary">@context.InsumoDetalhe</MudText>
+                    }
+                </MudTd>
                 <MudTd DataLabel="Necessário" Style="text-align:right">@Format.Number(context.QtdNecessaria)</MudTd>
                 <MudTd DataLabel="Disponível" Style="text-align:right"
                        Class="@(context.Disponivel ? null : "mud-error-text")">
@@ -121,6 +127,9 @@ else
 }
 
 @code {
+    private static string DetalheSuffix(BomLinhaPreview linha)
+        => string.IsNullOrEmpty(linha.InsumoDetalhe) ? string.Empty : $" ({linha.InsumoDetalhe})";
+
     private List<Equipamento> _equipamentos = new();
     private int? _equipamentoId;
     private string? _descricao;

@@ -117,7 +117,8 @@ export function ProducaoScreen({ navigation }: Props) {
                 <Text style={styles.warnTitle}>Faltantes</Text>
                 {preview.faltantes.map((f) => (
                   <Text key={f.insumoId} style={styles.warnItem}>
-                    {f.insumoNome}: falta {numberPt(f.faltante)}
+                    {f.insumoNome}
+                    {f.insumoDetalhe ? ` (${f.insumoDetalhe})` : ''}: falta {numberPt(f.faltante)}
                   </Text>
                 ))}
               </Card>
@@ -126,6 +127,7 @@ export function ProducaoScreen({ navigation }: Props) {
             {preview.linhas.map((l) => (
               <Card key={l.insumoId}>
                 <Text style={styles.itemTitle}>{l.insumoNome}</Text>
+                {l.insumoDetalhe ? <Text style={styles.meta}>{l.insumoDetalhe}</Text> : null}
                 <Text style={styles.meta}>
                   Necessário {numberPt(l.qtdNecessaria)} · Disponível {numberPt(l.saldoDisponivel)}
                 </Text>
