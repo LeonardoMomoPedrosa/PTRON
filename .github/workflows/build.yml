@@ -197,6 +197,13 @@ jobs:
             echo "Ajustando permissões..."
             sudo chown -R "${LINUX_SSH_USER}:${LINUX_SSH_USER}" "${LINUX_TARGET_DIR}"
 
+            # Data Protection keys live outside the deploy folder (never wiped) so cookies
+            # and e-mail links survive deploys. Must match DataProtection:KeysPath.
+            KEYS_DIR="$(dirname "${LINUX_TARGET_DIR}")/ptron-data/keys"
+            sudo mkdir -p "${KEYS_DIR}"
+            sudo chown -R "${LINUX_SSH_USER}:${LINUX_SSH_USER}" "$(dirname "${KEYS_DIR}")"
+            sudo chmod 700 "${KEYS_DIR}"
+
             echo "Iniciando serviço ${LINUX_SERVICE_NAME}..."
             sudo systemctl start "${LINUX_SERVICE_NAME}" 2>/dev/null || true
             sudo systemctl enable "${LINUX_SERVICE_NAME}" 2>/dev/null || true
