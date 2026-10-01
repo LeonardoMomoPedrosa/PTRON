@@ -138,7 +138,7 @@ Preparar o esqueleto técnico antes das funcionalidades.
 
 ## Épico 8 — Gestão de Usuários 📝 (proposto — decisões registradas, aguardando aprovação final)
 
-Hoje o acesso é um único usuário fixo (`Leo`, em `AccountController`, com senha no código) e todos os dados (tipos, insumos, equipamentos, entradas, produções) são globais. Este épico transforma o PTRON em um sistema multiusuário — **web e app mobile** — com cadastro, ativação por e-mail, recuperação de senha e **isolamento total dos dados por usuário**.
+Hoje o acesso é um único usuário fixo (`Leo`, em `AccountController`, com senha no código) e todos os dados (tipos, insumos, equipamentos, entradas, produções) são globais. Este épico transforma o PTRON em um sistema multiusuário — **web** — com cadastro, ativação por e-mail, recuperação de senha e **isolamento total dos dados por usuário**. O **app mobile fica fora deste épico** (continua funcionando como hoje, ver D7).
 
 ### Requisitos (do pedido)
 
@@ -150,7 +150,6 @@ Hoje o acesso é um único usuário fixo (`Leo`, em `AccountController`, com sen
 6. Na tela de login informa-se o **e-mail** (o Leo também pode entrar apenas com `Leo`).
 7. Na tela de login há **"Esqueci a senha"**: um e-mail é enviado para redefinir a senha.
 8. Tipos, insumos, equipamentos, entradas de estoque, produções e produtos passam a ser **específicos de cada usuário**.
-9. O **app mobile** também cria usuário, faz login, recupera senha e lembra o login (sessão persistente).
 
 ### Decisões já tomadas (respostas às perguntas do rascunho)
 
@@ -160,7 +159,7 @@ Hoje o acesso é um único usuário fixo (`Leo`, em `AccountController`, com sen
 | Q2 | O cadastro oferece uma **lista de países** (fornecida pelo sistema); **estado é texto livre**. |
 | Q3 | A senha do Leo fica **no banco de dados** (hash), não mais no código. |
 | Q4 | Cada novo usuário, ao ativar a conta, **recebe os tipos padrão** (Resistor, Capacitor, Diodo, Transistor, CI, Válvula). Não recebe insumos de exemplo. |
-| Q5 | O **app mobile entra neste épico**: criar usuário, login, recuperar senha, alterar senha e lembrar o login. |
+| Q5 | O **app mobile NÃO entra neste épico** (fica para um épico futuro). A API continua com o token fixo atual, que passa a enxergar apenas os dados do Leo. |
 | Q6 | Configuração do SMTP (e demais segredos) por **variáveis de ambiente**, feita por você depois que o épico estiver pronto. |
 
 ### Decisões de arquitetura propostas
@@ -205,8 +204,8 @@ No servidor Linux elas entram no serviço systemd (`Environment=` / `Environment
 - **URL pública** (`App__PublicBaseUrl`) para montar os links dos e-mails corretamente (atrás de proxy/HTTPS).
 - Tokens: ativação válida por 24 h (com opção de reenviar); redefinição de senha válida por 1 h e uso único.
 
-**D7 — Autenticação da API/mobile: tokens por usuário.**
-`POST /api/auth/login` devolve um **access token (JWT, ~60 min)** e um **refresh token** (longa duração, revogável, guardado hasheado no banco). O app guarda o refresh token no armazenamento seguro do aparelho (`expo-secure-store`) e renova o acesso sozinho — é assim que "lembra o login". O token fixo compartilhado (`Api:Token`) é **removido** quando o app novo for publicado. Os e-mails de ativação e de redefinição levam a **páginas web responsivas** (funcionam no navegador do celular); o app apenas dispara o envio e orienta o usuário.
+**D7 — API REST e app mobile: sem mudança de contrato neste épico.**
+O app mobile não é alterado. A API continua autenticada pelo token fixo (`Api:Token`), mas ele passa a representar o **usuário Leo**: o `ApiTokenMiddleware` define o `ICurrentUser` como Leo, então o app atual segue funcionando e enxerga exatamente os dados que já tem hoje (que pertencem ao Leo). Os demais usuários usam apenas a web. Login por usuário na API/app (JWT + refresh token, cadastro e recuperação de senha no celular) fica para um **épico futuro**.
 
 ### Banco de dados — SQLite ou migrar?
 
@@ -225,41 +224,40 @@ No servidor Linux elas entram no serviço systemd (`Environment=` / `Environment
 
 **Backend e web**
 
-- [ ] **E8-S1** — **Fundação de identidade.** Adicionar `Microsoft.AspNetCore.Identity.EntityFrameworkCore` e `MailKit`. Criar `ApplicationUser` (herda `IdentityUser`; campos `Pais` (código ISO), `Estado` (texto), `CriadoEm`, `Reservado`). `AppDbContext` passa a herdar de `IdentityDbContext<ApplicationUser>`. Política de senha (mín. 8 caracteres, letra e número), `RequireConfirmedEmail`, e-mail único, lockout (5 tentativas / 15 min). Persistir chaves do Data Protection. Migration com tabelas de identidade, tabela de refresh tokens e criação do Leo (`Id="leo"`, e-mail confirmado, senha em hash conforme D2).
+- [ ] **E8-S1** — **Fundação de identidade.** Adicionar `Microsoft.AspNetCore.Identity.EntityFrameworkCore` e `MailKit`. Criar `ApplicationUser` (herda `IdentityUser`; campos `Pais` (código ISO), `Estado` (texto), `CriadoEm`, `Reservado`). `AppDbContext` passa a herdar de `IdentityDbContext<ApplicationUser>`. Política de senha (mín. 8 caracteres, letra e número), `RequireConfirmedEmail`, e-mail único, lockout (5 tentativas / 15 min). Persistir chaves do Data Protection. Migration com tabelas de identidade, criação do Leo (`Id="leo"`, e-mail confirmado, senha em hash conforme D2).
 - [ ] **E8-S2** — **Dados por usuário.** Migration adiciona `UserId` nas 5 entidades raiz (dados existentes → Leo), índices e FKs; índice único `(UserId, Nome)` em tipos. `ICurrentUser`, `TenantDbContextFactory`, *query filters* e carimbo automático de `UserId`. Revisar todos os serviços (`TipoInsumo`, `Insumo`, `Equipamento`, `EntradaEstoque`, `Producao`, `Produto`) para validar que FKs referenciadas pertencem ao usuário atual e que consultas por Id respeitam o filtro (retornam "não encontrado" para dados de outro usuário).
 - [ ] **E8-S3** — **Envio de e-mail.** `IAppEmailSender` + implementação SMTP (MailKit) + implementação de desenvolvimento (log). Opções `Smtp` e `App:PublicBaseUrl` lidas de variáveis de ambiente (D5). Templates HTML/texto em português (ativação, redefinição e aviso de senha alterada) com a identidade visual do Makelectron. Falha de envio é registrada em log e não derruba a requisição.
 - [ ] **E8-S4** — **Cadastro (`/cadastro`).** Formulário: e-mail, **país (lista)**, **estado (texto livre)**, senha e confirmação de senha. Lista de países ISO 3166 em português, mantida no código (`Paises`), armazenando o código ISO; Brasil no topo. Validações: formato de e-mail, unicidade, senha conforme política, e-mail/nome reservado bloqueado, estado obrigatório (máx. 100 caracteres). Cria usuário **inativo** e envia o e-mail de ativação; tela "Verifique seu e-mail". Resposta idêntica para e-mail já existente (evita enumeração de contas).
 - [ ] **E8-S5** — **Ativação (`/ativar`).** Link `…/ativar?userId=…&token=…` confirma o e-mail e ativa a conta; **ao ativar, cria os 6 tipos padrão do usuário** (idempotente). Mensagens para sucesso, link inválido/expirado e conta já ativa. Opção "Reenviar e-mail de ativação" (com limite de frequência).
 - [ ] **E8-S6** — **Login por e-mail.** Campo "E-mail" (aceita também o apelido `Leo`). Usuário não ativado não entra e recebe mensagem com a opção de reenviar a ativação. Mensagem genérica para credenciais inválidas; lockout por tentativas. Login passa a usar token antifalsificação (hoje é `IgnoreAntiforgeryToken`) e cookie `Secure`/`HttpOnly`/`SameSite`. Links "Esqueci a senha" e "Criar conta". Nome/e-mail do usuário exibido no topo com menu (Alterar senha, Sair).
 - [ ] **E8-S7** — **Esqueci a senha (`/esqueci-senha` e `/redefinir-senha`).** Informa o e-mail; sempre responde "se o e-mail existir, enviamos instruções" (sem enumeração). Link com token de 1 h e uso único leva à tela de nova senha + confirmação. Só para contas ativadas (inclui o Leo). Limite de frequência por e-mail/IP.
-- [ ] **E8-S8** — **Alterar senha (`/conta/senha`).** Usuário logado informa senha atual, nova senha e confirmação. Ao concluir, as outras sessões e refresh tokens são invalidados (`SecurityStamp`) e um e-mail de aviso é enviado.
+- [ ] **E8-S8** — **Alterar senha (`/conta/senha`).** Usuário logado informa senha atual, nova senha e confirmação. Ao concluir, as outras sessões são invalidadas (`SecurityStamp`) e um e-mail de aviso é enviado.
 - [ ] **E8-S9** — **Demais áreas por usuário.** (a) Console SQL e menu "SQL" visíveis/permitidos **somente ao Leo** (`Reservado`). (b) Fotos em `uploads/{userId}/` com nomes GUID; exclusão/limpeza restritas ao dono. (c) O seed antigo ("se o banco está vazio" com insumos de exemplo) é removido; os tipos padrão passam a ser criados por usuário na ativação (S5). (d) Todas as páginas exigem usuário autenticado e ativo; `RedirectToLogin` mantido.
 
-**API e app mobile**
+**API (compatibilidade)**
 
-- [ ] **E8-S10** — **API de autenticação e escopo por usuário.** Endpoints: `POST /api/auth/register`, `/login`, `/refresh`, `/logout`, `/resend-activation`, `/forgot-password`, `/change-password`; `GET /api/paises`; `GET /api/auth/me`. JWT validado no pipeline `/api`, populando `ICurrentUser`; todos os endpoints existentes passam a operar apenas nos dados do usuário. Remove `ApiTokenMiddleware`/`Api:Token`; Swagger passa a usar Bearer JWT. Mesmas regras de ativação, política de senha, lockout e limites de frequência da web.
-- [ ] **E8-S11** — **App mobile (Expo).** Telas: login, criar conta (e-mail, país em lista, estado, senha), "Esqueci a senha", reenviar ativação e alterar senha (em Configurações), além de sair. Sessão persistente via refresh token no `expo-secure-store`; renovação automática do acesso e retorno ao login quando o refresh expirar. Remove o campo de token fixo das configurações. Tratamento de erros em português (conta não ativada, credenciais inválidas, bloqueio temporário).
+- [ ] **E8-S10** — **API continua funcionando como Leo.** Toda requisição `/api` autenticada pelo token fixo passa a ter `ICurrentUser = Leo` (via `ApiTokenMiddleware`), de modo que *query filters*, carimbo de `UserId` e uploads (`uploads/leo/` ou pasta existente) funcionem sem alterar rotas, DTOs ou o app Expo. Sem token válido, continua `401`. Teste de regressão cobrindo as rotas principais com o token fixo.
 
 **Qualidade e operação**
 
-- [ ] **E8-S12** — **Testes, documentação e operação.** Testes em `tests/PTRON.Tests`: isolamento entre usuários (A não lê/edita/exclui dados de B, nem referencia insumo de B), cadastro/ativação/redefinição (com `IAppEmailSender` falso), bloqueio de login sem ativação, política de senha, tipos padrão criados uma única vez, Leo com dados migrados e apelido `Leo`. Habilitar WAL + `busy_timeout`; backup periódico do `ptron.db` (`sqlite3 .backup`) no servidor; `build.yml` preserva a pasta de chaves; README documenta as variáveis de ambiente (D5), `PublicBaseUrl`, usuários e backup; este `plano.md` atualizado.
+- [ ] **E8-S11** — **Testes, documentação e operação.** Testes em `tests/PTRON.Tests`: isolamento entre usuários (A não lê/edita/exclui dados de B, nem referencia insumo de B), cadastro/ativação/redefinição (com `IAppEmailSender` falso), bloqueio de login sem ativação, política de senha, tipos padrão criados uma única vez, Leo com dados migrados e apelido `Leo`. Habilitar WAL + `busy_timeout`; backup periódico do `ptron.db` (`sqlite3 .backup`) no servidor; `build.yml` preserva a pasta de chaves; README documenta as variáveis de ambiente (D5), `PublicBaseUrl`, usuários e backup; este `plano.md` atualizado.
 
 ### Ordem sugerida dentro do épico
 
-`E8-S1` → `E8-S2` → `E8-S3` → `E8-S4` → `E8-S5` → `E8-S6` → `E8-S7` → `E8-S8` → `E8-S9` → `E8-S10` → `E8-S11` → `E8-S12`.
-(S3 pode rodar em paralelo a S2; S4–S8 dependem de S1 e S3; S9–S10 dependem de S2 e S6; S11 depende de S10.)
+`E8-S1` → `E8-S2` → `E8-S3` → `E8-S4` → `E8-S5` → `E8-S6` → `E8-S7` → `E8-S8` → `E8-S9` → `E8-S10` → `E8-S11`.
+(S3 pode rodar em paralelo a S2; S4–S8 dependem de S1 e S3; S9–S10 dependem de S2 e S6.)
 
-**Atenção na publicação:** quando o servidor com este épico for ao ar, a versão antiga do app mobile (token fixo) deixa de funcionar; a nova versão do app (S11) deve ser instalada em seguida.
+**Atenção:** o app mobile continua com o token fixo e, portanto, só acessa os dados do Leo até o épico futuro de login mobile.
 
 ### Fora do escopo deste épico
 
-Login social (Google etc.), autenticação em dois fatores, troca de e-mail da conta, exclusão de conta, perfis/papéis além do Leo, compartilhamento de dados entre usuários, painel administrativo de usuários, migração para PostgreSQL, deep links do e-mail para dentro do app.
+Login social (Google etc.), autenticação em dois fatores, troca de e-mail da conta, exclusão de conta, perfis/papéis além do Leo, compartilhamento de dados entre usuários, painel administrativo de usuários, migração para PostgreSQL, **app mobile (login por usuário, cadastro e recuperação de senha no celular, JWT/refresh token) — épico futuro**, deep links do e-mail para dentro do app.
 
 ### Pontos a confirmar (com padrão sugerido)
 
 - **C1** — Senha inicial do Leo: usar `Leo__InitialPassword` se existir; senão cair na senha atual (e você a troca no primeiro login). *Padrão: assim.*
-- **C2** — "Lembrar senha" no app foi entendido como **manter o login (sessão persistente) + recuperar senha esquecida**. *Padrão: ambos.*
-- **C3** — Links de ativação/redefinição abrem páginas web (inclusive no celular), sem deep link para o app. *Padrão: assim.*
+- **C2** — O token fixo da API passa a representar o Leo (D7), de modo que o app mobile atual continua funcionando apenas com os dados dele. *Padrão: assim.*
+- **C3** — Links de ativação/redefinição abrem páginas web (inclusive no celular). *Padrão: assim.*
 
 ---
 
