@@ -169,7 +169,7 @@ Já fornece hash de senha (PBKDF2), tokens de confirmação de e-mail e de redef
 
 **D2 — Leo é um usuário real, porém reservado.**
 - Linha em `AspNetUsers` com `Id = "leo"` (o mesmo `NameIdentifier` usado hoje), `UserName = "Leo"`, **e-mail `pedrosa.leonardo@gmail.com`** (configurável em `Leo:Email`), e-mail já confirmado (não precisa ativar) e marcada `Reservado`.
-- A senha é guardada como **hash no banco**. Senha inicial vem da variável de ambiente `Leo__InitialPassword` na primeira execução; se ela não existir, usa-se a senha atual como último recurso para não trancar o acesso — e a story de segurança recomenda trocá-la logo após o primeiro login. Depois disso a senha vive só no banco e o valor no código é removido.
+- A senha é guardada como **hash no banco**. Senha inicial vem da variável de ambiente `PTRON_Leo__InitialPassword` na primeira execução; se ela não existir, usa-se a senha atual como último recurso para não trancar o acesso — e a story de segurança recomenda trocá-la logo após o primeiro login. Depois disso a senha vive só no banco e o valor no código é removido.
 - Login do Leo: e-mail **ou** o apelido `Leo` + senha. Como tem e-mail real, "Esqueci a senha" e "Alterar senha" funcionam normalmente para ele.
 - Cadastro bloqueia o e-mail do Leo e o nome `leo`.
 - Privilégios exclusivos do Leo (flag `Reservado`): console SQL.
@@ -186,22 +186,22 @@ Já fornece hash de senha (PBKDF2), tokens de confirmação de e-mail e de redef
 **D4 — Banco de dados: manter SQLite (recomendação).** Ver seção própria abaixo.
 
 **D5 — E-mail: abstração `IAppEmailSender` com SMTP (MailKit), configurada por variáveis de ambiente.**
-Variáveis (padrão do .NET, `__` = seção aninhada):
+Todas as variáveis começam com o prefixo **`PTRON_`** (carregadas com `AddEnvironmentVariables(prefix: "PTRON_")`; `__` = seção aninhada, ex.: `PTRON_Smtp__Host` → `Smtp:Host`). Variáveis sem o prefixo são ignoradas:
 
 | Variável | Uso |
 |----------|-----|
-| `Smtp__Host`, `Smtp__Port` | Servidor SMTP (Cloudflare) |
-| `Smtp__SecureSocketOptions` | `StartTls` / `SslOnConnect` / `None` |
-| `Smtp__User`, `Smtp__Password` | Credenciais |
-| `Smtp__FromAddress`, `Smtp__FromName` | Remetente |
-| `App__PublicBaseUrl` | URL pública usada nos links dos e-mails |
-| `Leo__InitialPassword` | Senha inicial do Leo (só na primeira execução) |
+| `PTRON_Smtp__Host`, `PTRON_Smtp__Port` | Servidor SMTP (Cloudflare) |
+| `PTRON_Smtp__SecureSocketOptions` | `StartTls` / `SslOnConnect` / `None` |
+| `PTRON_Smtp__User`, `PTRON_Smtp__Password` | Credenciais |
+| `PTRON_Smtp__FromAddress`, `PTRON_Smtp__FromName` | Remetente |
+| `PTRON_App__PublicBaseUrl` | URL pública usada nos links dos e-mails |
+| `PTRON_Leo__InitialPassword` | Senha inicial do Leo (só na primeira execução) |
 
 No servidor Linux elas entram no serviço systemd (`Environment=` / `EnvironmentFile=`), que fica **fora** da pasta limpa pelo deploy. Em desenvolvimento, sem SMTP configurado, o e-mail é gravado no log/console (o link aparece no terminal); em produção, SMTP ausente gera aviso claro no log na inicialização. Textos dos e-mails em português.
 
 **D6 — Pontos operacionais críticos (fáceis de esquecer):**
 - **Chaves do Data Protection** precisam ser persistidas fora da pasta de deploy (o deploy faz `rm -rf /opt/ptron/*`). Sem isso, cada deploy/restart **invalida cookies e links de ativação/redefinição** já enviados. Será usada uma pasta persistente (ex.: `/opt/ptron-data/keys`, configurável) que o deploy não toca.
-- **URL pública** (`App__PublicBaseUrl`) para montar os links dos e-mails corretamente (atrás de proxy/HTTPS).
+- **URL pública** (`PTRON_App__PublicBaseUrl`) para montar os links dos e-mails corretamente (atrás de proxy/HTTPS).
 - Tokens: ativação válida por 24 h (com opção de reenviar); redefinição de senha válida por 1 h e uso único.
 
 **D7 — API REST e app mobile: sem mudança de contrato neste épico.**
@@ -226,7 +226,7 @@ O app mobile não é alterado. A API continua autenticada pelo token fixo (`Api:
 
 - [ ] **E8-S1** — **Fundação de identidade.** Adicionar `Microsoft.AspNetCore.Identity.EntityFrameworkCore` e `MailKit`. Criar `ApplicationUser` (herda `IdentityUser`; campos `Pais` (código ISO), `Estado` (texto), `CriadoEm`, `Reservado`). `AppDbContext` passa a herdar de `IdentityDbContext<ApplicationUser>`. Política de senha (mín. 8 caracteres, letra e número), `RequireConfirmedEmail`, e-mail único, lockout (5 tentativas / 15 min). Persistir chaves do Data Protection. Migration com tabelas de identidade, criação do Leo (`Id="leo"`, e-mail confirmado, senha em hash conforme D2).
 - [ ] **E8-S2** — **Dados por usuário.** Migration adiciona `UserId` nas 5 entidades raiz (dados existentes → Leo), índices e FKs; índice único `(UserId, Nome)` em tipos. `ICurrentUser`, `TenantDbContextFactory`, *query filters* e carimbo automático de `UserId`. Revisar todos os serviços (`TipoInsumo`, `Insumo`, `Equipamento`, `EntradaEstoque`, `Producao`, `Produto`) para validar que FKs referenciadas pertencem ao usuário atual e que consultas por Id respeitam o filtro (retornam "não encontrado" para dados de outro usuário).
-- [ ] **E8-S3** — **Envio de e-mail.** `IAppEmailSender` + implementação SMTP (MailKit) + implementação de desenvolvimento (log). Opções `Smtp` e `App:PublicBaseUrl` lidas de variáveis de ambiente (D5). Templates HTML/texto em português (ativação, redefinição e aviso de senha alterada) com a identidade visual do Makelectron. Falha de envio é registrada em log e não derruba a requisição.
+- [ ] **E8-S3** — **Envio de e-mail.** `IAppEmailSender` + implementação SMTP (MailKit) + implementação de desenvolvimento (log). Opções `Smtp` e `App:PublicBaseUrl` lidas de variáveis de ambiente com prefixo `PTRON_` (D5). Templates HTML/texto em português (ativação, redefinição e aviso de senha alterada) com a identidade visual do Makelectron. Falha de envio é registrada em log e não derruba a requisição.
 - [ ] **E8-S4** — **Cadastro (`/cadastro`).** Formulário: e-mail, **país (lista)**, **estado (texto livre)**, senha e confirmação de senha. Lista de países ISO 3166 em português, mantida no código (`Paises`), armazenando o código ISO; Brasil no topo. Validações: formato de e-mail, unicidade, senha conforme política, e-mail/nome reservado bloqueado, estado obrigatório (máx. 100 caracteres). Cria usuário **inativo** e envia o e-mail de ativação; tela "Verifique seu e-mail". Resposta idêntica para e-mail já existente (evita enumeração de contas).
 - [ ] **E8-S5** — **Ativação (`/ativar`).** Link `…/ativar?userId=…&token=…` confirma o e-mail e ativa a conta; **ao ativar, cria os 6 tipos padrão do usuário** (idempotente). Mensagens para sucesso, link inválido/expirado e conta já ativa. Opção "Reenviar e-mail de ativação" (com limite de frequência).
 - [ ] **E8-S6** — **Login por e-mail.** Campo "E-mail" (aceita também o apelido `Leo`). Usuário não ativado não entra e recebe mensagem com a opção de reenviar a ativação. Mensagem genérica para credenciais inválidas; lockout por tentativas. Login passa a usar token antifalsificação (hoje é `IgnoreAntiforgeryToken`) e cookie `Secure`/`HttpOnly`/`SameSite`. Links "Esqueci a senha" e "Criar conta". Nome/e-mail do usuário exibido no topo com menu (Alterar senha, Sair).
@@ -255,7 +255,7 @@ Login social (Google etc.), autenticação em dois fatores, troca de e-mail da c
 
 ### Pontos a confirmar (com padrão sugerido)
 
-- **C1** — Senha inicial do Leo: usar `Leo__InitialPassword` se existir; senão cair na senha atual (e você a troca no primeiro login). *Padrão: assim.*
+- **C1** — Senha inicial do Leo: usar `PTRON_Leo__InitialPassword` se existir; senão cair na senha atual (e você a troca no primeiro login). *Padrão: assim.*
 - **C2** — O token fixo da API passa a representar o Leo (D7), de modo que o app mobile atual continua funcionando apenas com os dados dele. *Padrão: assim.*
 - **C3** — Links de ativação/redefinição abrem páginas web (inclusive no celular). *Padrão: assim.*
 
