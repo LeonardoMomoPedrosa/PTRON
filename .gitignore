@@ -25,3 +25,6 @@ Thumbs.db
 mobile/node_modules/
 mobile/.expo/
 mobile/dist/
+
+# Data Protection keys (dev)
+src/PTRON/App_Data/

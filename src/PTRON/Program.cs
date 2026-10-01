@@ -8,9 +8,16 @@ using MudBlazor;
 using MudBlazor.Services;
 using PTRON.Api;
 using PTRON.Data;
+using PTRON.Identity;
 using PTRON.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Deployment settings and secrets (SMTP, Leo password, ...) come from PTRON_* environment variables.
+builder.Configuration.AddEnvironmentVariables(prefix: "PTRON_");
+
+using var startupLogs = LoggerFactory.Create(l => l.AddSimpleConsole());
+var startupLogger = startupLogs.CreateLogger("PTRON.Startup");
 
 // Brazilian culture for currency/number/date formatting.
 var ptBr = CultureInfo.GetCultureInfo("pt-BR");
@@ -115,6 +122,10 @@ builder.Services.AddControllers(options =>
 builder.Services.AddDbContextFactory<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("Default")
                       ?? "Data Source=ptron.db"));
+builder.Services.AddScoped(sp => sp.GetRequiredService<IDbContextFactory<AppDbContext>>().CreateDbContext());
+
+builder.Services.AddPtronDataProtection(builder.Configuration, builder.Environment, startupLogger);
+builder.Services.AddPtronIdentity(builder.Configuration);
 
 builder.Services.AddScoped<ImageUploadService>();
 builder.Services.AddScoped<TipoInsumoService>();
@@ -134,6 +145,10 @@ using (var scope = app.Services.CreateScope())
     var factory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<AppDbContext>>();
     using var db = factory.CreateDbContext();
     db.Database.Migrate();
+
+    await LeoBootstrap.EnsureAsync(
+        scope.ServiceProvider,
+        scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("PTRON.Leo"));
 
     // Ensure upload folder exists.
     var env = scope.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
