@@ -64,6 +64,16 @@ export function EntradaNovaScreen({ navigation }: Props) {
 
   const clearPreview = () => setPreview(null);
 
+  const suggestPrice = (insumo: Insumo, currency: Moeda, rate: number): string => {
+    const custo = currency === 'USD' ? (rate > 0 ? insumo.custoUnitario / rate : 0) : insumo.custoUnitario;
+    return custo > 0 ? String(Math.round(custo * 10000) / 10000) : '0';
+  };
+
+  const pickInsumo = (insumo: Insumo) => {
+    setPickId(insumo.id);
+    setPreco(suggestPrice(insumo, moeda, cambioNum));
+  };
+
   const body = (): EntradaWrite | null => {
     if (!cart.length) {
       Alert.alert('Validação', 'Adicione ao menos um item.');
@@ -210,7 +220,7 @@ export function EntradaNovaScreen({ navigation }: Props) {
           {filtered.map((i) => (
             <Pressable
               key={i.id}
-              onPress={() => setPickId(i.id)}
+              onPress={() => pickInsumo(i)}
               style={[styles.chip, pickId === i.id && styles.chipActive]}
             >
               <Text style={[styles.chipText, pickId === i.id && styles.chipTextActive]}>{i.nome}</Text>
