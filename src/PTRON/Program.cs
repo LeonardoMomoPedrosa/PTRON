@@ -9,6 +9,7 @@ using MudBlazor;
 using MudBlazor.Services;
 using PTRON.Api;
 using PTRON.Data;
+using PTRON.Email;
 using PTRON.Identity;
 using PTRON.Services;
 
@@ -130,6 +131,7 @@ builder.Services.AddScoped(sp => sp.GetRequiredService<IDbContextFactory<AppDbCo
 
 builder.Services.AddPtronDataProtection(builder.Configuration, builder.Environment, startupLogger);
 builder.Services.AddPtronIdentity(builder.Configuration);
+builder.Services.AddPtronEmail(builder.Configuration);
 
 builder.Services.AddScoped<ImageUploadService>();
 builder.Services.AddScoped<TipoInsumoService>();
@@ -142,6 +144,7 @@ builder.Services.AddScoped<ProdutoService>();
 builder.Services.AddScoped<SqlConsoleService>();
 
 var app = builder.Build();
+app.LogEmailStartup();
 
 // Apply migrations / create the database on startup, then seed if empty.
 using (var scope = app.Services.CreateScope())
