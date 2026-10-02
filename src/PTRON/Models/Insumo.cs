@@ -2,9 +2,11 @@ using System.ComponentModel.DataAnnotations;
 
 namespace PTRON.Models;
 
-public class Insumo
+public class Insumo : IUserOwned
 {
     public int Id { get; set; }
+
+    public string UserId { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "O tipo é obrigatório.")]
     public int TipoInsumoId { get; set; }

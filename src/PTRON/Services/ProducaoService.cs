@@ -51,6 +51,11 @@ public class ProducaoService
             return null;
         }
 
+        if (equipamento.Insumos.Any(ei => ei.Insumo is null))
+        {
+            return null;
+        }
+
         return new ProducaoPreview
         {
             EquipamentoId = equipamento.Id,
@@ -87,6 +92,11 @@ public class ProducaoService
                         .ThenInclude(i => i!.TipoInsumo)
                 .FirstOrDefaultAsync(e => e.Id == equipamentoId)
                 ?? throw new InvalidOperationException("Equipamento não encontrado.");
+
+            if (equipamento.Insumos.Any(ei => ei.Insumo is null))
+            {
+                throw new InvalidOperationException("Insumo não encontrado.");
+            }
 
             if (equipamento.Insumos.Count == 0)
             {

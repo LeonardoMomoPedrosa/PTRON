@@ -42,6 +42,7 @@ public class EquipamentoService
         await using var db = await _factory.CreateDbContextAsync();
         equipamento.Nome = Validation.RequireName(equipamento.Nome);
         NormalizeBom(equipamento);
+        await TenantChecks.RequireInsumosAsync(db, equipamento.Insumos.Select(i => i.InsumoId));
         db.Equipamentos.Add(equipamento);
         await db.SaveChangesAsync();
     }
@@ -62,6 +63,7 @@ public class EquipamentoService
         // so changing a model's BOM never affects products already produced.
         db.EquipamentoInsumos.RemoveRange(existing.Insumos);
         NormalizeBom(equipamento);
+        await TenantChecks.RequireInsumosAsync(db, equipamento.Insumos.Select(i => i.InsumoId));
         foreach (var item in equipamento.Insumos)
         {
             existing.Insumos.Add(new EquipamentoInsumo
@@ -128,6 +130,8 @@ public class EquipamentoService
             throw new InvalidOperationException("Equipamento não encontrado.");
         }
 
+        await TenantChecks.RequireInsumosAsync(db, new[] { insumoId });
+
         var line = await db.EquipamentoInsumos
             .FirstOrDefaultAsync(ei => ei.EquipamentoId == equipamentoId && ei.InsumoId == insumoId);
         if (line is null)
@@ -150,6 +154,11 @@ public class EquipamentoService
     public async Task RemoveInsumoAsync(int equipamentoId, int insumoId)
     {
         await using var db = await _factory.CreateDbContextAsync();
+        if (!await db.Equipamentos.AnyAsync(e => e.Id == equipamentoId))
+        {
+            return;
+        }
+
         var lines = await db.EquipamentoInsumos
             .Where(ei => ei.EquipamentoId == equipamentoId && ei.InsumoId == insumoId)
             .ToListAsync();

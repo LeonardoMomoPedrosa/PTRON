@@ -3,9 +3,11 @@ using PTRON.Services;
 
 namespace PTRON.Models;
 
-public class EntradaEstoque
+public class EntradaEstoque : IUserOwned
 {
     public int Id { get; set; }
+
+    public string UserId { get; set; } = string.Empty;
 
     public DateTime Data { get; set; } = DateTime.Now;
 

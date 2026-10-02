@@ -134,6 +134,8 @@ public class InsumoService
             throw new InvalidOperationException("Selecione o tipo do insumo.");
         }
 
+        await TenantChecks.RequireTipoAsync(db, insumo.TipoInsumoId);
+
         insumo.Valor = string.IsNullOrWhiteSpace(insumo.Valor) ? null : insumo.Valor.Trim();
         insumo.Potencia = string.IsNullOrWhiteSpace(insumo.Potencia) ? null : insumo.Potencia.Trim();
         insumo.Voltagem = string.IsNullOrWhiteSpace(insumo.Voltagem) ? null : insumo.Voltagem.Trim();
@@ -161,6 +163,7 @@ public class InsumoService
             throw new InvalidOperationException("Selecione o tipo do insumo.");
         }
 
+        await TenantChecks.RequireTipoAsync(db, insumo.TipoInsumoId);
         existing.TipoInsumoId = insumo.TipoInsumoId;
         existing.Valor = string.IsNullOrWhiteSpace(insumo.Valor) ? null : insumo.Valor.Trim();
         existing.Potencia = string.IsNullOrWhiteSpace(insumo.Potencia) ? null : insumo.Potencia.Trim();

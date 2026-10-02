@@ -3,6 +3,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.OpenApi.Models;
 using MudBlazor;
 using MudBlazor.Services;
@@ -122,6 +123,9 @@ builder.Services.AddControllers(options =>
 builder.Services.AddDbContextFactory<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("Default")
                       ?? "Data Source=ptron.db"));
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUser, CurrentUser>();
+builder.Services.Replace(ServiceDescriptor.Scoped<IDbContextFactory<AppDbContext>, TenantDbContextFactory>());
 builder.Services.AddScoped(sp => sp.GetRequiredService<IDbContextFactory<AppDbContext>>().CreateDbContext());
 
 builder.Services.AddPtronDataProtection(builder.Configuration, builder.Environment, startupLogger);
@@ -142,9 +146,11 @@ var app = builder.Build();
 // Apply migrations / create the database on startup, then seed if empty.
 using (var scope = app.Services.CreateScope())
 {
-    var factory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<AppDbContext>>();
-    using var db = factory.CreateDbContext();
-    db.Database.Migrate();
+    var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<AppDbContext>>();
+    await using (var db = new AppDbContext(options, ReservedUsers.LeoId))
+    {
+        db.Database.Migrate();
+    }
 
     await LeoBootstrap.EnsureAsync(
         scope.ServiceProvider,
@@ -154,7 +160,11 @@ using (var scope = app.Services.CreateScope())
     var env = scope.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
     Directory.CreateDirectory(Path.Combine(env.WebRootPath, "uploads"));
 
-    await SeedData.EnsureSeededAsync(factory);
+    // Sample rows belong to Leo. The tenant factory has no user during startup.
+    await using (var db = new AppDbContext(options, ReservedUsers.LeoId))
+    {
+        await SeedData.EnsureSeededAsync(db);
+    }
 }
 
 var supportedCultures = new[] { ptBr };

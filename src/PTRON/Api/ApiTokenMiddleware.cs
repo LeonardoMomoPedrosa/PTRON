@@ -1,5 +1,7 @@
+using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
+using PTRON.Identity;
 
 namespace PTRON.Api;
 
@@ -31,8 +33,22 @@ public sealed class ApiTokenMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-        if (HttpMethods.IsOptions(context.Request.Method) || TokenMatches(context))
+        if (HttpMethods.IsOptions(context.Request.Method))
         {
+            await _next(context);
+            return;
+        }
+
+        if (TokenMatches(context))
+        {
+            // The fixed token keeps acting as Leo so query filters see his data (E8-S10).
+            context.User = new ClaimsPrincipal(new ClaimsIdentity(
+                new[]
+                {
+                    new Claim(ClaimTypes.NameIdentifier, ReservedUsers.LeoId),
+                    new Claim(ClaimTypes.Name, ReservedUsers.LeoUserName)
+                },
+                authenticationType: "ApiToken"));
             await _next(context);
             return;
         }

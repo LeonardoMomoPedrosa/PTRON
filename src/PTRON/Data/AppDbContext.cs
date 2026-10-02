@@ -6,8 +6,18 @@ namespace PTRON.Data;
 
 public class AppDbContext : IdentityDbContext<ApplicationUser>
 {
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
+    /// <summary>User id applied to query filters and to new rows. Empty sees nothing.</summary>
+    public string CurrentUserId { get; }
+
+    public AppDbContext(DbContextOptions<AppDbContext> options)
+        : this(options, currentUserId: "")
     {
+    }
+
+    public AppDbContext(DbContextOptions<AppDbContext> options, string currentUserId)
+        : base(options)
+    {
+        CurrentUserId = currentUserId ?? "";
     }
 
     public DbSet<TipoInsumo> TiposInsumo => Set<TipoInsumo>();
@@ -86,5 +96,74 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
             .WithMany()
             .HasForeignKey(pi => pi.InsumoId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        // Child rows stay visible only when both parents belong to the current user.
+        modelBuilder.Entity<EquipamentoInsumo>()
+            .HasQueryFilter(ei => ei.Equipamento!.UserId == CurrentUserId && ei.Insumo!.UserId == CurrentUserId);
+        modelBuilder.Entity<EntradaEstoqueItem>()
+            .HasQueryFilter(it => it.EntradaEstoque!.UserId == CurrentUserId && it.Insumo!.UserId == CurrentUserId);
+        modelBuilder.Entity<ProdutoInsumo>()
+            .HasQueryFilter(pi => pi.Produto!.UserId == CurrentUserId && pi.Insumo!.UserId == CurrentUserId);
+
+        ConfigureOwnership<TipoInsumo>(modelBuilder, uniqueName: true);
+        ConfigureOwnership<Insumo>(modelBuilder, uniqueName: false);
+        ConfigureOwnership<Equipamento>(modelBuilder, uniqueName: false);
+        ConfigureOwnership<EntradaEstoque>(modelBuilder, uniqueName: false);
+        ConfigureOwnership<Produto>(modelBuilder, uniqueName: false);
+    }
+
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+    {
+        StampUser();
+        return base.SaveChanges(acceptAllChangesOnSuccess);
+    }
+
+    public override Task<int> SaveChangesAsync(
+        bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+    {
+        StampUser();
+        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+    }
+
+    private void ConfigureOwnership<TEntity>(ModelBuilder modelBuilder, bool uniqueName)
+        where TEntity : class, IUserOwned
+    {
+        var entity = modelBuilder.Entity<TEntity>();
+        entity.HasOne<ApplicationUser>()
+            .WithMany()
+            .HasForeignKey(e => e.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+        entity.HasQueryFilter(e => e.UserId == CurrentUserId);
+
+        if (uniqueName)
+        {
+            entity.HasIndex(nameof(IUserOwned.UserId), "Nome").IsUnique();
+        }
+        else
+        {
+            entity.HasIndex(e => e.UserId);
+        }
+    }
+
+    /// <summary>New rows belong to the current user. UserId never changes afterwards.</summary>
+    private void StampUser()
+    {
+        foreach (var entry in ChangeTracker.Entries<IUserOwned>())
+        {
+            if (entry.State == EntityState.Added)
+            {
+                if (string.IsNullOrEmpty(CurrentUserId))
+                {
+                    throw new InvalidOperationException(
+                        "Não há usuário autenticado para gravar estes dados.");
+                }
+
+                entry.Entity.UserId = CurrentUserId;
+            }
+            else if (entry.State == EntityState.Modified)
+            {
+                entry.Property(e => e.UserId).IsModified = false;
+            }
+        }
     }
 }

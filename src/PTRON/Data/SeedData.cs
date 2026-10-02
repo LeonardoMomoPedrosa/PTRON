@@ -9,10 +9,8 @@ namespace PTRON.Data;
 /// </summary>
 public static class SeedData
 {
-    public static async Task EnsureSeededAsync(IDbContextFactory<AppDbContext> factory)
+    public static async Task EnsureSeededAsync(AppDbContext db)
     {
-        await using var db = await factory.CreateDbContextAsync();
-
         if (await db.TiposInsumo.AnyAsync())
         {
             return;
