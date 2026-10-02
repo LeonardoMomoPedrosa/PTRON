@@ -361,11 +361,30 @@
 
     private async Task AfterInsumoChanged()
     {
+        if (_novoInsumo is not null)
+        {
+            _novoPreco = SugerirPreco(_novoInsumo);
+        }
+
         // Selection from Enter often binds after KeyUp — advance once value arrives.
         if (_enterOnInsumo && _novoInsumo is not null)
         {
             await AdvanceFromInsumoAsync();
         }
+    }
+
+    /// <summary>
+    /// Suggests the insumo's current average cost (stored in R$) as the unit price,
+    /// converting to USD when the entry is in dollars.
+    /// </summary>
+    private decimal SugerirPreco(Insumo insumo)
+    {
+        if (!EmDolar)
+        {
+            return insumo.CustoUnitario;
+        }
+
+        return CartState.Cambio > 0 ? insumo.CustoUnitario / CartState.Cambio : 0m;
     }
 
     private async Task AdvanceFromInsumoAsync()
