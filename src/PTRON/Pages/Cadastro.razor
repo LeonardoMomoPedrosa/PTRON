@@ -1,0 +1,142 @@
+@page "/cadastro"
+@layout LoginLayout
+@attribute [AllowAnonymous]
+@using System.ComponentModel.DataAnnotations
+@using PTRON.Identity
+@inject SignUpService SignUp
+
+<PageTitle>Makelectron — Criar conta</PageTitle>
+
+<MudPaper Class="pa-6" Elevation="3">
+    <div class="d-flex justify-center mb-4">
+        <BrandLogo Height="56" />
+    </div>
+
+    @if (_done)
+    {
+        <MudText Typo="Typo.h6" Class="mb-2">Verifique seu e-mail</MudText>
+        <MudAlert Severity="Severity.Success" Class="mb-4">
+            Se o cadastro puder ser concluído, enviamos um link de ativação para <strong>@_model.Email</strong>.
+            Abra o e-mail e clique no link em até 24 horas para ativar sua conta.
+        </MudAlert>
+        <MudText Typo="Typo.body2" Class="mb-4">
+            Não encontrou? Confira a caixa de spam. Você só consegue entrar depois de ativar a conta.
+        </MudText>
+        <MudButton Href="/login" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Size="Size.Large">
+            Ir para o login
+        </MudButton>
+    }
+    else
+    {
+        <MudText Typo="Typo.h6" Class="mb-1">Criar conta</MudText>
+        <MudText Typo="Typo.body2" Class="mb-4">Preencha os dados para se cadastrar.</MudText>
+
+        @if (_errors.Count > 0)
+        {
+            <MudAlert Severity="Severity.Error" Class="mb-4" Dense="true">
+                @foreach (var error in _errors)
+                {
+                    <div>@error</div>
+                }
+            </MudAlert>
+        }
+
+        <EditForm Model="_model" OnValidSubmit="SubmitAsync">
+            <DataAnnotationsValidator />
+
+            <MudTextField @bind-Value="_model.Email" For="() => _model.Email"
+                          Label="E-mail" InputType="InputType.Email" Variant="Variant.Outlined"
+                          Class="mb-3" Immediate="true" autocomplete="email" MaxLength="@SignUpService.MaxEmailLength" />
+
+            <MudSelect T="string" @bind-Value="_model.Pais" For="() => _model.Pais"
+                       Label="País" Variant="Variant.Outlined" Class="mb-3" Dense="true" MaxHeight="320">
+                @foreach (var pais in Paises.Todos)
+                {
+                    <MudSelectItem T="string" Value="@pais.Codigo">@pais.Nome</MudSelectItem>
+                }
+            </MudSelect>
+
+            <MudTextField @bind-Value="_model.Estado" For="() => _model.Estado"
+                          Label="Estado" Variant="Variant.Outlined" Class="mb-3"
+                          MaxLength="@SignUpService.MaxEstadoLength" autocomplete="address-level1" />
+
+            <MudTextField @bind-Value="_model.Senha" For="() => _model.Senha"
+                          Label="Senha" InputType="InputType.Password" Variant="Variant.Outlined"
+                          HelperText="Mínimo de 8 caracteres, com pelo menos uma letra e um número."
+                          Class="mb-3" autocomplete="new-password" />
+
+            <MudTextField @bind-Value="_model.ConfirmarSenha" For="() => _model.ConfirmarSenha"
+                          Label="Confirmar senha" InputType="InputType.Password" Variant="Variant.Outlined"
+                          Class="mb-4" autocomplete="new-password" />
+
+            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
+                       FullWidth="true" Size="Size.Large" Disabled="_busy">
+                Criar conta
+            </MudButton>
+        </EditForm>
+
+        <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-4">
+            Já tem conta? <MudLink Href="/login">Entrar</MudLink>
+        </MudText>
+    }
+</MudPaper>
+
+@code {
+    private readonly CadastroModel _model = new();
+    private List<string> _errors = new();
+    private bool _busy;
+    private bool _done;
+
+    private async Task SubmitAsync()
+    {
+        if (_busy) return;
+        _busy = true;
+        _errors = new List<string>();
+        try
+        {
+            var result = await SignUp.RegisterAsync(new SignUpRequest
+            {
+                Email = _model.Email,
+                Pais = _model.Pais,
+                Estado = _model.Estado,
+                Senha = _model.Senha,
+            });
+
+            if (result.Succeeded)
+                _done = true;
+            else
+                _errors = result.Errors.ToList();
+        }
+        catch (Exception)
+        {
+            _errors = new List<string> { "Não foi possível concluir o cadastro. Tente novamente." };
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private sealed class CadastroModel
+    {
+        [Required(ErrorMessage = "Informe o e-mail.")]
+        [EmailAddress(ErrorMessage = "Informe um e-mail válido.")]
+        [StringLength(SignUpService.MaxEmailLength, ErrorMessage = "O e-mail é muito longo.")]
+        public string? Email { get; set; }
+
+        [Required(ErrorMessage = "Selecione o país.")]
+        public string? Pais { get; set; }
+
+        [Required(ErrorMessage = "Informe o estado.")]
+        [StringLength(SignUpService.MaxEstadoLength, ErrorMessage = "O estado deve ter no máximo 100 caracteres.")]
+        public string? Estado { get; set; }
+
+        [Required(ErrorMessage = "Informe a senha.")]
+        [MinLength(8, ErrorMessage = "A senha deve ter pelo menos 8 caracteres.")]
+        public string? Senha { get; set; }
+
+        [Required(ErrorMessage = "Confirme a senha.")]
+        [Compare(nameof(Senha), ErrorMessage = "As senhas não conferem.")]
+        public string? ConfirmarSenha { get; set; }
+    }
+}

@@ -21,11 +21,7 @@ public sealed class ReservedUserValidator : IUserValidator<ApplicationUser>
             return Task.FromResult(IdentityResult.Success);
         }
 
-        var reservedName = ReservedUsers.IsReservedName(user.UserName) || ReservedUsers.IsReservedName(user.Email);
-        var reservedEmail = !string.IsNullOrWhiteSpace(_leo.Email)
-            && string.Equals(user.Email?.Trim(), _leo.Email.Trim(), StringComparison.OrdinalIgnoreCase);
-
-        if (reservedName || reservedEmail)
+        if (ReservedUsers.IsReservedName(user.UserName) || ReservedUsers.IsReservedEmail(user.Email, _leo.Email))
         {
             return Task.FromResult(IdentityResult.Failed(new IdentityError
             {
