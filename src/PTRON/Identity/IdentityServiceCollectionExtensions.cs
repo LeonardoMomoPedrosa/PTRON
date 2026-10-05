@@ -10,6 +10,7 @@ public static class IdentityServiceCollectionExtensions
     public static IServiceCollection AddPtronIdentity(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<LeoOptions>(configuration.GetSection(LeoOptions.SectionName));
+        services.AddScoped<SignUpService>();
 
         services.AddIdentityCore<ApplicationUser>(options =>
             {
@@ -27,6 +28,7 @@ public static class IdentityServiceCollectionExtensions
                 options.Lockout.MaxFailedAccessAttempts = 5;
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
             })
+            .AddErrorDescriber<PortugueseIdentityErrorDescriber>()
             .AddEntityFrameworkStores<AppDbContext>()
             .AddSignInManager()
             .AddDefaultTokenProviders()
