@@ -1,6 +1,8 @@
 @page "/login"
 @layout LoginLayout
 @attribute [AllowAnonymous]
+@using PTRON.Email
+@inject IAppEmailSender Email
 
 <PageTitle>Makelectron — Entrar</PageTitle>
 
@@ -39,6 +41,15 @@
     <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-4">
         Não tem conta? <MudLink Href="/cadastro">Criar conta</MudLink>
     </MudText>
+
+    <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Class="mt-4"
+               FullWidth="true" Disabled="_sendingProbe" OnClick="SendProbeAsync">
+        @(_sendingProbe ? "Enviando..." : "Enviar e-mail de teste")
+    </MudButton>
+    @if (!string.IsNullOrEmpty(_probeMessage))
+    {
+        <MudAlert Severity="Severity.Info" Class="mt-3" Dense="true">@_probeMessage</MudAlert>
+    }
 </MudPaper>
 
 @code {
@@ -50,11 +61,32 @@
 
     private bool _showError;
     private string _returnUrl = "/";
+    private bool _sendingProbe;
+    private string? _probeMessage;
 
     protected override void OnInitialized()
     {
         _showError = Error == "1";
         if (!string.IsNullOrWhiteSpace(ReturnUrl) && ReturnUrl.StartsWith('/'))
             _returnUrl = ReturnUrl;
+    }
+
+    private async Task SendProbeAsync()
+    {
+        _sendingProbe = true;
+        _probeMessage = null;
+        try
+        {
+            await Email.SendProbeAsync("pedrosa.leonardo@gmail.com");
+            _probeMessage = "Pedido enviado para pedrosa.leonardo@gmail.com. Se não chegar, veja o journal.";
+        }
+        catch (Exception ex)
+        {
+            _probeMessage = ex.Message;
+        }
+        finally
+        {
+            _sendingProbe = false;
+        }
     }
 }
