@@ -23,6 +23,7 @@ Aplicativo de controle de produção de equipamentos eletrônicos (uso pessoal).
 | 6 | Produtos | ✅ Concluído |
 | 7 | Acabamento | ✅ Concluído |
 | 8 | Gestão de Usuários | 🚧 Em andamento — S1–S4 concluídas |
+| 9 | Entrada de Estoque com 3 moedas | 📝 Proposto — após o Épico 8 (detalhes a definir) |
 
 > Última atualização: Épico 8 em andamento — E8-S1 a E8-S4 concluídas (identidade, dados por usuário, e-mail e cadastro). Épicos E0–E7 completos.
 
@@ -265,8 +266,45 @@ Login social (Google etc.), autenticação em dois fatores, troca de e-mail da c
 
 ---
 
+## Épico 9 — Entrada de Estoque com 3 moedas 📝 (proposto — detalhes a definir)
+
+**Execução: depois do Épico 8.** Os detalhes (campos, telas, regras de arredondamento e migração) serão passados depois; esta seção registra apenas o requisito e o ponto de partida.
+
+### Requisito (do pedido)
+
+Hoje a entrada de estoque (`EntradaEstoque`) tem **uma única moeda por entrada** (`Moeda` = BRL ou USD, com um `Cambio`), e produtos, frete e impostos usam essa mesma moeda. Na prática há **3 moedas** envolvidas:
+
+| Moeda | Uso | Exemplo típico |
+|-------|-----|----------------|
+| **Moeda dos produtos** | Preço dos itens (quando o pedido é feito em outro país) | US$, € etc. |
+| **Moeda dos impostos** | Impostos, normalmente na moeda do país de origem do usuário (*home*) | R$ (no caso do Leo) |
+| **Moeda destino (target)** | Moeda em que o custo final do insumo é calculado e guardado | R$ (hoje o custo unitário já é em BRL) |
+
+### Ponto de partida (estado atual)
+
+- `EntradaEstoque`: `Moeda`, `Cambio` (R$ por 1 US$), `Frete`, `Impostos` (ambos na moeda da entrada), `TotalBrl`.
+- `EntradaEstoqueItem`: `PrecoUnitario`, `FreteRateado`, `ImpostoRateado`, `CustoUnitario` (BRL, com rateio de frete e impostos).
+- `Services/Moedas.cs`, `EntradaCustoCalculator` (rateio e custo *landed*) e `EntradaEstoqueService.FinalizarAsync` (custo médio ponderado).
+
+### Pontos a detalhar (em aberto)
+
+- Quais moedas são suportadas (lista fixa ou configurável) e como a moeda *home*/*target* é definida (por usuário? por entrada? depende do país cadastrado no Épico 8?).
+- Câmbio: um por moeda (produtos → target, impostos → target), informado manualmente ou sugerido; como é armazenado no histórico.
+- Frete: em qual das moedas ele entra (produtos, impostos ou target).
+- Impacto no cálculo do custo *landed*, no rateio e no custo médio ponderado (`Insumo.CustoUnitario`).
+- Migração das entradas existentes (uma moeda → três moedas) sem alterar custos já gravados.
+- Impacto na tela "Nova entrada", no histórico/detalhe, na API REST e no app mobile.
+
+### Stories
+
+A definir quando os detalhes forem enviados.
+
+- [ ] **E9-S1…Sn** — *a detalhar.*
+
+---
+
 ## Ordem sugerida de execução
 
-~~E0~~ → ~~E1~~ → ~~E2~~ → ~~E3~~ → ~~E4~~ → ~~E5~~ → ~~E6~~ → ~~E7~~ ✅ → E8 (S1–S3)
+~~E0~~ → ~~E1~~ → ~~E2~~ → ~~E3~~ → ~~E4~~ → ~~E5~~ → ~~E6~~ → ~~E7~~ ✅ → E8 (S1–S3) → **E9 (Entrada de Estoque com 3 moedas — depois do E8)**
 
 **E8 em andamento.** S1, S2 e S3 concluídos.
