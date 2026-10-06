@@ -218,9 +218,6 @@ public sealed class SignUpTests : IAsyncLifetime
 
         public Task SendPasswordChangedAsync(string toAddress, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
-
-        public Task SendProbeAsync(string toAddress, CancellationToken cancellationToken = default)
-            => Task.CompletedTask;
     }
 }
 
