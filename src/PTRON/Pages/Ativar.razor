@@ -1,0 +1,129 @@
+@page "/ativar"
+@layout LoginLayout
+@attribute [AllowAnonymous]
+@using PTRON.Identity
+@inject ActivationService Activation
+
+<PageTitle>Makelectron — Ativar conta</PageTitle>
+
+<MudPaper Class="pa-6" Elevation="3">
+    <div class="d-flex justify-center mb-4">
+        <BrandLogo Height="56" />
+    </div>
+
+    @switch (_state)
+    {
+        case State.Working:
+            <MudText Typo="Typo.h6" Class="mb-3">Ativando sua conta...</MudText>
+            <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+            break;
+
+        case State.Activated:
+            <MudText Typo="Typo.h6" Class="mb-2">Conta ativada</MudText>
+            <MudAlert Severity="Severity.Success" Class="mb-4">
+                Seu e-mail foi confirmado. Agora você já pode entrar no Makelectron.
+            </MudAlert>
+            <MudButton Href="/login" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Size="Size.Large">
+                Ir para o login
+            </MudButton>
+            break;
+
+        case State.AlreadyActive:
+            <MudText Typo="Typo.h6" Class="mb-2">Conta já ativada</MudText>
+            <MudAlert Severity="Severity.Info" Class="mb-4">
+                Esta conta já foi ativada. É só entrar com seu e-mail e senha.
+            </MudAlert>
+            <MudButton Href="/login" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Size="Size.Large">
+                Ir para o login
+            </MudButton>
+            break;
+
+        default:
+            <MudText Typo="Typo.h6" Class="mb-2">Link inválido ou expirado</MudText>
+            <MudAlert Severity="Severity.Warning" Class="mb-4">
+                Não foi possível ativar a conta com este link. Ele pode ter expirado (vale por 24 horas)
+                ou já ter sido substituído por um mais novo.
+            </MudAlert>
+
+            @if (_resent)
+            {
+                <MudAlert Severity="Severity.Success" Class="mb-4">
+                    Se este e-mail estiver aguardando ativação, enviamos um novo link. Confira também a caixa de spam.
+                </MudAlert>
+            }
+            else
+            {
+                <MudText Typo="Typo.body2" Class="mb-3">Informe seu e-mail para receber um novo link de ativação.</MudText>
+                <MudTextField @bind-Value="_email" Label="E-mail" InputType="InputType.Email"
+                              Variant="Variant.Outlined" Class="mb-3" autocomplete="email"
+                              MaxLength="@SignUpService.MaxEmailLength" />
+                <MudButton OnClick="ResendAsync" Variant="Variant.Filled" Color="Color.Primary"
+                           FullWidth="true" Size="Size.Large" Disabled="_busy">
+                    Reenviar e-mail de ativação
+                </MudButton>
+            }
+
+            <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-4">
+                <MudLink Href="/login">Voltar ao login</MudLink>
+            </MudText>
+            break;
+    }
+</MudPaper>
+
+@code {
+    private enum State { Working, Activated, AlreadyActive, Invalid }
+
+    [SupplyParameterFromQuery(Name = "userId")]
+    public string? UserId { get; set; }
+
+    [SupplyParameterFromQuery(Name = "token")]
+    public string? Token { get; set; }
+
+    private State _state = State.Working;
+    private string? _email;
+    private bool _busy;
+    private bool _resent;
+
+    // Runs only on the interactive circuit, not during prerender, so a link preview or
+    // mail scanner that just fetches the page does not consume the activation token.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+
+        try
+        {
+            var outcome = await Activation.ActivateAsync(UserId, Token);
+            _state = outcome switch
+            {
+                ActivationOutcome.Activated => State.Activated,
+                ActivationOutcome.AlreadyActive => State.AlreadyActive,
+                _ => State.Invalid,
+            };
+        }
+        catch (Exception)
+        {
+            _state = State.Invalid;
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task ResendAsync()
+    {
+        if (_busy || string.IsNullOrWhiteSpace(_email)) return;
+        _busy = true;
+        try
+        {
+            await Activation.ResendAsync(_email);
+        }
+        catch (Exception)
+        {
+            // Same answer as success: the page must not reveal whether the e-mail exists.
+        }
+        finally
+        {
+            _busy = false;
+            _resent = true;
+        }
+    }
+}

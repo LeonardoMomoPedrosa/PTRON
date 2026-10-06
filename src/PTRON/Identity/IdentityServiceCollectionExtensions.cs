@@ -13,6 +13,7 @@ public static class IdentityServiceCollectionExtensions
         services.Configure<LeoOptions>(configuration.GetSection(LeoOptions.SectionName));
         services.TryAddSingleton(TimeProvider.System);
         services.AddSingleton<ActivationEmailLimiter>();
+        services.AddScoped<ActivationService>();
         services.AddScoped<SignUpService>();
 
         services.AddIdentityCore<ApplicationUser>(options =>
