@@ -14,6 +14,7 @@ public static class IdentityServiceCollectionExtensions
         services.TryAddSingleton(TimeProvider.System);
         services.AddSingleton<ActivationEmailLimiter>();
         services.AddScoped<ActivationService>();
+        services.AddScoped<LoginService>();
         services.AddScoped<SignUpService>();
 
         services.AddIdentityCore<ApplicationUser>(options =>
