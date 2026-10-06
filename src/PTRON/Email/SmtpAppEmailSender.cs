@@ -50,8 +50,15 @@ public sealed class SmtpAppEmailSender : AppEmailSenderBase
                 await client.AuthenticateAsync(smtp.User, smtp.Password ?? "", cancellationToken);
             }
 
-            await client.SendAsync(mime, cancellationToken);
+            var response = await client.SendAsync(mime, cancellationToken);
             await client.DisconnectAsync(true, cancellationToken);
+
+            _logger.LogInformation(
+                "E-mail aceito pelo servidor SMTP para {To}. Assunto: {Subject}. Message-Id: {MessageId}. Resposta: {Response}",
+                message.To,
+                message.Subject,
+                mime.MessageId,
+                response);
         }
         catch (Exception ex)
         {
