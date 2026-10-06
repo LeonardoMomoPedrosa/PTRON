@@ -10,18 +10,38 @@
     </div>
     <MudText Typo="Typo.body2" Class="mb-4">Entre para continuar.</MudText>
 
-    @if (_showError)
+    @if (_error == "inactive")
+    {
+        <MudAlert Severity="Severity.Warning" Class="mb-4" Dense="true">
+            Sua conta ainda não foi ativada. Abra o link que enviamos para o seu e-mail ou
+            <MudLink Href="@ResendHref">reenvie o e-mail de ativação</MudLink>.
+        </MudAlert>
+    }
+    else if (_error == "locked")
     {
         <MudAlert Severity="Severity.Error" Class="mb-4" Dense="true">
-            Usuário ou senha inválidos.
+            Muitas tentativas de entrada. Aguarde alguns minutos e tente novamente.
+        </MudAlert>
+    }
+    else if (_error == "expired")
+    {
+        <MudAlert Severity="Severity.Warning" Class="mb-4" Dense="true">
+            A página ficou aberta por muito tempo. Tente entrar novamente.
+        </MudAlert>
+    }
+    else if (!string.IsNullOrEmpty(_error))
+    {
+        <MudAlert Severity="Severity.Error" Class="mb-4" Dense="true">
+            E-mail ou senha inválidos.
         </MudAlert>
     }
 
     <form method="post" action="/account/login">
+        <AntiforgeryToken />
         <input type="hidden" name="returnUrl" value="@_returnUrl" />
 
-        <MudText Typo="Typo.caption">Usuário</MudText>
-        <input name="username" type="text" autocomplete="username" required
+        <MudText Typo="Typo.caption">E-mail</MudText>
+        <input name="username" type="text" autocomplete="username" required maxlength="256" value="@_email"
                class="mud-input mud-input-outlined mud-input-outlined-border pa-3 mb-3"
                style="width:100%; box-sizing:border-box; border:1px solid var(--mud-palette-lines-inputs); border-radius:4px; background:transparent; color:inherit;" />
 
@@ -48,12 +68,19 @@
     [SupplyParameterFromQuery(Name = "returnUrl")]
     public string? ReturnUrl { get; set; }
 
-    private bool _showError;
+    [SupplyParameterFromQuery(Name = "email")]
+    public string? Email { get; set; }
+
+    private string? _error;
+    private string _email = "";
     private string _returnUrl = "/";
+
+    private string ResendHref => "/ativar?email=" + Uri.EscapeDataString(_email);
 
     protected override void OnInitialized()
     {
-        _showError = Error == "1";
+        _error = Error;
+        _email = Email ?? "";
         if (!string.IsNullOrWhiteSpace(ReturnUrl) && ReturnUrl.StartsWith('/'))
             _returnUrl = ReturnUrl;
     }

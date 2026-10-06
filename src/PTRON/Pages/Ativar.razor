@@ -39,11 +39,18 @@
             break;
 
         default:
-            <MudText Typo="Typo.h6" Class="mb-2">Link inválido ou expirado</MudText>
-            <MudAlert Severity="Severity.Warning" Class="mb-4">
-                Não foi possível ativar a conta com este link. Ele pode ter expirado (vale por 24 horas)
-                ou já ter sido substituído por um mais novo.
-            </MudAlert>
+            @if (_state == State.Resend)
+            {
+                <MudText Typo="Typo.h6" Class="mb-2">Reenviar e-mail de ativação</MudText>
+            }
+            else
+            {
+                <MudText Typo="Typo.h6" Class="mb-2">Link inválido ou expirado</MudText>
+                <MudAlert Severity="Severity.Warning" Class="mb-4">
+                    Não foi possível ativar a conta com este link. Ele pode ter expirado (vale por 24 horas)
+                    ou já ter sido substituído por um mais novo.
+                </MudAlert>
+            }
 
             @if (_resent)
             {
@@ -71,7 +78,7 @@
 </MudPaper>
 
 @code {
-    private enum State { Working, Activated, AlreadyActive, Invalid }
+    private enum State { Working, Activated, AlreadyActive, Invalid, Resend }
 
     [SupplyParameterFromQuery(Name = "userId")]
     public string? UserId { get; set; }
@@ -79,16 +86,26 @@
     [SupplyParameterFromQuery(Name = "token")]
     public string? Token { get; set; }
 
+    [SupplyParameterFromQuery(Name = "email")]
+    public string? Email { get; set; }
+
     private State _state = State.Working;
     private string? _email;
     private bool _busy;
     private bool _resent;
 
+    protected override void OnInitialized()
+    {
+        _email = Email;
+        if (string.IsNullOrWhiteSpace(UserId) && string.IsNullOrWhiteSpace(Token))
+            _state = State.Resend;
+    }
+
     // Runs only on the interactive circuit, not during prerender, so a link preview or
     // mail scanner that just fetches the page does not consume the activation token.
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!firstRender) return;
+        if (!firstRender || _state == State.Resend) return;
 
         try
         {
