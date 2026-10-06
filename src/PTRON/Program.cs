@@ -61,13 +61,12 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
             ? CookieSecurePolicy.SameAsRequest
             : CookieSecurePolicy.Always;
     });
+// Not Secure.Always: TLS ends at the proxy, so Kestrel sees plain HTTP and the antiforgery
+// system throws on every request that issues a token when it requires HTTPS.
 builder.Services.AddAntiforgery(options =>
 {
     options.Cookie.HttpOnly = true;
     options.Cookie.SameSite = SameSiteMode.Lax;
-    options.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
-        ? CookieSecurePolicy.SameAsRequest
-        : CookieSecurePolicy.Always;
 });
 builder.Services.AddAuthorization();
 builder.Services.AddMudServices(config =>
