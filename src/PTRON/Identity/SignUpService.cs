@@ -31,21 +31,18 @@ public sealed class SignUpService
     public const int MaxEstadoLength = 100;
 
     private readonly UserManager<ApplicationUser> _users;
-    private readonly IAppEmailSender _email;
-    private readonly ActivationEmailLimiter _limiter;
+    private readonly ActivationService _activation;
     private readonly LeoOptions _leo;
     private readonly ILogger<SignUpService> _logger;
 
     public SignUpService(
         UserManager<ApplicationUser> users,
-        IAppEmailSender email,
-        ActivationEmailLimiter limiter,
+        ActivationService activation,
         IOptions<LeoOptions> leo,
         ILogger<SignUpService> logger)
     {
         _users = users;
-        _email = email;
-        _limiter = limiter;
+        _activation = activation;
         _leo = leo.Value;
         _logger = logger;
     }
@@ -83,7 +80,7 @@ public sealed class SignUpService
         if (existing is not null)
         {
             if (!existing.EmailConfirmed)
-                await SendActivationAsync(existing, cancellationToken);
+                await _activation.SendActivationAsync(existing, cancellationToken);
             return SignUpResult.Ok;
         }
 
@@ -108,27 +105,8 @@ public sealed class SignUpService
             return new SignUpResult(false, created.Errors.Select(e => e.Description).Distinct().ToList());
         }
 
-        await SendActivationAsync(user, cancellationToken);
+        await _activation.SendActivationAsync(user, cancellationToken);
         return SignUpResult.Ok;
-    }
-
-    private async Task SendActivationAsync(ApplicationUser user, CancellationToken cancellationToken)
-    {
-        if (!_limiter.TryAcquire(user.Email!))
-        {
-            _logger.LogWarning("Limite de e-mails de ativação atingido para o usuário {UserId}.", user.Id);
-            return;
-        }
-
-        try
-        {
-            var token = await _users.GenerateEmailConfirmationTokenAsync(user);
-            await _email.SendActivationAsync(user.Email!, user.Id, token, cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Falha ao enviar o e-mail de ativação para o usuário {UserId}.", user.Id);
-        }
     }
 
     private static bool IsValidEmail(string email)
