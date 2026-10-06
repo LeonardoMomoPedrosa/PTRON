@@ -1,0 +1,64 @@
+@page "/esqueci-senha"
+@layout LoginLayout
+@attribute [AllowAnonymous]
+
+<PageTitle>Makelectron — Esqueci a senha</PageTitle>
+
+<MudPaper Class="pa-6" Elevation="3">
+    <div class="d-flex justify-center mb-4">
+        <BrandLogo Height="56" />
+    </div>
+
+    @if (Sent == "1")
+    {
+        <MudText Typo="Typo.h6" Class="mb-2">Verifique seu e-mail</MudText>
+        <MudAlert Severity="Severity.Success" Class="mb-4">
+            Se o e-mail informado pertencer a uma conta ativa, enviamos as instruções para redefinir a senha.
+            O link vale por 1 hora e só pode ser usado uma vez.
+        </MudAlert>
+        <MudText Typo="Typo.body2" Class="mb-4">Não encontrou? Confira a caixa de spam.</MudText>
+        <MudButton Href="/login" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Size="Size.Large">
+            Voltar ao login
+        </MudButton>
+    }
+    else
+    {
+        <MudText Typo="Typo.h6" Class="mb-1">Esqueci a senha</MudText>
+        <MudText Typo="Typo.body2" Class="mb-4">
+            Informe o e-mail da sua conta e enviaremos um link para criar uma nova senha.
+        </MudText>
+
+        @if (Error == "expired")
+        {
+            <MudAlert Severity="Severity.Warning" Class="mb-4" Dense="true">
+                A página ficou aberta por muito tempo. Tente novamente.
+            </MudAlert>
+        }
+
+        <form method="post" action="/account/forgot-password">
+            <AntiforgeryToken />
+
+            <MudText Typo="Typo.caption">E-mail</MudText>
+            <input name="email" type="email" autocomplete="email" required maxlength="256"
+                   class="mud-input mud-input-outlined mud-input-outlined-border pa-3 mb-4"
+                   style="width:100%; box-sizing:border-box; border:1px solid var(--mud-palette-lines-inputs); border-radius:4px; background:transparent; color:inherit;" />
+
+            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
+                       FullWidth="true" Size="Size.Large">
+                Enviar link
+            </MudButton>
+        </form>
+
+        <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-4">
+            <MudLink Href="/login">Voltar ao login</MudLink>
+        </MudText>
+    }
+</MudPaper>
+
+@code {
+    [SupplyParameterFromQuery(Name = "sent")]
+    public string? Sent { get; set; }
+
+    [SupplyParameterFromQuery(Name = "error")]
+    public string? Error { get; set; }
+}

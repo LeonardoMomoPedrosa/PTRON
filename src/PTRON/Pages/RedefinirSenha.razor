@@ -1,0 +1,139 @@
+@page "/redefinir-senha"
+@layout LoginLayout
+@attribute [AllowAnonymous]
+@using System.ComponentModel.DataAnnotations
+@using PTRON.Identity
+@inject PasswordResetService PasswordReset
+
+<PageTitle>Makelectron — Redefinir senha</PageTitle>
+
+<MudPaper Class="pa-6" Elevation="3">
+    <div class="d-flex justify-center mb-4">
+        <BrandLogo Height="56" />
+    </div>
+
+    @switch (_state)
+    {
+        case State.Checking:
+            <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+            break;
+
+        case State.Done:
+            <MudText Typo="Typo.h6" Class="mb-2">Senha redefinida</MudText>
+            <MudAlert Severity="Severity.Success" Class="mb-4">
+                Sua senha foi alterada. Entre com a nova senha.
+            </MudAlert>
+            <MudButton Href="/login" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Size="Size.Large">
+                Ir para o login
+            </MudButton>
+            break;
+
+        case State.Invalid:
+            <MudText Typo="Typo.h6" Class="mb-2">Link inválido ou expirado</MudText>
+            <MudAlert Severity="Severity.Warning" Class="mb-4">
+                Este link de redefinição não vale mais. Ele dura 1 hora e só pode ser usado uma vez.
+            </MudAlert>
+            <MudButton Href="/esqueci-senha" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Size="Size.Large">
+                Pedir um novo link
+            </MudButton>
+            break;
+
+        default:
+            <MudText Typo="Typo.h6" Class="mb-1">Nova senha</MudText>
+            <MudText Typo="Typo.body2" Class="mb-4">Escolha a nova senha da sua conta.</MudText>
+
+            @if (_errors.Count > 0)
+            {
+                <MudAlert Severity="Severity.Error" Class="mb-4" Dense="true">
+                    @foreach (var error in _errors)
+                    {
+                        <div>@error</div>
+                    }
+                </MudAlert>
+            }
+
+            <EditForm Model="_model" OnValidSubmit="SubmitAsync">
+                <DataAnnotationsValidator />
+
+                <MudTextField @bind-Value="_model.Senha" For="() => _model.Senha"
+                              Label="Nova senha" InputType="InputType.Password" Variant="Variant.Outlined"
+                              HelperText="Mínimo de 8 caracteres, com pelo menos uma letra e um número."
+                              Class="mb-3" autocomplete="new-password" />
+
+                <MudTextField @bind-Value="_model.ConfirmarSenha" For="() => _model.ConfirmarSenha"
+                              Label="Confirmar nova senha" InputType="InputType.Password" Variant="Variant.Outlined"
+                              Class="mb-4" autocomplete="new-password" />
+
+                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
+                           FullWidth="true" Size="Size.Large" Disabled="_busy">
+                    Redefinir senha
+                </MudButton>
+            </EditForm>
+            break;
+    }
+</MudPaper>
+
+@code {
+    private enum State { Checking, Form, Done, Invalid }
+
+    [SupplyParameterFromQuery(Name = "userId")]
+    public string? UserId { get; set; }
+
+    [SupplyParameterFromQuery(Name = "token")]
+    public string? Token { get; set; }
+
+    private readonly ResetModel _model = new();
+    private List<string> _errors = new();
+    private State _state = State.Checking;
+    private bool _busy;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_state is State.Done) return;
+
+        try
+        {
+            _state = await PasswordReset.IsLinkValidAsync(UserId, Token) ? State.Form : State.Invalid;
+        }
+        catch (Exception)
+        {
+            _state = State.Invalid;
+        }
+    }
+
+    private async Task SubmitAsync()
+    {
+        if (_busy) return;
+        _busy = true;
+        _errors = new List<string>();
+        try
+        {
+            var result = await PasswordReset.ResetAsync(UserId, Token, _model.Senha);
+            if (result.Succeeded)
+                _state = State.Done;
+            else if (result.InvalidLink)
+                _state = State.Invalid;
+            else
+                _errors = result.Errors.ToList();
+        }
+        catch (Exception)
+        {
+            _errors = new List<string> { "Não foi possível redefinir a senha. Tente novamente." };
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private sealed class ResetModel
+    {
+        [Required(ErrorMessage = "Informe a nova senha.")]
+        [MinLength(8, ErrorMessage = "A senha deve ter pelo menos 8 caracteres.")]
+        public string? Senha { get; set; }
+
+        [Required(ErrorMessage = "Confirme a nova senha.")]
+        [Compare(nameof(Senha), ErrorMessage = "As senhas não conferem.")]
+        public string? ConfirmarSenha { get; set; }
+    }
+}
