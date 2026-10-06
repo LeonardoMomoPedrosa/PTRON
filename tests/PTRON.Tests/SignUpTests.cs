@@ -99,18 +99,72 @@ public sealed class SignUpTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Existing_email_gets_the_same_response_and_no_new_account_or_email()
+    public async Task Existing_pending_email_gets_the_same_response_and_a_new_activation_link_without_a_new_account()
     {
         await Register(Valid());
         _email.Activations.Clear();
 
-        var again = await Register(Valid("MARIA@example.com"));
+        var again = await Register(Valid("MARIA@example.com").With(r => r.Senha = "OutraSenha99"));
+
+        Assert.True(again.Succeeded);
+        Assert.Empty(again.Errors);
+        var sent = Assert.Single(_email.Activations);
+        Assert.Equal("maria@example.com", sent.To);
+        using var scope = _root.CreateScope();
+        Assert.Equal(1, await scope.ServiceProvider.GetRequiredService<AppDbContext>().Users.CountAsync(u => u.Id != ReservedUsers.LeoId));
+
+        var users = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var user = (await users.FindByEmailAsync("maria@example.com"))!;
+        Assert.True(await users.CheckPasswordAsync(user, "Senha1234"));
+        Assert.False(await users.CheckPasswordAsync(user, "OutraSenha99"));
+        Assert.True((await users.ConfirmEmailAsync(user, sent.Token)).Succeeded);
+    }
+
+    [Fact]
+    public async Task Activated_email_gets_the_same_response_and_no_email()
+    {
+        await Register(Valid());
+        using (var scope = _root.CreateScope())
+        {
+            var users = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+            var user = (await users.FindByEmailAsync("maria@example.com"))!;
+            await users.ConfirmEmailAsync(user, await users.GenerateEmailConfirmationTokenAsync(user));
+        }
+        _email.Activations.Clear();
+
+        var again = await Register(Valid());
 
         Assert.True(again.Succeeded);
         Assert.Empty(again.Errors);
         Assert.Empty(_email.Activations);
-        using var scope = _root.CreateScope();
-        Assert.Equal(1, await scope.ServiceProvider.GetRequiredService<AppDbContext>().Users.CountAsync(u => u.Id != ReservedUsers.LeoId));
+    }
+
+    [Fact]
+    public async Task Activation_emails_are_limited_to_seven_per_address()
+    {
+        for (var i = 0; i < 10; i++)
+        {
+            var result = await Register(Valid());
+            Assert.True(result.Succeeded);
+        }
+
+        Assert.Equal(ActivationEmailLimiter.DefaultMaxEmails, _email.Activations.Count);
+        Assert.Equal(7, _email.Activations.Count);
+    }
+
+    [Fact]
+    public void Limiter_releases_after_the_window_and_is_per_address()
+    {
+        var time = new ManualTime();
+        var limiter = new ActivationEmailLimiter(time, 2, TimeSpan.FromHours(24));
+
+        Assert.True(limiter.TryAcquire("a@example.com"));
+        Assert.True(limiter.TryAcquire("A@example.com"));
+        Assert.False(limiter.TryAcquire("a@example.com"));
+        Assert.True(limiter.TryAcquire("b@example.com"));
+
+        time.Advance(TimeSpan.FromHours(24));
+        Assert.True(limiter.TryAcquire("a@example.com"));
     }
 
     [Theory]
@@ -199,6 +253,13 @@ public sealed class SignUpTests : IAsyncLifetime
         Assert.True(Paises.IsValid("us"));
         Assert.False(Paises.IsValid("XX"));
         Assert.Equal("Portugal", Paises.Nome("PT"));
+    }
+
+    private sealed class ManualTime : TimeProvider
+    {
+        private DateTimeOffset _now = new(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        public override DateTimeOffset GetUtcNow() => _now;
+        public void Advance(TimeSpan by) => _now += by;
     }
 
     private sealed class FakeEmailSender : IAppEmailSender

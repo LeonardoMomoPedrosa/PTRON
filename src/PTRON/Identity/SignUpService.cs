@@ -32,24 +32,28 @@ public sealed class SignUpService
 
     private readonly UserManager<ApplicationUser> _users;
     private readonly IAppEmailSender _email;
+    private readonly ActivationEmailLimiter _limiter;
     private readonly LeoOptions _leo;
     private readonly ILogger<SignUpService> _logger;
 
     public SignUpService(
         UserManager<ApplicationUser> users,
         IAppEmailSender email,
+        ActivationEmailLimiter limiter,
         IOptions<LeoOptions> leo,
         ILogger<SignUpService> logger)
     {
         _users = users;
         _email = email;
+        _limiter = limiter;
         _leo = leo.Value;
         _logger = logger;
     }
 
     /// <summary>
     /// Creates an inactive account and sends the activation e-mail. The account only
-    /// signs in after the e-mail is confirmed (E8-S5).
+    /// signs in after the e-mail is confirmed (E8-S5). Signing up again with an e-mail that is
+    /// still pending resends the activation link (rate limited); the data typed the second time is ignored.
     /// </summary>
     public async Task<SignUpResult> RegisterAsync(SignUpRequest request, CancellationToken cancellationToken = default)
     {
@@ -75,8 +79,13 @@ public sealed class SignUpService
         if (ReservedUsers.IsReservedEmail(email, _leo.Email))
             return SignUpResult.Fail("Este e-mail não está disponível.");
 
-        if (await _users.FindByEmailAsync(email) is not null)
+        var existing = await _users.FindByEmailAsync(email);
+        if (existing is not null)
+        {
+            if (!existing.EmailConfirmed)
+                await SendActivationAsync(existing, cancellationToken);
             return SignUpResult.Ok;
+        }
 
         var user = new ApplicationUser
         {
@@ -99,17 +108,27 @@ public sealed class SignUpService
             return new SignUpResult(false, created.Errors.Select(e => e.Description).Distinct().ToList());
         }
 
-        var token = await _users.GenerateEmailConfirmationTokenAsync(user);
+        await SendActivationAsync(user, cancellationToken);
+        return SignUpResult.Ok;
+    }
+
+    private async Task SendActivationAsync(ApplicationUser user, CancellationToken cancellationToken)
+    {
+        if (!_limiter.TryAcquire(user.Email!))
+        {
+            _logger.LogWarning("Limite de e-mails de ativação atingido para o usuário {UserId}.", user.Id);
+            return;
+        }
+
         try
         {
-            await _email.SendActivationAsync(email, user.Id, token, cancellationToken);
+            var token = await _users.GenerateEmailConfirmationTokenAsync(user);
+            await _email.SendActivationAsync(user.Email!, user.Id, token, cancellationToken);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Falha ao enviar o e-mail de ativação para o novo usuário {UserId}.", user.Id);
+            _logger.LogError(ex, "Falha ao enviar o e-mail de ativação para o usuário {UserId}.", user.Id);
         }
-
-        return SignUpResult.Ok;
     }
 
     private static bool IsValidEmail(string email)

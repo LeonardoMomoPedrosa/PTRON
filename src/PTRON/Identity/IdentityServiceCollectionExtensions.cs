@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using PTRON.Data;
 using PTRON.Models;
 
@@ -10,6 +11,8 @@ public static class IdentityServiceCollectionExtensions
     public static IServiceCollection AddPtronIdentity(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<LeoOptions>(configuration.GetSection(LeoOptions.SectionName));
+        services.TryAddSingleton(TimeProvider.System);
+        services.AddSingleton<ActivationEmailLimiter>();
         services.AddScoped<SignUpService>();
 
         services.AddIdentityCore<ApplicationUser>(options =>
