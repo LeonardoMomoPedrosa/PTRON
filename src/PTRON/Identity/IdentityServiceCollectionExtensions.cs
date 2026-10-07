@@ -14,6 +14,8 @@ public static class IdentityServiceCollectionExtensions
         services.TryAddSingleton(TimeProvider.System);
         services.AddSingleton<ActivationEmailLimiter>();
         services.AddScoped<ActivationService>();
+        services.AddSingleton<PasswordResetLimiter>();
+        services.AddScoped<PasswordResetService>();
         services.AddScoped<LoginService>();
         services.AddScoped<SignUpService>();
 
@@ -29,6 +31,8 @@ public static class IdentityServiceCollectionExtensions
 
                 options.SignIn.RequireConfirmedEmail = true;
 
+                options.Tokens.PasswordResetTokenProvider = PasswordResetTokenProvider.ProviderName;
+
                 options.Lockout.AllowedForNewUsers = true;
                 options.Lockout.MaxFailedAccessAttempts = 5;
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
@@ -37,11 +41,16 @@ public static class IdentityServiceCollectionExtensions
             .AddEntityFrameworkStores<AppDbContext>()
             .AddSignInManager()
             .AddDefaultTokenProviders()
+            .AddTokenProvider<PasswordResetTokenProvider>(PasswordResetTokenProvider.ProviderName)
             .AddPasswordValidator<LetterPasswordValidator>()
             .AddUserValidator<ReservedUserValidator>();
 
-        // Activation links stay valid for 24h. Password reset gets its own 1h provider in E8-S7.
         services.Configure<DataProtectionTokenProviderOptions>(o => o.TokenLifespan = TimeSpan.FromHours(24));
+        services.Configure<PasswordResetTokenProviderOptions>(o =>
+        {
+            o.Name = PasswordResetTokenProvider.ProviderName;
+            o.TokenLifespan = TimeSpan.FromHours(1);
+        });
 
         return services;
     }

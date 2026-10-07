@@ -14,12 +14,30 @@ namespace PTRON.Controllers;
 public sealed class AccountController : Controller
 {
     private readonly LoginService _login;
+    private readonly PasswordResetService _passwordReset;
     private readonly IAntiforgery _antiforgery;
 
-    public AccountController(LoginService login, IAntiforgery antiforgery)
+    public AccountController(LoginService login, PasswordResetService passwordReset, IAntiforgery antiforgery)
     {
         _login = login;
+        _passwordReset = passwordReset;
         _antiforgery = antiforgery;
+    }
+
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword([FromForm] string? email)
+    {
+        try
+        {
+            await _antiforgery.ValidateRequestAsync(HttpContext);
+        }
+        catch (AntiforgeryValidationException)
+        {
+            return Redirect("/esqueci-senha?error=expired");
+        }
+
+        await _passwordReset.RequestAsync(email, ClientIp.From(HttpContext), HttpContext.RequestAborted);
+        return Redirect("/esqueci-senha?sent=1");
     }
 
     [HttpPost("login")]
