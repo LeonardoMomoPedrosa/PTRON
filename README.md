@@ -115,14 +115,14 @@ As fotos enviadas ficam em `src/PTRON/wwwroot/uploads/` — inclua essa pasta no
 
 ### Regras de negócio importantes
 
-- **Custo médio ponderado** na entrada de estoque:
-  `novoCusto = (Saldo*CustoUnitario + Σ qtd*preço) / (Saldo + Σ qtd)`
+- **Custo médio ponderado** na entrada de estoque. Produtos, frete e impostos podem estar em moedas diferentes (R$, US$, €, £ ou CN¥). Cada um é convertido para reais pelo câmbio informado e o frete e os impostos são rateados pela proporção do valor dos produtos. O custo que entra na média é esse custo *landed* em reais:
+  `novoCusto = (Saldo*CustoUnitario + Σ qtd*custoLanded) / (Saldo + Σ qtd)`
 - O custo dos insumos é **congelado (snapshot)** no momento da produção; alterar a lista de insumos de um modelo **não** altera produtos já produzidos.
 - Excluir um produto **devolve** as quantidades dos insumos ao estoque (o custo médio unitário do insumo não é recalculado na devolução).
 
 ### Status
 
-**Completo** (épicos 0–7). Veja o detalhamento em [`plano.md`](plano.md).
+**Épicos 0–7 e 9 concluídos.** O épico 8 (usuários) está em pausa, com S10 e S11 pendentes. Veja o detalhamento em [`plano.md`](plano.md).
 
 ---
 
@@ -237,11 +237,11 @@ Uploaded photos live in `src/PTRON/wwwroot/uploads/` — include that folder in 
 
 ### Important business rules
 
-- **Weighted-average cost** on stock entry:
-  `newCost = (Balance*UnitCost + Σ qty*price) / (Balance + Σ qty)`
+- **Weighted-average cost** on stock entry. Products, shipment and taxes may use different currencies (BRL, USD, EUR, GBP or CNY). Each amount is converted to BRL with its own rate, and shipment and taxes are split by each product's share of the product total. The cost that enters the average is that landed cost in BRL:
+  `newCost = (Balance*UnitCost + Σ qty*landedCost) / (Balance + Σ qty)`
 - Component costs are **frozen (snapshot)** at production time; changing a model's component list does **not** affect already-produced products.
 - Deleting a product **returns** component quantities to stock (the component's average unit cost is not recalculated on return).
 
 ### Status
 
-**Complete** (epics 0–7). See details in [`plano.md`](plano.md).
+**Epics 0–7 and 9 are complete.** Epic 8 (users) is paused, with S10 and S11 still open. See details in [`plano.md`](plano.md).

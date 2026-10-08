@@ -53,19 +53,7 @@ public sealed class EntradasEstoqueController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = entrada.Id }, DtoMapper.ToDto(created));
     }
 
-    private static EntradaCommand ToCommand(EntradaEstoqueWriteDto dto) => new()
-    {
-        Moeda = dto.Moeda,
-        Cambio = dto.Cambio,
-        Frete = dto.Frete,
-        Impostos = dto.Impostos,
-        Itens = dto.Itens.Select(i => new EntradaLinhaInput
-        {
-            InsumoId = i.InsumoId,
-            Qtd = i.Qtd,
-            PrecoUnitario = i.PrecoUnitario
-        }).ToList()
-    };
+    private static EntradaCommand ToCommand(EntradaEstoqueWriteDto dto) => dto.ToCommand();
 
     private async Task<IReadOnlyDictionary<int, Models.Insumo>> LoadInsumosAsync(IEnumerable<int> ids)
     {

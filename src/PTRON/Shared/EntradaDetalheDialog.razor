@@ -2,27 +2,28 @@
     <DialogContent>
         <MudGrid Class="mb-2">
             <MudItem xs="6" sm="3">
-                <MudText Typo="Typo.caption" Class="mud-text-secondary">Moeda</MudText>
-                <MudText>@Moedas.Symbol(Entrada.Moeda)</MudText>
+                <MudText Typo="Typo.caption" Class="mud-text-secondary">Produtos</MudText>
+                <MudText>@Format.Money(Entrada.TotalProdutos, Entrada.MoedaProdutos)</MudText>
+                @if (Entrada.MoedaProdutos != Moedas.Destino)
+                {
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">
+                        câmbio @Format.Money(Entrada.CambioProdutos) / @Moedas.Symbol(Entrada.MoedaProdutos) 1
+                    </MudText>
+                }
             </MudItem>
-            @if (Entrada.Moeda == Moedas.Usd)
-            {
-                <MudItem xs="6" sm="3">
-                    <MudText Typo="Typo.caption" Class="mud-text-secondary">Câmbio</MudText>
-                    <MudText>@Format.Money(Entrada.Cambio) / US$ 1</MudText>
-                </MudItem>
-            }
             <MudItem xs="6" sm="3">
                 <MudText Typo="Typo.caption" Class="mud-text-secondary">Frete</MudText>
-                <MudText>@Format.Money(Entrada.Frete, Entrada.Moeda)</MudText>
+                <MudText>@Format.Money(Entrada.Frete, Entrada.MoedaFrete)</MudText>
             </MudItem>
             <MudItem xs="6" sm="3">
                 <MudText Typo="Typo.caption" Class="mud-text-secondary">Impostos</MudText>
-                <MudText>@Format.Money(Entrada.Impostos, Entrada.Moeda)</MudText>
-            </MudItem>
-            <MudItem xs="6" sm="3">
-                <MudText Typo="Typo.caption" Class="mud-text-secondary">Produtos</MudText>
-                <MudText>@Format.Money(Entrada.TotalProdutos, Entrada.Moeda)</MudText>
+                <MudText>@Format.Money(Entrada.Impostos, Entrada.MoedaImpostos)</MudText>
+                @if (Entrada.MoedaImpostos != Moedas.Destino && Entrada.MoedaImpostos != Entrada.MoedaProdutos)
+                {
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">
+                        câmbio @Format.Money(Entrada.CambioImpostos) / @Moedas.Symbol(Entrada.MoedaImpostos) 1
+                    </MudText>
+                }
             </MudItem>
             <MudItem xs="6" sm="3">
                 <MudText Typo="Typo.caption" Class="mud-text-secondary">Total em R$</MudText>
@@ -54,17 +55,17 @@
                 </MudTd>
                 <MudTd DataLabel="Qtd" Style="text-align:right">@Format.Number(context.Item.Qtd)</MudTd>
                 <MudTd DataLabel="Preço unit." Style="text-align:right">
-                    @Format.Money(context.Item.PrecoUnitario, Entrada.Moeda)
+                    @Format.Money(context.Item.PrecoUnitario, Entrada.MoedaProdutos)
                 </MudTd>
                 <MudTd DataLabel="Subtotal" Style="text-align:right">
-                    @Format.Money(context.Subtotal, Entrada.Moeda)
+                    @Format.Money(context.Subtotal, Entrada.MoedaProdutos)
                 </MudTd>
                 <MudTd DataLabel="Proporção" Style="text-align:right">@Format.Percent(context.Proporcao)</MudTd>
                 <MudTd DataLabel="Frete" Style="text-align:right">
-                    @Format.Money(context.Item.FreteRateado, Entrada.Moeda)
+                    @Format.Money(context.Item.FreteRateado, Entrada.MoedaFrete)
                 </MudTd>
                 <MudTd DataLabel="Impostos" Style="text-align:right">
-                    @Format.Money(context.Item.ImpostoRateado, Entrada.Moeda)
+                    @Format.Money(context.Item.ImpostoRateado, Entrada.MoedaImpostos)
                 </MudTd>
                 <MudTd DataLabel="Custo unit. (R$)" Style="text-align:right">
                     @Format.Money(context.Item.CustoUnitario)
@@ -76,11 +77,11 @@
                 <MudTd></MudTd>
                 <MudTd Style="text-align:right"><b>Total</b></MudTd>
                 <MudTd Style="text-align:right">
-                    <b>@Format.Money(Entrada.TotalProdutos, Entrada.Moeda)</b>
+                    <b>@Format.Money(Entrada.TotalProdutos, Entrada.MoedaProdutos)</b>
                 </MudTd>
                 <MudTd></MudTd>
-                <MudTd Style="text-align:right"><b>@Format.Money(Entrada.Frete, Entrada.Moeda)</b></MudTd>
-                <MudTd Style="text-align:right"><b>@Format.Money(Entrada.Impostos, Entrada.Moeda)</b></MudTd>
+                <MudTd Style="text-align:right"><b>@Format.Money(Entrada.Frete, Entrada.MoedaFrete)</b></MudTd>
+                <MudTd Style="text-align:right"><b>@Format.Money(Entrada.Impostos, Entrada.MoedaImpostos)</b></MudTd>
                 <MudTd></MudTd>
                 <MudTd Style="text-align:right"><b>@Format.Money(Entrada.TotalBrl)</b></MudTd>
             </FooterContent>
@@ -109,7 +110,7 @@
                 Entrada.TotalProdutos,
                 item.Qtd,
                 Entrada.Itens.Sum(i => i.Qtd)),
-            SubtotalBrl = (subtotal + item.FreteRateado + item.ImpostoRateado) * Entrada.FatorCambio
+            SubtotalBrl = Entrada.SubtotalDestino(item)
         };
     });
 

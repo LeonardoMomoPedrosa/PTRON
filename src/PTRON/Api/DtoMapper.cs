@@ -79,17 +79,22 @@ internal static class DtoMapper
     {
         var totalProdutos = entrada.TotalProdutos;
         var totalQtd = entrada.Itens.Sum(i => i.Qtd);
-        var fator = entrada.FatorCambio;
         return new EntradaEstoqueDto
         {
             Id = entrada.Id,
             Data = entrada.Data,
-            Moeda = entrada.Moeda,
-            Cambio = entrada.Cambio,
+            Moeda = entrada.MoedaProdutos,
+            Cambio = entrada.CambioProdutosEfetivo,
+            MoedaProdutos = entrada.MoedaProdutos,
+            CambioProdutos = entrada.CambioProdutosEfetivo,
+            MoedaImpostos = entrada.MoedaImpostos,
+            CambioImpostos = entrada.CambioImpostosEfetivo,
+            MoedaFrete = entrada.MoedaFrete,
+            MoedaDestino = entrada.MoedaDestino,
             Frete = entrada.Frete,
             Impostos = entrada.Impostos,
             TotalProdutos = totalProdutos,
-            TotalMoeda = entrada.TotalMoeda,
+            TotalMoeda = entrada.MoedasIguais ? totalProdutos + entrada.Frete + entrada.Impostos : 0m,
             Total = entrada.TotalBrl,
             Itens = entrada.Itens
                 .Select(i =>
@@ -107,7 +112,7 @@ internal static class DtoMapper
                         FreteRateado = i.FreteRateado,
                         ImpostoRateado = i.ImpostoRateado,
                         CustoUnitario = i.CustoUnitario,
-                        SubtotalBrl = (subtotal + i.FreteRateado + i.ImpostoRateado) * fator
+                        SubtotalBrl = entrada.SubtotalDestino(i)
                     };
                 })
                 .ToList()
@@ -116,12 +121,18 @@ internal static class DtoMapper
 
     public static EntradaEstoqueDto ToDto(EntradaRateio rateio, IReadOnlyDictionary<int, Insumo> insumos) => new()
     {
-        Moeda = rateio.Moeda,
-        Cambio = rateio.Cambio,
+        Moeda = rateio.MoedaProdutos,
+        Cambio = rateio.CambioProdutos,
+        MoedaProdutos = rateio.MoedaProdutos,
+        CambioProdutos = rateio.CambioProdutos,
+        MoedaImpostos = rateio.MoedaImpostos,
+        CambioImpostos = rateio.CambioImpostos,
+        MoedaFrete = rateio.MoedaFrete,
+        MoedaDestino = rateio.MoedaDestino,
         Frete = rateio.Frete,
         Impostos = rateio.Impostos,
         TotalProdutos = rateio.TotalProdutos,
-        TotalMoeda = rateio.TotalMoeda,
+        TotalMoeda = rateio.MoedasIguais ? rateio.TotalMoeda : 0m,
         Total = rateio.TotalBrl,
         Itens = rateio.Linhas
             .Select(i =>

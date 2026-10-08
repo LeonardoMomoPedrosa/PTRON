@@ -22,10 +22,10 @@ Aplicativo de controle de produção de equipamentos eletrônicos (uso pessoal).
 | 5 | Produção | ✅ Concluído |
 | 6 | Produtos | ✅ Concluído |
 | 7 | Acabamento | ✅ Concluído |
-| 8 | Gestão de Usuários | 🚧 Em andamento — S1–S9 concluídas |
-| 9 | Entrada de Estoque com 3 moedas | 📝 Proposto — após o Épico 8 (detalhes a definir) |
+| 8 | Gestão de Usuários | ⏸ Em pausa — S1–S9 concluídas; S10 e S11 pendentes |
+| 9 | Entrada de Estoque com 3 moedas | ✅ Concluído |
 
-> Última atualização: Épico 8 em andamento — E8-S1 a E8-S9 concluídas (identidade, dados por usuário, e-mail, cadastro, ativação, login, redefinição e alteração de senha, SQL só do Leo, fotos por usuário). Épicos E0–E7 completos.
+> Última atualização: Épico 8 em pausa (S10 e S11 ainda pendentes). Épico 9 concluído — produtos, impostos e frete podem usar moedas diferentes; o custo do estoque continua em reais. Épicos E0–E7 completos.
 
 ## Modelo de dados
 
@@ -35,8 +35,10 @@ Insumo            (Id, TipoInsumoId, Nome, Valor?, Potencia?, Voltagem?,
                    Saldo=0, CustoUnitario=0, FotoPath?)
 Equipamento       (Id, Nome, FotoPath?)
 EquipamentoInsumo (Id, EquipamentoId, InsumoId, Qtd)            -- BOM (item 3a)
-EntradaEstoque    (Id, Data)
-EntradaEstoqueItem(Id, EntradaEstoqueId, InsumoId, Qtd, PrecoUnitario)
+EntradaEstoque    (Id, Data, MoedaProdutos, CambioProdutos, MoedaImpostos,
+                   CambioImpostos, MoedaFrete, MoedaDestino=BRL, Frete, Impostos)
+EntradaEstoqueItem(Id, EntradaEstoqueId, InsumoId, Qtd, PrecoUnitario,
+                   FreteRateado, ImpostoRateado, CustoUnitario)  -- custo em BRL
 Produto           (Id, EquipamentoId, DescricaoAdicional, Data, CustoTotal)
 ProdutoInsumo     (Id, ProdutoId, InsumoId, PrecoUnitario, Qtd)  -- snapshot (item 6a)
 ```
@@ -271,45 +273,36 @@ Login social (Google etc.), autenticação em dois fatores, troca de e-mail da c
 
 ---
 
-## Épico 9 — Entrada de Estoque com 3 moedas 📝 (proposto — detalhes a definir)
+## Épico 9 — Entrada de Estoque com 3 moedas ✅
 
-**Execução: depois do Épico 8.** Os detalhes (campos, telas, regras de arredondamento e migração) serão passados depois; esta seção registra apenas o requisito e o ponto de partida.
+A entrada deixa de ter uma única moeda. Produtos, impostos e frete podem estar em moedas diferentes. O custo do estoque continua gravado em **reais**.
 
-### Requisito (do pedido)
+### Decisões
 
-Hoje a entrada de estoque (`EntradaEstoque`) tem **uma única moeda por entrada** (`Moeda` = BRL ou USD, com um `Cambio`), e produtos, frete e impostos usam essa mesma moeda. Na prática há **3 moedas** envolvidas:
-
-| Moeda | Uso | Exemplo típico |
-|-------|-----|----------------|
-| **Moeda dos produtos** | Preço dos itens (quando o pedido é feito em outro país) | US$, € etc. |
-| **Moeda dos impostos** | Impostos, normalmente na moeda do país de origem do usuário (*home*) | R$ (no caso do Leo) |
-| **Moeda destino (target)** | Moeda em que o custo final do insumo é calculado e guardado | R$ (hoje o custo unitário já é em BRL) |
-
-### Ponto de partida (estado atual)
-
-- `EntradaEstoque`: `Moeda`, `Cambio` (R$ por 1 US$), `Frete`, `Impostos` (ambos na moeda da entrada), `TotalBrl`.
-- `EntradaEstoqueItem`: `PrecoUnitario`, `FreteRateado`, `ImpostoRateado`, `CustoUnitario` (BRL, com rateio de frete e impostos).
-- `Services/Moedas.cs`, `EntradaCustoCalculator` (rateio e custo *landed*) e `EntradaEstoqueService.FinalizarAsync` (custo médio ponderado).
-
-### Pontos a detalhar (em aberto)
-
-- Quais moedas são suportadas (lista fixa ou configurável) e como a moeda *home*/*target* é definida (por usuário? por entrada? depende do país cadastrado no Épico 8?).
-- Câmbio: um por moeda (produtos → target, impostos → target), informado manualmente ou sugerido; como é armazenado no histórico.
-- Frete: em qual das moedas ele entra (produtos, impostos ou target).
-- Impacto no cálculo do custo *landed*, no rateio e no custo médio ponderado (`Insumo.CustoUnitario`).
-- Migração das entradas existentes (uma moeda → três moedas) sem alterar custos já gravados.
-- Impacto na tela "Nova entrada", no histórico/detalhe, na API REST e no app mobile.
+| # | Decisão |
+|---|---------|
+| D1 | Moedas suportadas, lista fixa: **BRL, USD, EUR, GBP, CNY**. |
+| D2 | A moeda destino é **sempre BRL**. O custo unitário do insumo e o snapshot do produto não mudam de moeda. Escolher a moeda por usuário fica para depois (depende do país do Épico 8, que está em pausa). |
+| D3 | Dois câmbios, informados na hora e gravados na entrada: produtos → reais, e impostos → reais. Sem cotação automática. Se produtos e impostos estão na mesma moeda, vale o câmbio dos produtos. Real ignora câmbio (fica 1). |
+| D4 | O frete fica na moeda dos produtos, na moeda dos impostos ou em reais. O padrão da tela nova é reais; uma entrada antiga migra com o frete na moeda que ela já usava. |
+| D5 | O rateio continua pela proporção do valor dos produtos (ou pela quantidade, se todos os preços forem zero). Frete e impostos são rateados na moeda em que foram informados; a última linha absorve o arredondamento de 4 casas. O custo *landed* em reais é `subtotal × câmbio dos produtos + frete rateado × câmbio do frete + imposto rateado × câmbio dos impostos`. |
+| D6 | A migração copia a moeda e o câmbio antigos para produtos, impostos e frete, com destino BRL. Itens e custos já gravados não são recalculados. |
+| D7 | A API aceita o corpo antigo (`moeda` + `cambio`, uma moeda para tudo) e o corpo novo. A resposta traz os campos novos e mantém `moeda`/`cambio` como a moeda e o câmbio dos produtos. |
 
 ### Stories
 
-A definir quando os detalhes forem enviados.
-
-- [ ] **E9-S1…Sn** — *a detalhar.*
+- [x] **E9-S1** — **Modelo e migração.** `EntradaEstoque` guarda `MoedaProdutos`, `CambioProdutos`, `MoedaImpostos`, `CambioImpostos`, `MoedaFrete` e `MoedaDestino`. A migration `EntradaTresMoedas` renomeia `Moeda`/`Cambio` para a moeda e o câmbio dos produtos e preenche impostos, frete e destino sem alterar `CustoUnitario` dos itens.
+- [x] **E9-S2** — **Cálculo.** `EntradaCustoCalculator` converte cada moeda com o próprio câmbio e mantém o custo médio ponderado em reais.
+- [x] **E9-S3** — **Telas web.** Nova entrada, pré-visualização, histórico e detalhe mostram cada valor na sua moeda e o total em reais.
+- [x] **E9-S4** — **API e app mobile.** Preview e finalização aceitam as três moedas; o app Expo usa a mesma lista e os mesmos câmbios.
+- [x] **E9-S5** — **Testes.** Casos de reais, dólar único (comportamento anterior), produtos em dólar com impostos em reais, frete em reais, euro e dólar com câmbios diferentes, payload antigo da API, e migração de uma entrada em dólar sem mudar o custo gravado.
 
 ---
 
 ## Ordem sugerida de execução
 
-~~E0~~ → ~~E1~~ → ~~E2~~ → ~~E3~~ → ~~E4~~ → ~~E5~~ → ~~E6~~ → ~~E7~~ ✅ → E8 (S1–S9) → **E9 (Entrada de Estoque com 3 moedas — depois do E8)**
+~~E0~~ → ~~E1~~ → ~~E2~~ → ~~E3~~ → ~~E4~~ → ~~E5~~ → ~~E6~~ → ~~E7~~ ✅ → E8 (em pausa, S1–S9 feitas) → ~~E9~~ ✅
 
-**E8 em andamento.** S1 a S9 concluídas. Faltam S10 (regressão da API) e S11 (testes de isolamento, WAL, backup e README).
+**E8 em pausa.** S1 a S9 concluídas. Faltam S10 (regressão da API) e S11 (testes de isolamento, WAL, backup e README).
+
+**E9 concluído.** Entrada de estoque com moeda dos produtos, moeda dos impostos e moeda do frete; custo do estoque em reais.

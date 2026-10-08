@@ -14,39 +14,75 @@
         <MudPaper Class="pa-4 mb-4 mt-4" Outlined="true">
             <MudGrid Class="align-end">
                 <MudItem xs="12" sm="3">
-                    <MudSelect T="string" @bind-Value="CartState.Moeda" Label="Moeda" AnchorOrigin="Origin.BottomCenter">
-                        <MudSelectItem T="string" Value="@Moedas.Brl">R$</MudSelectItem>
-                        <MudSelectItem T="string" Value="@Moedas.Usd">US$</MudSelectItem>
+                    <MudSelect T="string" Value="CartState.MoedaProdutos" ValueChanged="OnMoedaProdutosChanged"
+                               Label="Moeda dos produtos" AnchorOrigin="Origin.BottomCenter">
+                        @foreach (var moeda in Moedas.Todas)
+                        {
+                            <MudSelectItem T="string" Value="@moeda">@Moedas.Symbol(moeda)</MudSelectItem>
+                        }
                     </MudSelect>
                 </MudItem>
-                @if (EmDolar)
+                @if (PrecisaCambioProdutos)
                 {
                     <MudItem xs="12" sm="3">
-                        <MudNumericField T="decimal" @bind-Value="CartState.Cambio"
-                                         Label="Câmbio (R$ por US$)"
+                        <MudNumericField T="decimal" @bind-Value="CartState.CambioProdutos"
+                                         Label="@CambioLabel(CartState.MoedaProdutos)"
                                          Min="0m" Step="0.0001m" Format="N4" Culture="@Format.Culture"
-                                         HelperText="Quantos reais valem 1 dólar"
+                                         HelperText="@CambioHint(CartState.MoedaProdutos)"
                                          Immediate="true" HideSpinButtons="true" />
                     </MudItem>
                 }
+                <MudItem xs="12" sm="3">
+                    <MudSelect T="string" Value="CartState.MoedaImpostos" ValueChanged="OnMoedaImpostosChanged"
+                               Label="Moeda dos impostos" AnchorOrigin="Origin.BottomCenter">
+                        @foreach (var moeda in Moedas.Todas)
+                        {
+                            <MudSelectItem T="string" Value="@moeda">@Moedas.Symbol(moeda)</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                @if (PrecisaCambioImpostos)
+                {
+                    <MudItem xs="12" sm="3">
+                        <MudNumericField T="decimal" @bind-Value="CartState.CambioImpostos"
+                                         Label="@CambioLabel(CartState.MoedaImpostos)"
+                                         Min="0m" Step="0.0001m" Format="N4" Culture="@Format.Culture"
+                                         HelperText="@CambioHint(CartState.MoedaImpostos)"
+                                         Immediate="true" HideSpinButtons="true" />
+                    </MudItem>
+                }
+                <MudItem xs="12" sm="3">
+                    <MudSelect T="string" @bind-Value="CartState.MoedaFrete" Label="Moeda do frete" AnchorOrigin="Origin.BottomCenter">
+                        @foreach (var moeda in MoedasFreteOpcoes)
+                        {
+                            <MudSelectItem T="string" Value="@moeda">@Moedas.Symbol(moeda)</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
                 <MudItem xs="6" sm="3">
                     <MudNumericField T="decimal" @bind-Value="CartState.Frete"
-                                     Label="@($"Frete ({Moedas.Symbol(CartState.Moeda)})")"
+                                     Label="@($"Frete ({Moedas.Symbol(CartState.MoedaFrete)})")"
                                      Min="0m" Step="0.01m" Format="N2" Culture="@Format.Culture"
                                      Immediate="true" HideSpinButtons="true" />
                 </MudItem>
                 <MudItem xs="6" sm="3">
                     <MudNumericField T="decimal" @bind-Value="CartState.Impostos"
-                                     Label="@($"Impostos ({Moedas.Symbol(CartState.Moeda)})")"
+                                     Label="@($"Impostos ({Moedas.Symbol(CartState.MoedaImpostos)})")"
                                      Min="0m" Step="0.01m" Format="N2" Culture="@Format.Culture"
                                      Immediate="true" HideSpinButtons="true" />
                 </MudItem>
             </MudGrid>
-            @if (EmDolar)
+            @if (TemMoedaEstrangeira)
             {
                 <MudAlert Severity="Severity.Info" Dense="true" Class="mt-3">
-                    Os preços dos produtos, o frete e os impostos desta entrada são em dólar.
-                    O custo do estoque será convertido para reais pelo câmbio informado.
+                    Os preços dos produtos estão em @Moedas.Symbol(CartState.MoedaProdutos),
+                    os impostos em @Moedas.Symbol(CartState.MoedaImpostos)
+                    e o frete em @Moedas.Symbol(CartState.MoedaFrete).
+                    O custo do estoque é gravado em reais.
+                    @if (ImpostosNaMoedaDosProdutos && PrecisaCambioProdutos)
+                    {
+                        <span> Produtos e impostos usam o mesmo câmbio.</span>
+                    }
                 </MudAlert>
             }
         </MudPaper>
@@ -94,7 +130,7 @@
                     <MudTh Style="width:64px">Foto</MudTh>
                     <MudTh>Insumo</MudTh>
                     <MudTh Style="text-align:right">Qtd</MudTh>
-                    <MudTh Style="text-align:right">Preço unit. (@Moedas.Symbol(CartState.Moeda))</MudTh>
+                    <MudTh Style="text-align:right">Preço unit. (@Moedas.Symbol(CartState.MoedaProdutos))</MudTh>
                     <MudTh Style="text-align:right">Subtotal</MudTh>
                     <MudTh Style="text-align:right">Ações</MudTh>
                 </HeaderContent>
@@ -131,7 +167,7 @@
                                          Style="max-width:120px; margin-left:auto;" HideSpinButtons="true" />
                     </MudTd>
                     <MudTd DataLabel="Subtotal" Style="text-align:right">
-                        @Format.Money(context.Qtd * context.PrecoUnitario, CartState.Moeda)
+                        @Format.Money(context.Qtd * context.PrecoUnitario, CartState.MoedaProdutos)
                     </MudTd>
                     <MudTd Style="text-align:right">
                         <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small"
@@ -146,7 +182,7 @@
                     <MudTd></MudTd>
                     <MudTd></MudTd>
                     <MudTd Style="text-align:right"><b>Produtos</b></MudTd>
-                    <MudTd Style="text-align:right"><b>@Format.Money(TotalProdutos, CartState.Moeda)</b></MudTd>
+                    <MudTd Style="text-align:right"><b>@Format.Money(TotalProdutos, CartState.MoedaProdutos)</b></MudTd>
                     <MudTd></MudTd>
                 </FooterContent>
             </MudTable>
@@ -156,25 +192,28 @@
             <MudGrid>
                 <MudItem xs="6" sm="3">
                     <MudText Typo="Typo.caption" Class="mud-text-secondary">Produtos</MudText>
-                    <MudText>@Format.Money(TotalProdutos, CartState.Moeda)</MudText>
+                    <MudText>@Format.Money(TotalProdutos, CartState.MoedaProdutos)</MudText>
                 </MudItem>
                 <MudItem xs="6" sm="3">
                     <MudText Typo="Typo.caption" Class="mud-text-secondary">Frete</MudText>
-                    <MudText>@Format.Money(CartState.Frete, CartState.Moeda)</MudText>
+                    <MudText>@Format.Money(CartState.Frete, CartState.MoedaFrete)</MudText>
                 </MudItem>
                 <MudItem xs="6" sm="3">
                     <MudText Typo="Typo.caption" Class="mud-text-secondary">Impostos</MudText>
-                    <MudText>@Format.Money(CartState.Impostos, CartState.Moeda)</MudText>
+                    <MudText>@Format.Money(CartState.Impostos, CartState.MoedaImpostos)</MudText>
                 </MudItem>
-                <MudItem xs="6" sm="3">
-                    <MudText Typo="Typo.caption" Class="mud-text-secondary">Total @Moedas.Symbol(CartState.Moeda)</MudText>
-                    <MudText Typo="Typo.subtitle1"><b>@Format.Money(TotalMoeda, CartState.Moeda)</b></MudText>
-                </MudItem>
-                @if (EmDolar && CartState.Cambio > 0)
+                @if (MoedasIguais)
+                {
+                    <MudItem xs="6" sm="3">
+                        <MudText Typo="Typo.caption" Class="mud-text-secondary">Total @Moedas.Symbol(CartState.MoedaProdutos)</MudText>
+                        <MudText Typo="Typo.subtitle1"><b>@Format.Money(TotalMoeda, CartState.MoedaProdutos)</b></MudText>
+                    </MudItem>
+                }
+                @if (TemMoedaEstrangeira && CambioParaTotalValido)
                 {
                     <MudItem xs="12" sm="3">
                         <MudText Typo="Typo.caption" Class="mud-text-secondary">Total em R$</MudText>
-                        <MudText Typo="Typo.subtitle1"><b>@Format.Money(TotalMoeda * CartState.Cambio)</b></MudText>
+                        <MudText Typo="Typo.subtitle1"><b>@Format.Money(TotalBrlEstimado)</b></MudText>
                     </MudItem>
                 }
             </MudGrid>
@@ -205,11 +244,22 @@
             <RowTemplate>
                 <MudTd DataLabel="Data">@Format.Date(context.Data)</MudTd>
                 <MudTd DataLabel="Moeda">
-                    @Moedas.Symbol(context.Moeda)
-                    @if (context.Moeda == Moedas.Usd)
+                    @if (context.MoedasIguais)
                     {
-                        <MudText Typo="Typo.caption" Class="mud-text-secondary">
-                            câmbio @Format.Money(context.Cambio)
+                        @Moedas.Symbol(context.MoedaProdutos)
+                        @if (context.MoedaProdutos != Moedas.Destino)
+                        {
+                            <MudText Typo="Typo.caption" Class="mud-text-secondary">
+                                câmbio @Format.Money(context.CambioProdutos)
+                            </MudText>
+                        }
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.body2">
+                            Produtos @Moedas.Symbol(context.MoedaProdutos)
+                            · Impostos @Moedas.Symbol(context.MoedaImpostos)
+                            · Frete @Moedas.Symbol(context.MoedaFrete)
                         </MudText>
                     }
                 </MudTd>
@@ -244,10 +294,82 @@
     private decimal _novoPreco;
 
     private List<EntradaCartState.CartLine> _cart => CartState.Lines;
-    private bool EmDolar => CartState.Moeda == Moedas.Usd;
-    private string PrecoLabel => EmDolar ? "Preço unitário (US$)" : "Preço unitário (R$)";
+    private bool PrecisaCambioProdutos => CartState.MoedaProdutos != Moedas.Destino;
+    private bool ImpostosNaMoedaDosProdutos => CartState.MoedaImpostos == CartState.MoedaProdutos;
+    private bool PrecisaCambioImpostos =>
+        CartState.MoedaImpostos != Moedas.Destino && !ImpostosNaMoedaDosProdutos;
+    private bool MoedasIguais =>
+        ImpostosNaMoedaDosProdutos && CartState.MoedaFrete == CartState.MoedaProdutos;
+    private bool TemMoedaEstrangeira =>
+        PrecisaCambioProdutos || CartState.MoedaImpostos != Moedas.Destino || CartState.MoedaFrete != Moedas.Destino;
+    private string PrecoLabel => $"Preço unitário ({Moedas.Symbol(CartState.MoedaProdutos)})";
     private decimal TotalProdutos => _cart.Sum(c => c.Qtd * c.PrecoUnitario);
     private decimal TotalMoeda => TotalProdutos + CartState.Frete + CartState.Impostos;
+    private IReadOnlyList<string> MoedasFreteOpcoes
+    {
+        get
+        {
+            var list = new List<string>();
+            void Add(string moeda)
+            {
+                var code = Moedas.Normalize(moeda);
+                if (Moedas.IsValid(code) && !list.Contains(code))
+                {
+                    list.Add(code);
+                }
+            }
+
+            Add(CartState.MoedaProdutos);
+            Add(CartState.MoedaImpostos);
+            Add(Moedas.Destino);
+            return list;
+        }
+    }
+
+    private bool CambioParaTotalValido =>
+        (!PrecisaCambioProdutos || CartState.CambioProdutos > 0)
+        && (!PrecisaCambioImpostos || CartState.CambioImpostos > 0);
+
+    private decimal TotalBrlEstimado
+    {
+        get
+        {
+            var cambioProdutos = Moedas.CambioParaDestino(CartState.MoedaProdutos, CartState.CambioProdutos);
+            var cambioImpostos = ImpostosNaMoedaDosProdutos
+                ? cambioProdutos
+                : Moedas.CambioParaDestino(CartState.MoedaImpostos, CartState.CambioImpostos);
+            var cambioFrete = Moedas.CambioFrete(
+                CartState.MoedaFrete,
+                CartState.MoedaProdutos,
+                cambioProdutos,
+                CartState.MoedaImpostos,
+                cambioImpostos);
+            return TotalProdutos * cambioProdutos + CartState.Frete * cambioFrete + CartState.Impostos * cambioImpostos;
+        }
+    }
+
+    private static string CambioLabel(string moeda) => $"Câmbio (R$ por {Moedas.Symbol(moeda)})";
+    private static string CambioHint(string moeda) => $"Quantos reais valem 1 {Moedas.Nome(moeda)}";
+
+    private void OnMoedaProdutosChanged(string value)
+    {
+        CartState.MoedaProdutos = Moedas.Normalize(value);
+        EnsureFreteMoeda();
+    }
+
+    private void OnMoedaImpostosChanged(string value)
+    {
+        CartState.MoedaImpostos = Moedas.Normalize(value);
+        EnsureFreteMoeda();
+    }
+
+    private void EnsureFreteMoeda()
+    {
+        if (!MoedasFreteOpcoes.Contains(Moedas.Normalize(CartState.MoedaFrete)))
+        {
+            CartState.MoedaFrete = CartState.MoedaProdutos;
+        }
+    }
 
     private static readonly DialogOptions PreviewDialogOptions = new()
     {
@@ -375,16 +497,16 @@
 
     /// <summary>
     /// Suggests the insumo's current average cost (stored in R$) as the unit price,
-    /// converting to USD when the entry is in dollars.
+    /// converting into the product currency when that currency is not reais.
     /// </summary>
     private decimal SugerirPreco(Insumo insumo)
     {
-        if (!EmDolar)
+        if (!PrecisaCambioProdutos)
         {
             return insumo.CustoUnitario;
         }
 
-        return CartState.Cambio > 0 ? insumo.CustoUnitario / CartState.Cambio : 0m;
+        return CartState.CambioProdutos > 0 ? insumo.CustoUnitario / CartState.CambioProdutos : 0m;
     }
 
     private async Task AdvanceFromInsumoAsync()
@@ -467,8 +589,11 @@
 
     private EntradaCommand BuildCommand() => new()
     {
-        Moeda = CartState.Moeda,
-        Cambio = CartState.Cambio,
+        MoedaProdutos = CartState.MoedaProdutos,
+        CambioProdutos = CartState.CambioProdutos,
+        MoedaImpostos = CartState.MoedaImpostos,
+        CambioImpostos = ImpostosNaMoedaDosProdutos ? CartState.CambioProdutos : CartState.CambioImpostos,
+        MoedaFrete = CartState.MoedaFrete,
         Frete = CartState.Frete,
         Impostos = CartState.Impostos,
         Itens = _cart.Select(c => new EntradaLinhaInput
@@ -495,12 +620,6 @@
         if (CartState.Frete < 0 || CartState.Impostos < 0)
         {
             Snackbar.Add("Frete e impostos não podem ser negativos.", Severity.Warning);
-            return;
-        }
-
-        if (EmDolar && CartState.Cambio <= 0)
-        {
-            Snackbar.Add("Informe o câmbio (quantos R$ valem 1 US$).", Severity.Warning);
             return;
         }
 

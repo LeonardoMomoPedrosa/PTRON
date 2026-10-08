@@ -5,17 +5,24 @@ import { api } from '../api';
 import type { EntradaEstoque, EntradaWrite, Insumo } from '../api/types';
 import { FormField, Loading, PrimaryButton, Screen, SecondaryButton } from '../components/ui';
 import { useSettings } from '../context/SettingsContext';
-import { money, moneyCurrency, numberPt, percentPt } from '../format';
+import { MOEDAS, money, moneyCurrency, moedaSymbol, numberPt, percentPt, type MoedaCodigo } from '../format';
 import { showError } from '../hooks';
 import { colors, spacing } from '../theme';
 import type { RootStackParamList } from '../navigation/types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'EntradaNova'>;
 type CartLine = { insumoId: number; nome: string; qtd: string; preco: string };
-type Moeda = 'BRL' | 'USD';
 
 function parseDecimal(value: string): number {
   return Number(value.replace(',', '.')) || 0;
+}
+
+function freteOptions(produtos: MoedaCodigo, impostos: MoedaCodigo): MoedaCodigo[] {
+  const list: MoedaCodigo[] = [];
+  for (const code of [produtos, impostos, 'BRL' as MoedaCodigo]) {
+    if (!list.includes(code)) list.push(code);
+  }
+  return list;
 }
 
 export function EntradaNovaScreen({ navigation }: Props) {
@@ -28,8 +35,11 @@ export function EntradaNovaScreen({ navigation }: Props) {
   const [qtd, setQtd] = useState('1');
   const [preco, setPreco] = useState('0');
   const [cart, setCart] = useState<CartLine[]>([]);
-  const [moeda, setMoeda] = useState<Moeda>('BRL');
-  const [cambio, setCambio] = useState('');
+  const [moedaProdutos, setMoedaProdutos] = useState<MoedaCodigo>('BRL');
+  const [cambioProdutos, setCambioProdutos] = useState('');
+  const [moedaImpostos, setMoedaImpostos] = useState<MoedaCodigo>('BRL');
+  const [cambioImpostos, setCambioImpostos] = useState('');
+  const [moedaFrete, setMoedaFrete] = useState<MoedaCodigo>('BRL');
   const [frete, setFrete] = useState('0');
   const [impostos, setImpostos] = useState('0');
   const [preview, setPreview] = useState<EntradaEstoque | null>(null);
@@ -47,6 +57,14 @@ export function EntradaNovaScreen({ navigation }: Props) {
     })();
   }, [config, navigation]);
 
+  const opcoesFrete = useMemo(
+    () => freteOptions(moedaProdutos, moedaImpostos),
+    [moedaProdutos, moedaImpostos],
+  );
+  useEffect(() => {
+    if (!opcoesFrete.includes(moedaFrete)) setMoedaFrete(moedaProdutos);
+  }, [moedaFrete, moedaProdutos, opcoesFrete]);
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return insumos.slice(0, 25);
@@ -58,20 +76,36 @@ export function EntradaNovaScreen({ navigation }: Props) {
   const totalProdutos = cart.reduce((sum, line) => sum + parseDecimal(line.qtd) * parseDecimal(line.preco), 0);
   const freteNum = parseDecimal(frete);
   const impostosNum = parseDecimal(impostos);
+  const cambioProdutosNum = parseDecimal(cambioProdutos);
+  const cambioImpostosNum = parseDecimal(cambioImpostos);
+  const mesmaMoeda = moedaImpostos === moedaProdutos;
+  const cambioProdutosEfetivo = moedaProdutos === 'BRL' ? 1 : cambioProdutosNum;
+  const cambioImpostosEfetivo = moedaImpostos === 'BRL' ? 1 : mesmaMoeda ? cambioProdutosEfetivo : cambioImpostosNum;
+  const cambioFrete =
+    moedaFrete === 'BRL' ? 1 : moedaFrete === moedaProdutos ? cambioProdutosEfetivo : cambioImpostosEfetivo;
+  const moedasIguais = mesmaMoeda && moedaFrete === moedaProdutos;
   const totalMoeda = totalProdutos + freteNum + impostosNum;
-  const cambioNum = parseDecimal(cambio);
-  const symbol = moeda === 'USD' ? 'US$' : 'R$';
+  const totalBrl = totalProdutos * cambioProdutosEfetivo + freteNum * cambioFrete + impostosNum * cambioImpostosEfetivo;
+  const temEstrangeira = moedaProdutos !== 'BRL' || moedaImpostos !== 'BRL' || moedaFrete !== 'BRL';
+  const cambioTotalValido =
+    (moedaProdutos === 'BRL' || cambioProdutosNum > 0) &&
+    (moedaImpostos === 'BRL' || mesmaMoeda || cambioImpostosNum > 0);
 
   const clearPreview = () => setPreview(null);
 
-  const suggestPrice = (insumo: Insumo, currency: Moeda, rate: number): string => {
-    const custo = currency === 'USD' ? (rate > 0 ? insumo.custoUnitario / rate : 0) : insumo.custoUnitario;
+  const suggestPrice = (insumo: Insumo): string => {
+    const custo =
+      moedaProdutos === 'BRL'
+        ? insumo.custoUnitario
+        : cambioProdutosNum > 0
+          ? insumo.custoUnitario / cambioProdutosNum
+          : 0;
     return custo > 0 ? String(Math.round(custo * 10000) / 10000) : '0';
   };
 
   const pickInsumo = (insumo: Insumo) => {
     setPickId(insumo.id);
-    setPreco(suggestPrice(insumo, moeda, cambioNum));
+    setPreco(suggestPrice(insumo));
   };
 
   const body = (): EntradaWrite | null => {
@@ -79,8 +113,12 @@ export function EntradaNovaScreen({ navigation }: Props) {
       Alert.alert('Validação', 'Adicione ao menos um item.');
       return null;
     }
-    if (moeda === 'USD' && !(cambioNum > 0)) {
-      Alert.alert('Validação', 'Informe o câmbio (quantos R$ valem 1 US$).');
+    if (moedaProdutos !== 'BRL' && !(cambioProdutosNum > 0)) {
+      Alert.alert('Validação', `Informe o câmbio dos produtos (quantos R$ valem 1 ${moedaSymbol(moedaProdutos)}).`);
+      return null;
+    }
+    if (moedaImpostos !== 'BRL' && !mesmaMoeda && !(cambioImpostosNum > 0)) {
+      Alert.alert('Validação', `Informe o câmbio dos impostos (quantos R$ valem 1 ${moedaSymbol(moedaImpostos)}).`);
       return null;
     }
     if (freteNum < 0 || impostosNum < 0) {
@@ -88,8 +126,11 @@ export function EntradaNovaScreen({ navigation }: Props) {
       return null;
     }
     return {
-      moeda,
-      cambio: moeda === 'USD' ? cambioNum : 0,
+      moedaProdutos,
+      cambioProdutos: moedaProdutos === 'BRL' ? 0 : cambioProdutosNum,
+      moedaImpostos,
+      cambioImpostos: mesmaMoeda || moedaImpostos === 'BRL' ? 0 : cambioImpostosNum,
+      moedaFrete,
       frete: freteNum,
       impostos: impostosNum,
       itens: cart.map((c) => ({
@@ -161,43 +202,69 @@ export function EntradaNovaScreen({ navigation }: Props) {
 
   if (loading) return <Loading />;
 
+  const previewProdutos = preview?.moedaProdutos || preview?.moeda;
+  const previewImpostos = preview?.moedaImpostos || previewProdutos;
+  const previewFrete = preview?.moedaFrete || previewProdutos;
+
   return (
     <Screen>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.section}>Moeda</Text>
-        <View style={styles.chips}>
-          {(['BRL', 'USD'] as Moeda[]).map((option) => (
-            <Pressable
-              key={option}
-              onPress={() => {
-                setMoeda(option);
-                clearPreview();
-              }}
-              style={[styles.chip, moeda === option && styles.chipActive]}
-            >
-              <Text style={[styles.chipText, moeda === option && styles.chipTextActive]}>
-                {option === 'USD' ? 'US$' : 'R$'}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-        {moeda === 'USD' ? (
-          <>
-            <FormField
-              label="Câmbio (R$ por US$)"
-              value={cambio}
-              onChangeText={(value) => {
-                setCambio(value);
-                clearPreview();
-              }}
-              keyboardType="decimal-pad"
-              placeholder="Ex.: 5,45"
-            />
-            <Text style={styles.hint}>Os produtos, o frete e os impostos desta entrada são em dólar.</Text>
-          </>
+        <Text style={styles.section}>Moeda dos produtos</Text>
+        <CurrencyChips
+          value={moedaProdutos}
+          onChange={(option) => {
+            setMoedaProdutos(option);
+            clearPreview();
+          }}
+        />
+        {moedaProdutos !== 'BRL' ? (
+          <FormField
+            label={`Câmbio (R$ por ${moedaSymbol(moedaProdutos)})`}
+            value={cambioProdutos}
+            onChangeText={(value) => {
+              setCambioProdutos(value);
+              clearPreview();
+            }}
+            keyboardType="decimal-pad"
+            placeholder="Ex.: 5,45"
+          />
         ) : null}
+
+        <Text style={styles.section}>Moeda dos impostos</Text>
+        <CurrencyChips
+          value={moedaImpostos}
+          onChange={(option) => {
+            setMoedaImpostos(option);
+            clearPreview();
+          }}
+        />
+        {moedaImpostos !== 'BRL' && !mesmaMoeda ? (
+          <FormField
+            label={`Câmbio (R$ por ${moedaSymbol(moedaImpostos)})`}
+            value={cambioImpostos}
+            onChangeText={(value) => {
+              setCambioImpostos(value);
+              clearPreview();
+            }}
+            keyboardType="decimal-pad"
+            placeholder="Ex.: 5,45"
+          />
+        ) : null}
+        {mesmaMoeda && moedaProdutos !== 'BRL' ? (
+          <Text style={styles.hint}>Produtos e impostos usam o mesmo câmbio.</Text>
+        ) : null}
+
+        <Text style={styles.section}>Moeda do frete</Text>
+        <CurrencyChips
+          value={moedaFrete}
+          options={opcoesFrete}
+          onChange={(option) => {
+            setMoedaFrete(option);
+            clearPreview();
+          }}
+        />
         <FormField
-          label={`Frete (${symbol})`}
+          label={`Frete (${moedaSymbol(moedaFrete)})`}
           value={frete}
           onChangeText={(value) => {
             setFrete(value);
@@ -206,7 +273,7 @@ export function EntradaNovaScreen({ navigation }: Props) {
           keyboardType="decimal-pad"
         />
         <FormField
-          label={`Impostos (${symbol})`}
+          label={`Impostos (${moedaSymbol(moedaImpostos)})`}
           value={impostos}
           onChangeText={(value) => {
             setImpostos(value);
@@ -214,6 +281,9 @@ export function EntradaNovaScreen({ navigation }: Props) {
           }}
           keyboardType="decimal-pad"
         />
+        {temEstrangeira ? (
+          <Text style={styles.hint}>O custo do estoque é gravado em reais.</Text>
+        ) : null}
 
         <FormField label="Buscar insumo" value={search} onChangeText={setSearch} />
         <View style={styles.chips}>
@@ -229,7 +299,7 @@ export function EntradaNovaScreen({ navigation }: Props) {
         </View>
         <FormField label="Quantidade" value={qtd} onChangeText={setQtd} keyboardType="decimal-pad" />
         <FormField
-          label={`Preço unitário (${symbol})`}
+          label={`Preço unitário (${moedaSymbol(moedaProdutos)})`}
           value={preco}
           onChangeText={setPreco}
           keyboardType="decimal-pad"
@@ -237,13 +307,13 @@ export function EntradaNovaScreen({ navigation }: Props) {
         <SecondaryButton title="Adicionar ao carrinho" onPress={add} />
 
         <Text style={styles.section}>
-          Carrinho · produtos {moneyCurrency(totalProdutos, moeda)}
+          Carrinho · produtos {moneyCurrency(totalProdutos, moedaProdutos)}
         </Text>
         {cart.map((line) => (
           <View key={line.insumoId} style={styles.card}>
             <Text style={styles.title}>{line.nome}</Text>
             <Text style={styles.meta}>
-              {numberPt(parseDecimal(line.qtd))} × {moneyCurrency(parseDecimal(line.preco), moeda)}
+              {numberPt(parseDecimal(line.qtd))} × {moneyCurrency(parseDecimal(line.preco), moedaProdutos)}
             </Text>
             <Pressable
               onPress={() => {
@@ -257,12 +327,16 @@ export function EntradaNovaScreen({ navigation }: Props) {
         ))}
 
         <View style={styles.card}>
-          <Text style={styles.meta}>Produtos: {moneyCurrency(totalProdutos, moeda)}</Text>
-          <Text style={styles.meta}>Frete: {moneyCurrency(freteNum, moeda)}</Text>
-          <Text style={styles.meta}>Impostos: {moneyCurrency(impostosNum, moeda)}</Text>
-          <Text style={styles.title}>Total {symbol}: {moneyCurrency(totalMoeda, moeda)}</Text>
-          {moeda === 'USD' && cambioNum > 0 ? (
-            <Text style={styles.title}>Total em R$: {money(totalMoeda * cambioNum)}</Text>
+          <Text style={styles.meta}>Produtos: {moneyCurrency(totalProdutos, moedaProdutos)}</Text>
+          <Text style={styles.meta}>Frete: {moneyCurrency(freteNum, moedaFrete)}</Text>
+          <Text style={styles.meta}>Impostos: {moneyCurrency(impostosNum, moedaImpostos)}</Text>
+          {moedasIguais ? (
+            <Text style={styles.title}>
+              Total {moedaSymbol(moedaProdutos)}: {moneyCurrency(totalMoeda, moedaProdutos)}
+            </Text>
+          ) : null}
+          {temEstrangeira && cambioTotalValido ? (
+            <Text style={styles.title}>Total em R$: {money(totalBrl)}</Text>
           ) : null}
         </View>
 
@@ -276,19 +350,19 @@ export function EntradaNovaScreen({ navigation }: Props) {
           <View>
             <Text style={styles.section}>Pré-visualização</Text>
             <Text style={styles.hint}>
-              A proporção usa só o valor dos produtos. Frete e impostos entram nessa mesma proporção.
+              A proporção usa só o valor dos produtos. Frete e impostos entram nessa mesma proporção, cada um na sua moeda.
             </Text>
             {preview.itens.map((item) => (
               <View key={item.insumoId} style={styles.card}>
                 <Text style={styles.title}>{item.insumoNome}</Text>
                 <Text style={styles.meta}>
-                  {numberPt(item.qtd)} × {moneyCurrency(item.precoUnitario, preview.moeda)} ={' '}
-                  {moneyCurrency(item.subtotal, preview.moeda)}
+                  {numberPt(item.qtd)} × {moneyCurrency(item.precoUnitario, previewProdutos)} ={' '}
+                  {moneyCurrency(item.subtotal, previewProdutos)}
                 </Text>
                 <Text style={styles.meta}>Proporção: {percentPt(item.proporcao)}</Text>
                 <Text style={styles.meta}>
-                  Frete: {moneyCurrency(item.freteRateado, preview.moeda)} · Impostos:{' '}
-                  {moneyCurrency(item.impostoRateado, preview.moeda)}
+                  Frete: {moneyCurrency(item.freteRateado, previewFrete)} · Impostos:{' '}
+                  {moneyCurrency(item.impostoRateado, previewImpostos)}
                 </Text>
                 <Text style={styles.title}>
                   Custo unit. {money(item.custoUnitario)} · Total {money(item.subtotalBrl)}
@@ -305,6 +379,30 @@ export function EntradaNovaScreen({ navigation }: Props) {
         ) : null}
       </ScrollView>
     </Screen>
+  );
+}
+
+function CurrencyChips({
+  value,
+  onChange,
+  options = MOEDAS,
+}: {
+  value: MoedaCodigo;
+  onChange: (value: MoedaCodigo) => void;
+  options?: readonly MoedaCodigo[];
+}) {
+  return (
+    <View style={styles.chips}>
+      {options.map((option) => (
+        <Pressable
+          key={option}
+          onPress={() => onChange(option)}
+          style={[styles.chip, value === option && styles.chipActive]}
+        >
+          <Text style={[styles.chipText, value === option && styles.chipTextActive]}>{moedaSymbol(option)}</Text>
+        </Pressable>
+      ))}
+    </View>
   );
 }
 

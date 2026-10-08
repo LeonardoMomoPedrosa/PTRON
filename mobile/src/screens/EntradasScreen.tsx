@@ -3,12 +3,20 @@ import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { api } from '../api';
 import { Card, EmptyState, ErrorBanner, Loading, Screen } from '../components/ui';
-import { dateTimePt, money } from '../format';
+import { dateTimePt, moedaSymbol, money } from '../format';
 import { useApiLoader } from '../hooks';
 import { colors, spacing } from '../theme';
 import type { RootStackParamList } from '../navigation/types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Entradas'>;
+
+function resumoMoedas(item: { moeda: string; moedaProdutos?: string; moedaImpostos?: string; moedaFrete?: string }): string {
+  const produtos = item.moedaProdutos || item.moeda;
+  const impostos = item.moedaImpostos || produtos;
+  const frete = item.moedaFrete || produtos;
+  if (produtos === impostos && produtos === frete) return moedaSymbol(produtos);
+  return `${moedaSymbol(produtos)} / ${moedaSymbol(impostos)} / ${moedaSymbol(frete)}`;
+}
 
 export function EntradasScreen({ navigation }: Props) {
   const loader = useCallback((cfg: Parameters<typeof api.getEntradas>[0]) => api.getEntradas(cfg), []);
@@ -43,7 +51,7 @@ export function EntradasScreen({ navigation }: Props) {
               <Text style={styles.meta}>{dateTimePt(item.data)}</Text>
               <View style={styles.row}>
                 <Text style={styles.meta}>
-                  {item.itens?.length ?? 0} itens · {item.moeda === 'USD' ? 'US$' : 'R$'}
+                  {item.itens?.length ?? 0} itens · {resumoMoedas(item)}
                 </Text>
                 <Text style={styles.total}>{money(item.total)}</Text>
               </View>

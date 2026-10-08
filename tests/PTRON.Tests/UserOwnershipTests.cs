@@ -152,8 +152,8 @@ public sealed class UserOwnershipTests : IAsyncLifetime
         var entradaError = await Assert.ThrowsAsync<InvalidOperationException>(() =>
             anaEntradas.FinalizarAsync(new EntradaCommand
             {
-                Moeda = Moedas.Brl,
-                Cambio = 1,
+                MoedaProdutos = Moedas.Brl,
+                CambioProdutos = 1,
                 Itens = new[] { new EntradaLinhaInput { InsumoId = insumoId, Qtd = 1, PrecoUnitario = 2 } }
             }));
         Assert.Contains("não encontrado", entradaError.Message, StringComparison.Ordinal);

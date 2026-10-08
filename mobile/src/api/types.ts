@@ -74,8 +74,15 @@ export type EntradaItem = {
 export type EntradaEstoque = {
   id: number;
   data: string;
+  /** Product currency. Older responses only sent this field. */
   moeda: string;
   cambio: number;
+  moedaProdutos?: string;
+  cambioProdutos?: number;
+  moedaImpostos?: string;
+  cambioImpostos?: number;
+  moedaFrete?: string;
+  moedaDestino?: string;
   frete: number;
   impostos: number;
   totalProdutos: number;
@@ -85,8 +92,11 @@ export type EntradaEstoque = {
 };
 
 export type EntradaWrite = {
-  moeda: 'BRL' | 'USD';
-  cambio: number;
+  moedaProdutos: 'BRL' | 'USD' | 'EUR' | 'GBP' | 'CNY';
+  cambioProdutos: number;
+  moedaImpostos: 'BRL' | 'USD' | 'EUR' | 'GBP' | 'CNY';
+  cambioImpostos: number;
+  moedaFrete: 'BRL' | 'USD' | 'EUR' | 'GBP' | 'CNY';
   frete: number;
   impostos: number;
   itens: { insumoId: number; qtd: number; precoUnitario: number }[];

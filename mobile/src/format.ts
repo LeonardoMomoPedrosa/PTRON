@@ -1,13 +1,33 @@
+export const MOEDAS = ['BRL', 'USD', 'EUR', 'GBP', 'CNY'] as const;
+export type MoedaCodigo = (typeof MOEDAS)[number];
+
 export function money(value: number | null | undefined): string {
   return moneyCurrency(value, 'BRL');
 }
 
+export function moedaSymbol(moeda?: string | null): string {
+  switch ((moeda ?? 'BRL').toUpperCase()) {
+    case 'USD':
+      return 'US$';
+    case 'EUR':
+      return '€';
+    case 'GBP':
+      return '£';
+    case 'CNY':
+      return 'CN¥';
+    default:
+      return 'R$';
+  }
+}
+
 export function moneyCurrency(value: number | null | undefined, moeda?: string | null): string {
   const n = Number(value ?? 0);
-  if (moeda === 'USD') {
-    return `US$ ${n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const code = (moeda ?? 'BRL').toUpperCase();
+  if (code === 'BRL') {
+    return n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }
-  return n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  const formatted = n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return `${moedaSymbol(code)} ${formatted}`;
 }
 
 export function percentPt(ratio: number | null | undefined): string {

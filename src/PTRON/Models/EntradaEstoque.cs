@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using PTRON.Services;
 
 namespace PTRON.Models;
@@ -11,26 +12,61 @@ public class EntradaEstoque : IUserOwned
 
     public DateTime Data { get; set; } = DateTime.Now;
 
-    /// <summary>BRL or USD. Product prices, shipment and taxes use this currency.</summary>
+    /// <summary>Currency of the product prices.</summary>
     [MaxLength(3)]
-    public string Moeda { get; set; } = Moedas.Brl;
+    public string MoedaProdutos { get; set; } = Moedas.Brl;
 
-    /// <summary>Reais per 1 US$. Always 1 when the entry is in BRL.</summary>
-    public decimal Cambio { get; set; } = 1m;
+    /// <summary>Reais per 1 unit of <see cref="MoedaProdutos"/>. Always 1 when products are in BRL.</summary>
+    public decimal CambioProdutos { get; set; } = 1m;
 
-    /// <summary>Shipment in the entry currency.</summary>
+    /// <summary>Currency of the taxes.</summary>
+    [MaxLength(3)]
+    public string MoedaImpostos { get; set; } = Moedas.Brl;
+
+    /// <summary>Reais per 1 unit of <see cref="MoedaImpostos"/>. Always 1 when taxes are in BRL.</summary>
+    public decimal CambioImpostos { get; set; } = 1m;
+
+    /// <summary>Currency of the shipment. Product currency, tax currency, or BRL.</summary>
+    [MaxLength(3)]
+    public string MoedaFrete { get; set; } = Moedas.Brl;
+
+    /// <summary>Currency in which the landed cost is stored. Always BRL.</summary>
+    [MaxLength(3)]
+    public string MoedaDestino { get; set; } = Moedas.Destino;
+
+    /// <summary>Shipment in <see cref="MoedaFrete"/>.</summary>
     public decimal Frete { get; set; }
 
-    /// <summary>Taxes in the entry currency.</summary>
+    /// <summary>Taxes in <see cref="MoedaImpostos"/>.</summary>
     public decimal Impostos { get; set; }
 
     public ICollection<EntradaEstoqueItem> Itens { get; set; } = new List<EntradaEstoqueItem>();
 
     public decimal TotalProdutos => Itens.Sum(i => i.Qtd * i.PrecoUnitario);
 
-    public decimal FatorCambio => Moeda == Moedas.Usd ? Cambio : 1m;
+    [NotMapped]
+    public decimal CambioProdutosEfetivo => Moedas.CambioParaDestino(MoedaProdutos, CambioProdutos);
 
-    public decimal TotalMoeda => TotalProdutos + Frete + Impostos;
+    [NotMapped]
+    public decimal CambioImpostosEfetivo => Moedas.CambioParaDestino(MoedaImpostos, CambioImpostos);
 
-    public decimal TotalBrl => TotalMoeda * FatorCambio;
+    [NotMapped]
+    public decimal CambioFreteEfetivo => Moedas.CambioFrete(
+        MoedaFrete, MoedaProdutos, CambioProdutos, MoedaImpostos, CambioImpostos);
+
+    [NotMapped]
+    public bool MoedasIguais =>
+        Moedas.Normalize(MoedaProdutos) == Moedas.Normalize(MoedaImpostos)
+        && Moedas.Normalize(MoedaProdutos) == Moedas.Normalize(MoedaFrete);
+
+    public decimal TotalBrl =>
+        TotalProdutos * CambioProdutosEfetivo
+        + Frete * CambioFreteEfetivo
+        + Impostos * CambioImpostosEfetivo;
+
+    /// <summary>Landed line total in BRL, before the unit-cost rounding stored on the item.</summary>
+    public decimal SubtotalDestino(EntradaEstoqueItem item)
+        => item.Qtd * item.PrecoUnitario * CambioProdutosEfetivo
+           + item.FreteRateado * CambioFreteEfetivo
+           + item.ImpostoRateado * CambioImpostosEfetivo;
 }

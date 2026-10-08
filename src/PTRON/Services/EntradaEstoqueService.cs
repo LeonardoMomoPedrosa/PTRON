@@ -41,8 +41,8 @@ public class EntradaEstoqueService
 
     /// <summary>
     /// Finalizes a stock entry: persists the cart, allocates shipment and taxes
-    /// by each product's share of the product total, converts USD to BRL, and
-    /// recalculates the weighted-average unit cost inside a transaction.
+    /// by each product's share of the product total, converts each currency to BRL
+    /// with its own rate, and recalculates the weighted-average unit cost inside a transaction.
     /// Formula: novoCusto = (Saldo*CustoUnitario + Σ qtd*custoAterrado) / (Saldo + Σ qtd)
     /// </summary>
     public async Task<EntradaEstoque> FinalizarAsync(EntradaCommand command)
@@ -57,8 +57,12 @@ public class EntradaEstoqueService
             var entrada = new EntradaEstoque
             {
                 Data = DateTime.Now,
-                Moeda = rateio.Moeda,
-                Cambio = rateio.Cambio,
+                MoedaProdutos = rateio.MoedaProdutos,
+                CambioProdutos = rateio.CambioProdutos,
+                MoedaImpostos = rateio.MoedaImpostos,
+                CambioImpostos = rateio.CambioImpostos,
+                MoedaFrete = rateio.MoedaFrete,
+                MoedaDestino = rateio.MoedaDestino,
                 Frete = rateio.Frete,
                 Impostos = rateio.Impostos,
                 Itens = rateio.Linhas.Select(a => new EntradaEstoqueItem

@@ -12,15 +12,16 @@ public static class Format
     /// <summary>Formats a value as Brazilian currency, e.g. "R$ 1.234,56".</summary>
     public static string Money(decimal value) => Money(value, Moedas.Brl);
 
-    /// <summary>Formats a value in the entry currency (R$ or US$).</summary>
+    /// <summary>Formats a value in the given currency (R$, US$, €, £ or CN¥).</summary>
     public static string Money(decimal value, string? moeda)
     {
-        if (Moedas.Normalize(moeda) == Moedas.Usd)
+        var code = Moedas.Normalize(moeda);
+        if (code == Moedas.Brl || string.IsNullOrEmpty(code))
         {
-            return "US$ " + value.ToString("N2", Culture);
+            return value.ToString("C", Culture);
         }
 
-        return value.ToString("C", Culture);
+        return Moedas.Symbol(code) + " " + value.ToString("N2", Culture);
     }
 
     public static string Percent(decimal ratio) => ratio.ToString("P2", Culture);

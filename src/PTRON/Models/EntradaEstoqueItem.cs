@@ -18,10 +18,10 @@ public class EntradaEstoqueItem
     [Range(0.0, double.MaxValue, ErrorMessage = "O preço não pode ser negativo.")]
     public decimal PrecoUnitario { get; set; }
 
-    /// <summary>Shipment allocated to this line, in the entry currency.</summary>
+    /// <summary>Shipment allocated to this line, in the entry's freight currency.</summary>
     public decimal FreteRateado { get; set; }
 
-    /// <summary>Taxes allocated to this line, in the entry currency.</summary>
+    /// <summary>Taxes allocated to this line, in the entry's tax currency.</summary>
     public decimal ImpostoRateado { get; set; }
 
     /// <summary>Landed unit cost in BRL, including this line's share of shipment and taxes.</summary>

@@ -115,14 +115,27 @@ public sealed class EntradaEstoqueDto
 {
     public int Id { get; set; }
     public DateTime Data { get; set; }
+
+    /// <summary>Product currency. Kept so older clients that only read <c>moeda</c> still work.</summary>
     public string Moeda { get; set; } = "BRL";
+
+    /// <summary>Reais per 1 unit of <see cref="Moeda"/>. Kept for older clients.</summary>
     public decimal Cambio { get; set; } = 1m;
+
+    public string MoedaProdutos { get; set; } = "BRL";
+    public decimal CambioProdutos { get; set; } = 1m;
+    public string MoedaImpostos { get; set; } = "BRL";
+    public decimal CambioImpostos { get; set; } = 1m;
+    public string MoedaFrete { get; set; } = "BRL";
+    public string MoedaDestino { get; set; } = "BRL";
     public decimal Frete { get; set; }
     public decimal Impostos { get; set; }
     public decimal TotalProdutos { get; set; }
+
+    /// <summary>Products + shipment + taxes. Only meaningful when the three currencies match.</summary>
     public decimal TotalMoeda { get; set; }
 
-    /// <summary>Landed total in BRL (products + shipment + taxes, converted when the entry is in USD).</summary>
+    /// <summary>Landed total in BRL.</summary>
     public decimal Total { get; set; }
     public List<EntradaEstoqueItemDto> Itens { get; set; } = new();
 }
@@ -144,9 +157,17 @@ public sealed class EntradaEstoqueItemDto
 
 public sealed class EntradaEstoqueWriteDto : IValidatableObject
 {
-    public string Moeda { get; set; } = "BRL";
+    /// <summary>Legacy single currency. Used when <see cref="MoedaProdutos"/> is omitted.</summary>
+    public string? Moeda { get; set; }
 
+    /// <summary>Legacy rate (reais per 1 US$). Used when <see cref="CambioProdutos"/> is omitted.</summary>
     public decimal Cambio { get; set; }
+
+    public string? MoedaProdutos { get; set; }
+    public decimal CambioProdutos { get; set; }
+    public string? MoedaImpostos { get; set; }
+    public decimal CambioImpostos { get; set; }
+    public string? MoedaFrete { get; set; }
 
     [Range(typeof(decimal), "0", "79228162514264337593543950335", ParseLimitsInInvariantCulture = true, ErrorMessage = "O frete não pode ser negativo.")]
     public decimal Frete { get; set; }
@@ -157,17 +178,64 @@ public sealed class EntradaEstoqueWriteDto : IValidatableObject
     [MinLength(1, ErrorMessage = "Adicione ao menos um item à entrada.")]
     public List<EntradaEstoqueItemWriteDto> Itens { get; set; } = new();
 
+    public EntradaCommand ToCommand()
+    {
+        var produtos = First(MoedaProdutos, Moeda) ?? Moedas.Brl;
+        var impostos = First(MoedaImpostos, produtos)!;
+        var frete = First(MoedaFrete, produtos)!;
+        var cambioProdutos = CambioProdutos > 0 ? CambioProdutos : Cambio;
+        return new EntradaCommand
+        {
+            MoedaProdutos = produtos,
+            CambioProdutos = cambioProdutos,
+            MoedaImpostos = impostos,
+            CambioImpostos = CambioImpostos,
+            MoedaFrete = frete,
+            Frete = Frete,
+            Impostos = Impostos,
+            Itens = Itens.Select(i => new EntradaLinhaInput
+            {
+                InsumoId = i.InsumoId,
+                Qtd = i.Qtd,
+                PrecoUnitario = i.PrecoUnitario
+            }).ToList()
+        };
+    }
+
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        var moeda = Moedas.Normalize(Moeda);
-        if (!Moedas.IsValid(moeda))
+        if (Itens is null || Itens.Count == 0)
         {
-            yield return new ValidationResult("Selecione a moeda R$ ou US$.", new[] { nameof(Moeda) });
+            yield break;
         }
-        else if (moeda == Moedas.Usd && Cambio <= 0)
+
+        InvalidOperationException? error = null;
+        try
         {
-            yield return new ValidationResult("Informe o câmbio (quantos R$ valem 1 US$).", new[] { nameof(Cambio) });
+            EntradaCustoCalculator.Calcular(ToCommand());
         }
+        catch (InvalidOperationException ex)
+        {
+            error = ex;
+        }
+
+        if (error is not null)
+        {
+            yield return new ValidationResult(error.Message);
+        }
+    }
+
+    private static string? First(params string?[] values)
+    {
+        foreach (var value in values)
+        {
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                return value;
+            }
+        }
+
+        return null;
     }
 }
 
