@@ -255,8 +255,10 @@ public sealed class ProducaoPreviewDto
 {
     public int EquipamentoId { get; set; }
     public string EquipamentoNome { get; set; } = string.Empty;
+    public int Quantidade { get; set; } = 1;
     public List<BomLinhaPreviewDto> Linhas { get; set; } = new();
     public decimal CustoEstimado { get; set; }
+    public decimal CustoPorUnidade { get; set; }
     public bool PodeProduzir { get; set; }
     public List<BomLinhaPreviewDto> Faltantes { get; set; } = new();
 }
@@ -266,6 +268,7 @@ public sealed class BomLinhaPreviewDto
     public int InsumoId { get; set; }
     public string InsumoNome { get; set; } = string.Empty;
     public string InsumoDetalhe { get; set; } = string.Empty;
+    public decimal QtdPorUnidade { get; set; }
     public decimal QtdNecessaria { get; set; }
     public decimal SaldoDisponivel { get; set; }
     public decimal CustoUnitario { get; set; }
@@ -279,8 +282,19 @@ public sealed class ProduzirDto
     [Range(1, int.MaxValue, ErrorMessage = "Selecione o equipamento.")]
     public int EquipamentoId { get; set; }
 
+    [Range(1, 10000, ErrorMessage = "A quantidade deve ser entre 1 e 10000.")]
+    public int Quantidade { get; set; } = 1;
+
     [MaxLength(1000)]
     public string? DescricaoAdicional { get; set; }
+}
+
+public sealed class ProducaoResultadoDto
+{
+    public int Quantidade { get; set; }
+    public decimal CustoUnitario { get; set; }
+    public decimal CustoTotal { get; set; }
+    public List<ProdutoDto> Produtos { get; set; } = new();
 }
 
 public sealed class ProdutoDescricaoDto

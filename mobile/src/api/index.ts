@@ -9,6 +9,7 @@ import type {
   Insumo,
   InsumoWrite,
   ProducaoPreview,
+  ProducaoResultado,
   Produto,
   ProdutoList,
   Tipo,
@@ -82,12 +83,12 @@ export const api = {
       body: JSON.stringify(body),
     }),
 
-  getProducaoPreview: (cfg: ApiConfig, equipamentoId: number) =>
-    apiRequest<ProducaoPreview>(cfg, `/api/producao/preview/${equipamentoId}`),
-  produzir: (cfg: ApiConfig, equipamentoId: number, descricaoAdicional?: string) =>
-    apiRequest<Produto>(cfg, '/api/producao', {
+  getProducaoPreview: (cfg: ApiConfig, equipamentoId: number, quantidade = 1) =>
+    apiRequest<ProducaoPreview>(cfg, `/api/producao/preview/${equipamentoId}?quantidade=${quantidade}`),
+  produzir: (cfg: ApiConfig, equipamentoId: number, quantidade: number, descricaoAdicional?: string) =>
+    apiRequest<ProducaoResultado>(cfg, '/api/producao', {
       method: 'POST',
-      body: JSON.stringify({ equipamentoId, descricaoAdicional }),
+      body: JSON.stringify({ equipamentoId, quantidade, descricaoAdicional }),
     }),
 
   getProdutos: (cfg: ApiConfig) => apiRequest<ProdutoList[]>(cfg, '/api/produtos'),

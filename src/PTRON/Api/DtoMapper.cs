@@ -160,7 +160,9 @@ internal static class DtoMapper
     {
         EquipamentoId = preview.EquipamentoId,
         EquipamentoNome = preview.EquipamentoNome,
+        Quantidade = preview.Quantidade,
         CustoEstimado = preview.CustoEstimado,
+        CustoPorUnidade = preview.CustoPorUnidade,
         PodeProduzir = preview.PodeProduzir,
         Linhas = preview.Linhas.Select(ToDto).ToList(),
         Faltantes = preview.Faltantes.Select(ToDto).ToList()
@@ -171,6 +173,7 @@ internal static class DtoMapper
         InsumoId = linha.InsumoId,
         InsumoNome = linha.InsumoNome,
         InsumoDetalhe = linha.InsumoDetalhe,
+        QtdPorUnidade = linha.QtdPorUnidade,
         QtdNecessaria = linha.QtdNecessaria,
         SaldoDisponivel = linha.SaldoDisponivel,
         CustoUnitario = linha.CustoUnitario,

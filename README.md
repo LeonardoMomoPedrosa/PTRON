@@ -78,8 +78,8 @@ Alternativa: cabeçalho `X-Api-Key: ptron-dev-token-8f4c2a91`. Sem token a API r
 | GET/PUT/DELETE | `/api/equipamentos/{id}` | Detalhe com BOM / alterar / excluir |
 | GET/POST | `/api/entradas` | Histórico / finalizar entrada |
 | GET | `/api/entradas/{id}` | Detalhe da entrada |
-| GET | `/api/producao/preview/{equipamentoId}` | Preview (faltantes, custo estimado) |
-| POST | `/api/producao` | Produzir `{ equipamentoId, descricaoAdicional }` |
+| GET | `/api/producao/preview/{equipamentoId}` | Preview (`?quantidade=`, faltantes, custo estimado) |
+| POST | `/api/producao` | Produzir `{ equipamentoId, quantidade, descricaoAdicional }` |
 | GET | `/api/produtos` | Listar produtos |
 | GET/DELETE | `/api/produtos/{id}` | Detalhe (snapshot) / excluir (devolve estoque) |
 | PUT | `/api/produtos/{id}/descricao` | Atualizar a descrição adicional do produto |
@@ -200,8 +200,8 @@ Alternatively: header `X-Api-Key: ptron-dev-token-8f4c2a91`. Missing token → `
 | GET/PUT/DELETE | `/api/equipamentos/{id}` | Detail with BOM / update / delete |
 | GET/POST | `/api/entradas` | History / finalize stock entry |
 | GET | `/api/entradas/{id}` | Stock-entry detail |
-| GET | `/api/producao/preview/{equipamentoId}` | Preview (shortages, estimated cost) |
-| POST | `/api/producao` | Produce `{ equipamentoId, descricaoAdicional }` |
+| GET | `/api/producao/preview/{equipamentoId}` | Preview (`?quantidade=`, shortages, estimated cost) |
+| POST | `/api/producao` | Produce `{ equipamentoId, quantidade, descricaoAdicional }` |
 | GET | `/api/produtos` | List products |
 | GET/DELETE | `/api/produtos/{id}` | Detail (snapshot) / delete (returns stock) |
 | PUT | `/api/produtos/{id}/descricao` | Update the product's additional description |

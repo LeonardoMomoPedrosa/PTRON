@@ -106,6 +106,7 @@ export type BomLinhaPreview = {
   insumoId: number;
   insumoNome: string;
   insumoDetalhe?: string;
+  qtdPorUnidade: number;
   qtdNecessaria: number;
   saldoDisponivel: number;
   custoUnitario: number;
@@ -117,10 +118,19 @@ export type BomLinhaPreview = {
 export type ProducaoPreview = {
   equipamentoId: number;
   equipamentoNome: string;
+  quantidade: number;
   linhas: BomLinhaPreview[];
   custoEstimado: number;
+  custoPorUnidade: number;
   podeProduzir: boolean;
   faltantes: BomLinhaPreview[];
+};
+
+export type ProducaoResultado = {
+  quantidade: number;
+  custoUnitario: number;
+  custoTotal: number;
+  produtos: Produto[];
 };
 
 export type ProdutoList = {

@@ -17,9 +17,9 @@ public sealed class ProducaoController : ControllerBase
     }
 
     [HttpGet("preview/{equipamentoId:int}")]
-    public async Task<ActionResult<ProducaoPreviewDto>> Preview(int equipamentoId)
+    public async Task<ActionResult<ProducaoPreviewDto>> Preview(int equipamentoId, [FromQuery] int quantidade = 1)
     {
-        var preview = await _producao.GetPreviewAsync(equipamentoId);
+        var preview = await _producao.GetPreviewAsync(equipamentoId, quantidade);
         if (preview is null)
         {
             return NotFound(new ErrorDto { Error = "Equipamento não encontrado." });
@@ -29,10 +29,23 @@ public sealed class ProducaoController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<ProdutoDto>> Produzir(ProduzirDto dto)
+    public async Task<ActionResult<ProducaoResultadoDto>> Produzir(ProduzirDto dto)
     {
-        var produto = await _producao.ProduzirAsync(dto.EquipamentoId, dto.DescricaoAdicional);
-        var created = await _produtos.GetWithInsumosAsync(produto.Id) ?? produto;
-        return Created($"/api/produtos/{produto.Id}", DtoMapper.ToDto(created));
+        var resultado = await _producao.ProduzirAsync(dto.EquipamentoId, dto.DescricaoAdicional, dto.Quantidade);
+        var produtos = new List<ProdutoDto>();
+        foreach (var produto in resultado.Produtos)
+        {
+            var created = await _produtos.GetWithInsumosAsync(produto.Id) ?? produto;
+            produtos.Add(DtoMapper.ToDto(created));
+        }
+
+        var primeiro = resultado.Produtos[0];
+        return Created($"/api/produtos/{primeiro.Id}", new ProducaoResultadoDto
+        {
+            Quantidade = resultado.Quantidade,
+            CustoUnitario = resultado.CustoUnitario,
+            CustoTotal = resultado.CustoUnitario * resultado.Quantidade,
+            Produtos = produtos
+        });
     }
 }

@@ -27,6 +27,7 @@ export function ProducaoScreen({ navigation }: Props) {
   const [selectedId, setSelectedId] = useState(0);
   const [preview, setPreview] = useState<ProducaoPreview | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
+  const [quantidade, setQuantidade] = useState('1');
   const [descricao, setDescricao] = useState('');
   const [producing, setProducing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -47,13 +48,16 @@ export function ProducaoScreen({ navigation }: Props) {
     void loadEquipamentos();
   }, [loadEquipamentos]);
 
-  const loadPreview = async (id: number) => {
+  const quantidadeNum = Math.max(0, Math.floor(Number(quantidade.replace(',', '.')) || 0));
+
+  const loadPreview = async (id: number, qtd = quantidadeNum) => {
     setSelectedId(id);
     setPreview(null);
     if (!id) return;
+    const pedida = qtd >= 1 ? qtd : 1;
     setPreviewLoading(true);
     try {
-      setPreview(await api.getProducaoPreview(config, id));
+      setPreview(await api.getProducaoPreview(config, id, pedida));
     } catch (e) {
       showError(e);
     } finally {
@@ -66,11 +70,25 @@ export function ProducaoScreen({ navigation }: Props) {
       Alert.alert('Indisponível', 'Há insumos faltantes para produzir.');
       return;
     }
+    if (quantidadeNum < 1 || quantidadeNum > 10000) {
+      Alert.alert('Validação', 'A quantidade deve ser entre 1 e 10000.');
+      return;
+    }
     setProducing(true);
     try {
-      const produto = await api.produzir(config, preview.equipamentoId, descricao || undefined);
-      Alert.alert('Produzido', `Produto #${produto.id} criado.`);
-      navigation.navigate('ProdutoDetalhe', { id: produto.id });
+      const resultado = await api.produzir(
+        config,
+        preview.equipamentoId,
+        quantidadeNum,
+        descricao || undefined,
+      );
+      const primeiro = resultado.produtos[0];
+      const texto =
+        resultado.quantidade === 1
+          ? `Produto #${primeiro.id} criado.`
+          : `${resultado.quantidade} produtos criados. Custo de cada um: ${money(resultado.custoUnitario)}.`;
+      Alert.alert('Produzido', texto);
+      navigation.navigate('ProdutoDetalhe', { id: primeiro.id });
     } catch (e) {
       showError(e);
     } finally {
@@ -106,7 +124,11 @@ export function ProducaoScreen({ navigation }: Props) {
           <>
             <Card>
               <Text style={styles.title}>{preview.equipamentoNome}</Text>
-              <Text style={styles.meta}>Custo estimado: {money(preview.custoEstimado)}</Text>
+              <Text style={styles.meta}>
+                {preview.quantidade === 1
+                  ? `Custo estimado: ${money(preview.custoEstimado)}`
+                  : `Custo de cada um: ${money(preview.custoPorUnidade)} · ${preview.quantidade} unidades: ${money(preview.custoEstimado)}`}
+              </Text>
               <Text style={preview.podeProduzir ? styles.ok : styles.fail}>
                 {preview.podeProduzir ? 'Pronto para produzir' : 'Insumos insuficientes'}
               </Text>
@@ -129,7 +151,9 @@ export function ProducaoScreen({ navigation }: Props) {
                 <Text style={styles.itemTitle}>{l.insumoNome}</Text>
                 {l.insumoDetalhe ? <Text style={styles.meta}>{l.insumoDetalhe}</Text> : null}
                 <Text style={styles.meta}>
-                  Necessário {numberPt(l.qtdNecessaria)} · Disponível {numberPt(l.saldoDisponivel)}
+                  Necessário {numberPt(l.qtdNecessaria)}
+                  {preview.quantidade > 1 ? ` (${preview.quantidade} × ${numberPt(l.qtdPorUnidade)})` : ''} · Disponível{' '}
+                  {numberPt(l.saldoDisponivel)}
                 </Text>
                 <Text style={styles.meta}>
                   {money(l.custoUnitario)} · Subtotal {money(l.subtotal)}
@@ -141,6 +165,16 @@ export function ProducaoScreen({ navigation }: Props) {
             ))}
 
             <FormField
+              label="Quantidade"
+              value={quantidade}
+              onChangeText={(value) => {
+                setQuantidade(value);
+                const qtd = Math.floor(Number(value.replace(',', '.')) || 0);
+                if (selectedId && qtd >= 1 && qtd <= 10000) void loadPreview(selectedId, qtd);
+              }}
+              keyboardType="number-pad"
+            />
+            <FormField
               label="Descrição adicional"
               value={descricao}
               onChangeText={setDescricao}
@@ -148,7 +182,7 @@ export function ProducaoScreen({ navigation }: Props) {
               multiline
             />
             <PrimaryButton
-              title={producing ? 'Produzindo…' : 'Produzir'}
+              title={producing ? 'Produzindo…' : quantidadeNum > 1 ? `Produzir ${quantidadeNum}` : 'Produzir'}
               onPress={produzir}
               disabled={producing || !preview.podeProduzir}
             />

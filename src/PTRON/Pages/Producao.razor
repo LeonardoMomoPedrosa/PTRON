@@ -10,7 +10,7 @@
 
 <MudPaper Class="pa-4 mb-4" Outlined="true">
     <MudGrid>
-        <MudItem xs="12" md="6">
+        <MudItem xs="12" md="5">
             <MudSelect T="int?" @bind-Value="_equipamentoId" @bind-Value:after="OnEquipamentoChanged"
                        Label="Equipamento (modelo)"
                        Clearable="true"
@@ -21,7 +21,14 @@
                 }
             </MudSelect>
         </MudItem>
-        <MudItem xs="12" md="6">
+        <MudItem xs="12" sm="4" md="2">
+            <MudNumericField T="int" @bind-Value="_quantidade" @bind-Value:after="OnQuantidadeChanged"
+                             Label="Quantidade"
+                             Min="1" Max="10000" Step="1"
+                             HelperText="Quantos produtos produzir"
+                             Immediate="true" HideSpinButtons="false" />
+        </MudItem>
+        <MudItem xs="12" md="5">
             <MudTextField @bind-Value="_descricao"
                           Label="Descrição adicional do produto"
                           MaxLength="1000"
@@ -46,7 +53,9 @@ else
     @if (!_preview.PodeProduzir)
     {
         <MudAlert Severity="Severity.Error" Class="mb-4" Dense="true">
-            <MudText Typo="Typo.subtitle2">Não é possível produzir — insumos faltantes:</MudText>
+            <MudText Typo="Typo.subtitle2">
+                Não é possível produzir@(_preview.Quantidade == 1 ? "" : $" {_preview.Quantidade} unidades") — insumos faltantes:
+            </MudText>
             <ul class="mt-2 mb-0">
                 @foreach (var f in _preview.Faltantes)
                 {
@@ -62,7 +71,18 @@ else
     else
     {
         <MudAlert Severity="Severity.Success" Class="mb-4" Dense="true">
-            Todos os insumos estão disponíveis. Custo estimado: <b>@Format.Money(_preview.CustoEstimado)</b>
+            @if (_preview.Quantidade == 1)
+            {
+                <span>Todos os insumos estão disponíveis. Custo estimado: <b>@Format.Money(_preview.CustoEstimado)</b></span>
+            }
+            else
+            {
+                <span>
+                    Todos os insumos estão disponíveis para @_preview.Quantidade unidades.
+                    Custo de cada uma: <b>@Format.Money(_preview.CustoPorUnidade)</b>.
+                    Custo das @_preview.Quantidade: <b>@Format.Money(_preview.CustoEstimado)</b>.
+                </span>
+            }
         </MudAlert>
     }
 
@@ -84,7 +104,15 @@ else
                         <MudText Typo="Typo.caption" Class="mud-text-secondary">@context.InsumoDetalhe</MudText>
                     }
                 </MudTd>
-                <MudTd DataLabel="Necessário" Style="text-align:right">@Format.Number(context.QtdNecessaria)</MudTd>
+                <MudTd DataLabel="Necessário" Style="text-align:right">
+                    @Format.Number(context.QtdNecessaria)
+                    @if (_preview.Quantidade > 1)
+                    {
+                        <MudText Typo="Typo.caption" Class="mud-text-secondary">
+                            @_preview.Quantidade × @Format.Number(context.QtdPorUnidade)
+                        </MudText>
+                    }
+                </MudTd>
                 <MudTd DataLabel="Disponível" Style="text-align:right"
                        Class="@(context.Disponivel ? null : "mud-error-text")">
                     @Format.Number(context.SaldoDisponivel)
@@ -108,7 +136,7 @@ else
                 <MudTd></MudTd>
                 <MudTd></MudTd>
                 <MudTd></MudTd>
-                <MudTd Style="text-align:right"><b>Custo estimado</b></MudTd>
+                <MudTd Style="text-align:right"><b>@(_preview.Quantidade == 1 ? "Custo estimado" : $"Custo de {_preview.Quantidade}")</b></MudTd>
                 <MudTd Style="text-align:right"><b>@Format.Money(_preview.CustoEstimado)</b></MudTd>
                 <MudTd></MudTd>
             </FooterContent>
@@ -119,9 +147,9 @@ else
         <MudButton Variant="Variant.Filled"
                    Color="Color.Primary"
                    StartIcon="@Icons.Material.Filled.PrecisionManufacturing"
-                   Disabled="@(!_preview.PodeProduzir || _produzindo)"
+                   Disabled="@(!_preview.PodeProduzir || _produzindo || _carregandoPreview || _quantidade < 1)"
                    OnClick="Produzir">
-            Produzir
+            @(_quantidade == 1 ? "Produzir" : $"Produzir {_quantidade}")
         </MudButton>
     </MudStack>
 }
@@ -132,24 +160,58 @@ else
 
     private List<Equipamento> _equipamentos = new();
     private int? _equipamentoId;
+    private int _quantidade = 1;
     private string? _descricao;
     private ProducaoPreview? _preview;
     private bool _produzindo;
+    private bool _carregandoPreview;
+    private int _previewTicket;
 
     protected override async Task OnInitializedAsync()
     {
         _equipamentos = await EquipamentoService.GetAllAsync();
     }
 
-    private async Task OnEquipamentoChanged()
+    private Task OnEquipamentoChanged() => LoadPreview();
+
+    private Task OnQuantidadeChanged()
     {
-        _preview = null;
-        if (_equipamentoId is null)
+        if (_quantidade < 1)
         {
+            _quantidade = 1;
+        }
+
+        return LoadPreview();
+    }
+
+    private async Task LoadPreview()
+    {
+        var ticket = ++_previewTicket;
+        var id = _equipamentoId;
+        var quantidade = Math.Max(1, _quantidade);
+        if (id is null)
+        {
+            _preview = null;
+            _carregandoPreview = false;
             return;
         }
 
-        _preview = await ProducaoService.GetPreviewAsync(_equipamentoId.Value);
+        _carregandoPreview = true;
+        try
+        {
+            var preview = await ProducaoService.GetPreviewAsync(id.Value, quantidade);
+            if (ticket == _previewTicket)
+            {
+                _preview = preview;
+            }
+        }
+        finally
+        {
+            if (ticket == _previewTicket)
+            {
+                _carregandoPreview = false;
+            }
+        }
     }
 
     private async Task Produzir()
@@ -159,11 +221,15 @@ else
             return;
         }
 
+        var unidades = _quantidade == 1 ? "1 unidade" : $"{_quantidade} unidades";
+        var custo = _quantidade == 1
+            ? $"custo estimado de {Format.Money(_preview.CustoEstimado)}"
+            : $"custo de {Format.Money(_preview.CustoPorUnidade)} cada ({Format.Money(_preview.CustoEstimado)} no total)";
         var parameters = new DialogParameters<ConfirmDialog>
         {
             {
                 x => x.Message,
-                $"Produzir 1 unidade de \"{_preview.EquipamentoNome}\" com custo estimado de {Format.Money(_preview.CustoEstimado)}? Os insumos serão subtraídos do estoque."
+                $"Produzir {unidades} de \"{_preview.EquipamentoNome}\" com {custo}? Os insumos serão subtraídos do estoque."
             },
             { x => x.ConfirmText, "Produzir" },
             { x => x.Color, Color.Primary }
@@ -178,22 +244,20 @@ else
         _produzindo = true;
         try
         {
-            var produto = await ProducaoService.ProduzirAsync(_preview.EquipamentoId, _descricao);
-            Snackbar.Add(
-                $"Produto #{produto.Id} criado. Custo total: {Format.Money(produto.CustoTotal)}.",
-                Severity.Success);
+            var resultado = await ProducaoService.ProduzirAsync(
+                _preview.EquipamentoId, _descricao, _quantidade);
+            var mensagem = resultado.Quantidade == 1
+                ? $"Produto #{resultado.Produtos[0].Id} criado. Custo total: {Format.Money(resultado.CustoUnitario)}."
+                : $"{resultado.Quantidade} produtos criados. Custo de cada um: {Format.Money(resultado.CustoUnitario)}.";
+            Snackbar.Add(mensagem, Severity.Success);
 
             _descricao = null;
-            // Refresh preview so saldos update.
-            _preview = await ProducaoService.GetPreviewAsync(_preview.EquipamentoId);
+            await LoadPreview();
         }
         catch (Exception ex)
         {
             Snackbar.Add(ex.Message, Severity.Error);
-            if (_equipamentoId is not null)
-            {
-                _preview = await ProducaoService.GetPreviewAsync(_equipamentoId.Value);
-            }
+            await LoadPreview();
         }
         finally
         {
