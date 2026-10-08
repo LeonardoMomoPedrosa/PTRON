@@ -1,4 +1,6 @@
 @page "/sql"
+@using PTRON.Identity
+@attribute [Authorize(Policy = ReservedUsers.PolicyName)]
 @inject SqlConsoleService SqlService
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService

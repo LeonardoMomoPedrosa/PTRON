@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -18,6 +19,9 @@ public static class IdentityServiceCollectionExtensions
         services.AddScoped<PasswordResetService>();
         services.AddScoped<LoginService>();
         services.AddScoped<SignUpService>();
+        services.AddScoped<ChangePasswordService>();
+        services.AddSingleton<SessionStampValidator>();
+        services.AddScoped<CircuitHandler, SessionCircuitHandler>();
 
         services.AddIdentityCore<ApplicationUser>(options =>
             {

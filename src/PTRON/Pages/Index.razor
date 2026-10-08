@@ -1,4 +1,6 @@
 ﻿@page "/"
+@using Microsoft.AspNetCore.Components.Authorization
+@using PTRON.Identity
 
 <PageTitle>Makelectron — Início</PageTitle>
 
@@ -23,6 +25,21 @@
             </MudCard>
         </MudItem>
     }
+    @if (_reserved)
+    {
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Class="pa-2" Style="height:100%">
+                <MudCardContent>
+                    <MudIcon Icon="@Icons.Material.Filled.Storage" Color="Color.Primary" Size="Size.Large" />
+                    <MudText Typo="Typo.h6" Class="mt-2">SQL</MudText>
+                    <MudText Typo="Typo.body2">Consultas e comandos diretos no banco.</MudText>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Href="sql" Variant="Variant.Text" Color="Color.Primary">Abrir</MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+    }
 </MudGrid>
 
 @code {
@@ -36,6 +53,16 @@
         new("Entrada de estoque", "Compra de insumos com custo médio.", "entradas", Icons.Material.Filled.AddShoppingCart),
         new("Produção", "Produzir a partir de um modelo.", "producao", Icons.Material.Filled.PrecisionManufacturing),
         new("Produtos", "Produtos produzidos e custos.", "produtos", Icons.Material.Filled.Inventory2),
-        new("SQL", "Consultas e comandos diretos no banco.", "sql", Icons.Material.Filled.Storage),
     };
+
+    private bool _reserved;
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthState { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (AuthState is not null)
+            _reserved = ReservedUsers.IsReservedPrincipal((await AuthState).User);
+    }
 }

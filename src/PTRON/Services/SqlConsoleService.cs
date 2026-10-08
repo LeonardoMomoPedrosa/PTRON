@@ -2,20 +2,25 @@ using System.Data;
 using System.Data.Common;
 using Microsoft.EntityFrameworkCore;
 using PTRON.Data;
+using PTRON.Identity;
 
 namespace PTRON.Services;
 
 public class SqlConsoleService
 {
     private readonly IDbContextFactory<AppDbContext> _factory;
+    private readonly ICurrentUser _currentUser;
 
-    public SqlConsoleService(IDbContextFactory<AppDbContext> factory)
+    public SqlConsoleService(IDbContextFactory<AppDbContext> factory, ICurrentUser currentUser)
     {
         _factory = factory;
+        _currentUser = currentUser;
     }
 
     public async Task<SqlConsoleResult> ExecuteAsync(string sql)
     {
+        await RequireReservedAsync();
+
         if (string.IsNullOrWhiteSpace(sql))
         {
             throw new InvalidOperationException("Informe um comando SQL.");
@@ -46,6 +51,8 @@ public class SqlConsoleService
 
     public async Task<List<string>> GetTableNamesAsync()
     {
+        await RequireReservedAsync();
+
         await using var db = await _factory.CreateDbContextAsync();
         var connection = db.Database.GetDbConnection();
         if (connection.State != ConnectionState.Open)
@@ -72,6 +79,19 @@ public class SqlConsoleService
         }
 
         return tables;
+    }
+
+    private async Task RequireReservedAsync()
+    {
+        var userId = _currentUser.UserId;
+        if (!string.IsNullOrEmpty(userId))
+        {
+            await using var db = await _factory.CreateDbContextAsync();
+            if (await db.Users.AsNoTracking().AnyAsync(u => u.Id == userId && u.Reservado))
+                return;
+        }
+
+        throw new InvalidOperationException("O console SQL é exclusivo do usuário reservado.");
     }
 
     private static bool IsQuery(string sql)

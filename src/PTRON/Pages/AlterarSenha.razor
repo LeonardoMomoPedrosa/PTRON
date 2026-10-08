@@ -1,0 +1,87 @@
+@page "/conta/senha"
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.WebUtilities
+@inject NavigationManager Navigation
+
+<PageTitle>Makelectron — Alterar senha</PageTitle>
+
+<MudText Typo="Typo.h5" Class="mb-4">Alterar senha</MudText>
+
+<MudPaper Class="pa-6" Elevation="1" Style="max-width: 28rem;">
+    @if (_ok)
+    {
+        <MudAlert Severity="Severity.Success" Class="mb-4">
+            Sua senha foi alterada. As outras sessões foram encerradas.
+        </MudAlert>
+    }
+    else if (_expired)
+    {
+        <MudAlert Severity="Severity.Warning" Class="mb-4" Dense="true">
+            A página ficou aberta por muito tempo. Tente novamente.
+        </MudAlert>
+    }
+    else if (_erros.Count > 0)
+    {
+        <MudAlert Severity="Severity.Error" Class="mb-4" Dense="true">
+            @foreach (var erro in _erros)
+            {
+                <div>@erro</div>
+            }
+        </MudAlert>
+    }
+
+    <MudText Typo="Typo.body2" Class="mb-4">
+        Informe a senha atual e escolha uma nova. As outras sessões desta conta são encerradas.
+    </MudText>
+
+    <form method="post" action="/account/change-password" data-enhance="false">
+        <AntiforgeryToken />
+        <input type="text" name="username" autocomplete="username" value="@_userName" tabindex="-1" aria-hidden="true"
+               style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;" />
+
+        <MudText Typo="Typo.caption">Senha atual</MudText>
+        <input name="currentPassword" type="password" autocomplete="current-password" required
+               class="mud-input mud-input-outlined mud-input-outlined-border pa-3 mb-3"
+               style="width:100%; box-sizing:border-box; border:1px solid var(--mud-palette-lines-inputs); border-radius:4px; background:transparent; color:inherit;" />
+
+        <MudText Typo="Typo.caption">Nova senha</MudText>
+        <input name="newPassword" type="password" autocomplete="new-password" required minlength="8"
+               class="mud-input mud-input-outlined mud-input-outlined-border pa-3 mb-1"
+               style="width:100%; box-sizing:border-box; border:1px solid var(--mud-palette-lines-inputs); border-radius:4px; background:transparent; color:inherit;" />
+        <MudText Typo="Typo.caption" Class="mb-3 d-block">Mínimo de 8 caracteres, com pelo menos uma letra e um número.</MudText>
+
+        <MudText Typo="Typo.caption">Confirmar nova senha</MudText>
+        <input name="confirmPassword" type="password" autocomplete="new-password" required minlength="8"
+               class="mud-input mud-input-outlined mud-input-outlined-border pa-3 mb-4"
+               style="width:100%; box-sizing:border-box; border:1px solid var(--mud-palette-lines-inputs); border-radius:4px; background:transparent; color:inherit;" />
+
+        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary">
+            Alterar senha
+        </MudButton>
+    </form>
+</MudPaper>
+
+@code {
+    private readonly List<string> _erros = new();
+    private bool _ok;
+    private bool _expired;
+    private string _userName = "";
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthState { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (AuthState is not null)
+            _userName = (await AuthState).User.Identity?.Name ?? "";
+    }
+
+    protected override void OnInitialized()
+    {
+        var query = QueryHelpers.ParseQuery(new Uri(Navigation.Uri).Query);
+        _ok = query.TryGetValue("ok", out var ok) && ok == "1";
+        _expired = query.TryGetValue("error", out var error) && error == "expired";
+        if (query.TryGetValue("erro", out var erros))
+            _erros.AddRange(erros.Where(e => !string.IsNullOrWhiteSpace(e))!);
+    }
+}

@@ -60,6 +60,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
             ? CookieSecurePolicy.SameAsRequest
             : CookieSecurePolicy.Always;
+        options.Events.OnValidatePrincipal = SessionStampValidator.RejectIfStampMismatchAsync;
     });
 // Not Secure.Always: TLS ends at the proxy, so Kestrel sees plain HTTP and the antiforgery
 // system throws on every request that issues a token when it requires HTTPS.
@@ -68,7 +69,11 @@ builder.Services.AddAntiforgery(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.SameSite = SameSiteMode.Lax;
 });
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(ReservedUsers.PolicyName, policy =>
+        policy.RequireAssertion(context => ReservedUsers.IsReservedPrincipal(context.User)));
+});
 builder.Services.AddMudServices(config =>
 {
     // FlipAlways refits the menu on every viewport change. On a phone in
@@ -158,7 +163,7 @@ builder.Services.AddScoped<SqlConsoleService>();
 var app = builder.Build();
 app.LogEmailStartup();
 
-// Apply migrations / create the database on startup, then seed if empty.
+// Apply migrations / create the database on startup. Default types are created per user on activation.
 using (var scope = app.Services.CreateScope())
 {
     var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<AppDbContext>>();
@@ -171,15 +176,8 @@ using (var scope = app.Services.CreateScope())
         scope.ServiceProvider,
         scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("PTRON.Leo"));
 
-    // Ensure upload folder exists.
     var env = scope.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
     Directory.CreateDirectory(Path.Combine(env.WebRootPath, "uploads"));
-
-    // Sample rows belong to Leo. The tenant factory has no user during startup.
-    await using (var db = new AppDbContext(options, ReservedUsers.LeoId))
-    {
-        await SeedData.EnsureSeededAsync(db);
-    }
 }
 
 var supportedCultures = new[] { ptBr };

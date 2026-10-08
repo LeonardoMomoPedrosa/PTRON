@@ -1,4 +1,7 @@
-﻿<MudNavMenu>
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using PTRON.Identity
+
+<MudNavMenu>
     <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Início</MudNavLink>
     <MudNavLink Href="tipos" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Category">Tipos</MudNavLink>
     <MudNavLink Href="insumos" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Memory">Insumos</MudNavLink>
@@ -6,5 +9,21 @@
     <MudNavLink Href="entradas" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.AddShoppingCart">Entrada de estoque</MudNavLink>
     <MudNavLink Href="producao" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.PrecisionManufacturing">Produção</MudNavLink>
     <MudNavLink Href="produtos" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Inventory2">Produtos</MudNavLink>
-    <MudNavLink Href="sql" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Storage">SQL</MudNavLink>
+    @if (_reserved)
+    {
+        <MudNavLink Href="sql" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Storage">SQL</MudNavLink>
+    }
 </MudNavMenu>
+
+@code {
+    private bool _reserved;
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthState { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (AuthState is not null)
+            _reserved = ReservedUsers.IsReservedPrincipal((await AuthState).User);
+    }
+}

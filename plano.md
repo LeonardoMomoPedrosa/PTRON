@@ -22,10 +22,10 @@ Aplicativo de controle de produção de equipamentos eletrônicos (uso pessoal).
 | 5 | Produção | ✅ Concluído |
 | 6 | Produtos | ✅ Concluído |
 | 7 | Acabamento | ✅ Concluído |
-| 8 | Gestão de Usuários | 🚧 Em andamento — S1–S7 concluídas |
+| 8 | Gestão de Usuários | 🚧 Em andamento — S1–S9 concluídas |
 | 9 | Entrada de Estoque com 3 moedas | 📝 Proposto — após o Épico 8 (detalhes a definir) |
 
-> Última atualização: Épico 8 em andamento — E8-S1 a E8-S7 concluídas (identidade, dados por usuário, e-mail, cadastro, ativação, login por e-mail e redefinição de senha). Épicos E0–E7 completos.
+> Última atualização: Épico 8 em andamento — E8-S1 a E8-S9 concluídas (identidade, dados por usuário, e-mail, cadastro, ativação, login, redefinição e alteração de senha, SQL só do Leo, fotos por usuário). Épicos E0–E7 completos.
 
 ## Modelo de dados
 
@@ -137,7 +137,7 @@ Preparar o esqueleto técnico antes das funcionalidades.
 
 ---
 
-## Épico 8 — Gestão de Usuários 📝 (proposto — decisões registradas, aguardando aprovação final)
+## Épico 8 — Gestão de Usuários 🚧 (em andamento — S1–S9 concluídas)
 
 Hoje o acesso é um único usuário fixo (`Leo`, em `AccountController`, com senha no código) e todos os dados (tipos, insumos, equipamentos, entradas, produções) são globais. Este épico transforma o PTRON em um sistema multiusuário — **web** — com cadastro, ativação por e-mail, recuperação de senha e **isolamento total dos dados por usuário**. O **app mobile fica fora deste épico** (continua funcionando como hoje, ver D7).
 
@@ -239,12 +239,14 @@ O app mobile não é alterado. A API continua autenticada pelo token fixo (`Api:
   **Implementação:** `Identity/LoginService` (aceita e-mail ou o apelido `Leo`; senha errada e usuário inexistente dão a mesma resposta; conta não ativada só é informada depois que a senha confere, sem revelar e-mails cadastrados; `AccessFailed`/lockout de 5 tentativas em 15 min; zera o contador ao entrar); `AccountController` sem a senha fixa, valida o token antifalsificação (falha volta ao login com aviso) e grava no cookie o id, o nome (e-mail, ou `Leo`) e o e-mail; cookie de autenticação e de antifalsificação `HttpOnly`, `SameSite=Lax` e `Secure` fora de desenvolvimento; `Login.razor` com campo "E-mail", `<AntiforgeryToken />` (exige `<persist-component-state />` no `_Layout.cshtml`, senão o token some quando o circuito Blazor inicia) e mensagens para credenciais inválidas, conta não ativada (com link para `/ativar?email=…`, que agora também funciona como tela só de reenvio), bloqueio e página expirada; `MainLayout` com menu da conta (nome/e-mail e Sair). Os links "Esqueci a senha" (E8-S7) e "Alterar senha" (E8-S8) entram nessas stories. 9 testes (`LoginTests`); fluxo verificado em navegador.
 - [x] **E8-S7** — **Esqueci a senha (`/esqueci-senha` e `/redefinir-senha`).** Informa o e-mail; sempre responde "se o e-mail existir, enviamos instruções" (sem enumeração). Link com token de 1 h e uso único leva à tela de nova senha + confirmação. Só para contas ativadas (inclui o Leo). Limite de frequência por e-mail/IP.
   **Implementação:** `Pages/EsqueciSenha.razor` (formulário HTML comum com token antifalsificação que faz POST em `AccountController.ForgotPassword`, o único ponto com acesso ao IP; sempre volta para `?sent=1`); `Pages/RedefinirSenha.razor` (checa o link sem consumi-lo, formulário de nova senha + confirmação, telas de sucesso e de link inválido/expirado); `Identity/PasswordResetService` (`RequestAsync` só envia para conta ativada, inclusive o Leo, e termina igual para e-mail inexistente, pendente, inválido ou limitado; `ResetAsync` troca a senha, tira o bloqueio por tentativas, e envia o aviso de senha alterada); `Identity/PasswordResetTokenProvider` com validade de 1 h (ativação continua 24 h); o token é de uso único porque a troca de senha renova o `SecurityStamp`, e um token de ativação não serve para redefinir; `Identity/PasswordResetLimiter` (5 e-mails por endereço e 20 por IP, por hora, contados mesmo quando o e-mail não existe) sobre `SlidingWindowLimiter` (em memória, com limpeza de chaves antigas); `Identity/ClientIp` lê `CF-Connecting-IP`, depois `X-Forwarded-For`, e só serve para limitar frequência. Link "Esqueci a senha" na tela de login. As outras sessões do usuário só passam a ser derrubadas em E8-S8. 18 testes (`PasswordResetTests`); fluxo verificado em navegador, inclusive em modo Production.
-- [ ] **E8-S8** — **Alterar senha (`/conta/senha`).** Usuário logado informa senha atual, nova senha e confirmação. Ao concluir, as outras sessões são invalidadas (`SecurityStamp`) e um e-mail de aviso é enviado.
-- [ ] **E8-S9** — **Demais áreas por usuário.** (a) Console SQL e menu "SQL" visíveis/permitidos **somente ao Leo** (`Reservado`). (b) Fotos em `uploads/{userId}/` com nomes GUID; exclusão/limpeza restritas ao dono. (c) O seed antigo ("se o banco está vazio" com insumos de exemplo) é removido; os tipos padrão passam a ser criados por usuário na ativação (S5). (d) Todas as páginas exigem usuário autenticado e ativo; `RedirectToLogin` mantido.
+- [x] **E8-S8** — **Alterar senha (`/conta/senha`).** Usuário logado informa senha atual, nova senha e confirmação. Ao concluir, as outras sessões são invalidadas (`SecurityStamp`) e um e-mail de aviso é enviado.
+  **Implementação:** `Pages/AlterarSenha.razor` (formulário HTML com token antifalsificação que faz POST em `AccountController.ChangePassword`, para o cookie novo sair na mesma resposta); `Identity/ChangePasswordService` (senha atual, confirmação, política de senha e e-mail de aviso; falha de envio só vai para o log); `AuthPrincipal` grava o `SecurityStamp` e, para o Leo, a claim `ptron:reservado`; `SessionStampValidator` recusa o cookie quando o carimbo não bate ou a conta não está ativa (e-mail não confirmado); `SessionCircuitHandler` manda o circuito Blazor que ainda tem o carimbo antigo para `/account/logout`. O login passa a usar o mesmo principal. Link "Alterar senha" no menu da conta. 8 testes (`ChangePasswordTests`).
+- [x] **E8-S9** — **Demais áreas por usuário.** (a) Console SQL e menu "SQL" visíveis/permitidos **somente ao Leo** (`Reservado`). (b) Fotos em `uploads/{userId}/` com nomes GUID; exclusão/limpeza restritas ao dono. (c) O seed antigo ("se o banco está vazio" com insumos de exemplo) é removido; os tipos padrão passam a ser criados por usuário na ativação (S5). (d) Todas as páginas exigem usuário autenticado e ativo; `RedirectToLogin` mantido.
+  **Implementação:** menu e atalho da home só aparecem para o principal reservado (a claim ou, em cookies antigos, o id `leo`); `/sql` exige a política `Reserved`; `SqlConsoleService` consulta `Reservado` antes de qualquer comando. `ImageUploadService` grava em `uploads/{userId}/{guid}.ext` e `Delete` só apaga arquivo dessa pasta; fotos antigas em `uploads/{arquivo}` continuam do Leo. `SeedData` foi removido (os 6 tipos padrão seguem em `ActivationService`, na ativação). Páginas continuam com `[Authorize]` e `RedirectToLogin`; o cookie deixa de valer se o e-mail não estiver confirmado. 5 testes (`UserAreasTests`).
 
 **API (compatibilidade)**
 
-- [ ] **E8-S10** — **API continua funcionando como Leo.** Toda requisição `/api` autenticada pelo token fixo passa a ter `ICurrentUser = Leo` (via `ApiTokenMiddleware`), de modo que *query filters*, carimbo de `UserId` e uploads (`uploads/leo/` ou pasta existente) funcionem sem alterar rotas, DTOs ou o app Expo. Sem token válido, continua `401`. Teste de regressão cobrindo as rotas principais com o token fixo. O `ApiTokenMiddleware` já grava o claim do Leo (feito em S2 para os filtros não esvaziarem a API); falta o teste de regressão e a pasta de uploads por usuário (S9).
+- [ ] **E8-S10** — **API continua funcionando como Leo.** Toda requisição `/api` autenticada pelo token fixo passa a ter `ICurrentUser = Leo` (via `ApiTokenMiddleware`), de modo que *query filters*, carimbo de `UserId` e uploads (`uploads/leo/` ou pasta existente) funcionem sem alterar rotas, DTOs ou o app Expo. Sem token válido, continua `401`. Teste de regressão cobrindo as rotas principais com o token fixo. O `ApiTokenMiddleware` já grava o claim do Leo (feito em S2 para os filtros não esvaziarem a API) e as fotos novas da API caem em `uploads/leo/` (S9). Falta o teste de regressão das rotas.
 
 **Qualidade e operação**
 
@@ -308,6 +310,6 @@ A definir quando os detalhes forem enviados.
 
 ## Ordem sugerida de execução
 
-~~E0~~ → ~~E1~~ → ~~E2~~ → ~~E3~~ → ~~E4~~ → ~~E5~~ → ~~E6~~ → ~~E7~~ ✅ → E8 (S1–S3) → **E9 (Entrada de Estoque com 3 moedas — depois do E8)**
+~~E0~~ → ~~E1~~ → ~~E2~~ → ~~E3~~ → ~~E4~~ → ~~E5~~ → ~~E6~~ → ~~E7~~ ✅ → E8 (S1–S9) → **E9 (Entrada de Estoque com 3 moedas — depois do E8)**
 
-**E8 em andamento.** S1, S2 e S3 concluídos.
+**E8 em andamento.** S1 a S9 concluídas. Faltam S10 (regressão da API) e S11 (testes de isolamento, WAL, backup e README).

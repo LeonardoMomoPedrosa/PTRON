@@ -114,7 +114,7 @@ public sealed class UserOwnershipTests : IAsyncLifetime
         await leoTipos.CreateAsync(new TipoInsumo { Nome = "Diodo" });
         var tipoId = (await leoTipos.GetAllAsync()).Single().Id;
 
-        var anaInsumos = new InsumoService(new UserFactory(_options, _anaId), new ImageUploadService(new TempHost()));
+        var anaInsumos = new InsumoService(new UserFactory(_options, _anaId), new ImageUploadService(new TempHost(), new FixedUser(_anaId)));
         var error = await Assert.ThrowsAsync<InvalidOperationException>(
             () => anaInsumos.CreateAsync(new Insumo { Nome = "1N4007", TipoInsumoId = tipoId }));
         Assert.Equal("Tipo não encontrado.", error.Message);
@@ -159,7 +159,7 @@ public sealed class UserOwnershipTests : IAsyncLifetime
         Assert.Contains("não encontrado", entradaError.Message, StringComparison.Ordinal);
 
         var anaEquipamentos = new EquipamentoService(
-            new UserFactory(_options, _anaId), new ImageUploadService(new TempHost()));
+            new UserFactory(_options, _anaId), new ImageUploadService(new TempHost(), new FixedUser(_anaId)));
         var bomError = await Assert.ThrowsAsync<InvalidOperationException>(
             () => anaEquipamentos.AddInsumoAsync(equipamentoId, insumoId, 1));
         Assert.Equal("Equipamento não encontrado.", bomError.Message);
@@ -192,6 +192,12 @@ public sealed class UserOwnershipTests : IAsyncLifetime
         }
 
         public AppDbContext CreateDbContext() => new(_options, _userId);
+    }
+
+    private sealed class FixedUser : ICurrentUser
+    {
+        public FixedUser(string userId) => UserId = userId;
+        public string UserId { get; }
     }
 
     private sealed class TempHost : IWebHostEnvironment
