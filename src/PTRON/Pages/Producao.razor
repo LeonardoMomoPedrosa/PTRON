@@ -50,7 +50,14 @@ else if (_preview.Linhas.Count == 0)
 }
 else
 {
-    @if (!_preview.PodeProduzir)
+    @if (!_preview.PodeProduzir && _concluida)
+    {
+        <MudAlert Severity="Severity.Success" Class="mb-4" Dense="true">
+            Produção concluída. O estoque agora não cobre outra leva de @_preview.Quantidade
+            @(_preview.Quantidade == 1 ? "unidade" : "unidades").
+        </MudAlert>
+    }
+    else if (!_preview.PodeProduzir)
     {
         <MudAlert Severity="Severity.Error" Class="mb-4" Dense="true">
             <MudText Typo="Typo.subtitle2">
@@ -165,6 +172,7 @@ else
     private ProducaoPreview? _preview;
     private bool _produzindo;
     private bool _carregandoPreview;
+    private bool _concluida;
     private int _previewTicket;
 
     protected override async Task OnInitializedAsync()
@@ -172,10 +180,15 @@ else
         _equipamentos = await EquipamentoService.GetAllAsync();
     }
 
-    private Task OnEquipamentoChanged() => LoadPreview();
+    private Task OnEquipamentoChanged()
+    {
+        _concluida = false;
+        return LoadPreview();
+    }
 
     private Task OnQuantidadeChanged()
     {
+        _concluida = false;
         if (_quantidade < 1)
         {
             _quantidade = 1;
@@ -252,6 +265,7 @@ else
             Snackbar.Add(mensagem, Severity.Success);
 
             _descricao = null;
+            _concluida = true;
             await LoadPreview();
         }
         catch (Exception ex)
