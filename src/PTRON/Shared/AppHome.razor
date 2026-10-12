@@ -1,5 +1,7 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @using PTRON.Identity
+@using PTRON.Services
+@inject SignupDashboardService Signups
 
 <PageTitle>Makelectron — Início</PageTitle>
 
@@ -9,6 +11,19 @@
 </MudText>
 
 <MudGrid>
+    @if (_signups is not null)
+    {
+        <MudItem xs="12">
+            <MudCard Class="pa-2">
+                <MudCardContent>
+                    <MudIcon Icon="@Icons.Material.Filled.People" Color="Color.Primary" Size="Size.Large" />
+                    <MudText Typo="Typo.h6" Class="mt-2">Usuários cadastrados</MudText>
+                    <MudText Typo="Typo.h4">@_signups.Cadastrados</MudText>
+                    <MudText Typo="Typo.body2">@Detalhe</MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    }
     @foreach (var item in _atalhos)
     {
         <MudItem xs="12" sm="6" md="4">
@@ -55,13 +70,41 @@
     };
 
     private bool _reserved;
+    private SignupCounts? _signups;
+
+    private string Detalhe
+    {
+        get
+        {
+            if (_signups is null || _signups.Cadastrados == 0)
+                return "Ninguém se cadastrou ainda.";
+
+            var pendentes = _signups.Cadastrados - _signups.Ativos;
+            if (pendentes == 0)
+                return "Todos já ativaram a conta.";
+
+            return $"{FraseAtivos(_signups.Ativos)} {FrasePendentes(pendentes)}";
+        }
+    }
 
     [CascadingParameter]
     private Task<AuthenticationState>? AuthState { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        if (AuthState is not null)
-            _reserved = ReservedUsers.IsReservedPrincipal((await AuthState).User);
+        if (AuthState is null)
+            return;
+
+        _reserved = ReservedUsers.IsReservedPrincipal((await AuthState).User);
+        if (_reserved)
+            _signups = await Signups.GetAsync();
     }
+
+    private static string FraseAtivos(int n) => n == 1
+        ? "1 já ativou a conta."
+        : $"{n} já ativaram a conta.";
+
+    private static string FrasePendentes(int n) => n == 1
+        ? "1 ainda aguarda o e-mail."
+        : $"{n} ainda aguardam o e-mail.";
 }

@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using PTRON.Data;
 using PTRON.Identity;
+using PTRON.Models;
 using PTRON.Services;
 using Xunit;
 
@@ -94,6 +95,41 @@ public sealed class UserAreasTests : IAsyncLifetime
             () => images.SaveAsync(stream, "foto.png", stream.Length));
         Assert.Equal("Não há usuário autenticado para salvar a imagem.", error.Message);
     }
+
+    [Fact]
+    public async Task Signup_panel_counts_accounts_except_leo_and_refuses_everyone_else()
+    {
+        await using (var db = new AppDbContext(_options, ReservedUsers.LeoId))
+        {
+            db.Users.AddRange(
+                User("ativa-1@example.com", confirmed: true),
+                User("ativa-2@example.com", confirmed: true),
+                User("pendente@example.com", confirmed: false));
+            await db.SaveChangesAsync();
+        }
+
+        var leo = new SignupDashboardService(
+            new UserFactory(_options, ReservedUsers.LeoId), new FixedUser(ReservedUsers.LeoId));
+        var counts = await leo.GetAsync();
+        Assert.Equal(3, counts.Cadastrados);
+        Assert.Equal(2, counts.Ativos);
+
+        var other = new SignupDashboardService(new UserFactory(_options, "ana-1"), new FixedUser("ana-1"));
+        var denied = await Assert.ThrowsAsync<InvalidOperationException>(() => other.GetAsync());
+        Assert.Equal("O painel de cadastros é exclusivo do usuário reservado.", denied.Message);
+    }
+
+    private static ApplicationUser User(string email, bool confirmed) => new()
+    {
+        Id = Guid.NewGuid().ToString("N"),
+        UserName = email,
+        NormalizedUserName = email.ToUpperInvariant(),
+        Email = email,
+        NormalizedEmail = email.ToUpperInvariant(),
+        EmailConfirmed = confirmed,
+        SecurityStamp = Guid.NewGuid().ToString("N"),
+        ConcurrencyStamp = Guid.NewGuid().ToString("N")
+    };
 
     [Fact]
     public async Task Sql_console_runs_for_leo_and_refuses_everyone_else()

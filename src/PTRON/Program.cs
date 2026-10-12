@@ -159,6 +159,7 @@ builder.Services.AddScoped<EntradaCartState>();
 builder.Services.AddScoped<ProducaoService>();
 builder.Services.AddScoped<ProdutoService>();
 builder.Services.AddScoped<SqlConsoleService>();
+builder.Services.AddScoped<SignupDashboardService>();
 
 var app = builder.Build();
 app.LogEmailStartup();
