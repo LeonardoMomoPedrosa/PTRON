@@ -1,61 +1,24 @@
 ﻿@page "/"
+@attribute [AllowAnonymous]
+@layout BareLayout
 @using Microsoft.AspNetCore.Components.Authorization
-@using PTRON.Identity
 
-<PageTitle>Makelectron — Início</PageTitle>
-
-<BrandLogo Height="64" />
-<MudText Typo="Typo.subtitle1" Class="mt-3 mb-6">
-    Controle de produção de equipamentos eletrônicos.
-</MudText>
-
-<MudGrid>
-    @foreach (var item in _atalhos)
-    {
-        <MudItem xs="12" sm="6" md="4">
-            <MudCard Class="pa-2" Style="height:100%">
-                <MudCardContent>
-                    <MudIcon Icon="@item.Icon" Color="Color.Primary" Size="Size.Large" />
-                    <MudText Typo="Typo.h6" Class="mt-2">@item.Titulo</MudText>
-                    <MudText Typo="Typo.body2">@item.Descricao</MudText>
-                </MudCardContent>
-                <MudCardActions>
-                    <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Primary">Abrir</MudButton>
-                </MudCardActions>
-            </MudCard>
-        </MudItem>
-    }
-    @if (_reserved)
-    {
-        <MudItem xs="12" sm="6" md="4">
-            <MudCard Class="pa-2" Style="height:100%">
-                <MudCardContent>
-                    <MudIcon Icon="@Icons.Material.Filled.Storage" Color="Color.Primary" Size="Size.Large" />
-                    <MudText Typo="Typo.h6" Class="mt-2">SQL</MudText>
-                    <MudText Typo="Typo.body2">Consultas e comandos diretos no banco.</MudText>
-                </MudCardContent>
-                <MudCardActions>
-                    <MudButton Href="sql" Variant="Variant.Text" Color="Color.Primary">Abrir</MudButton>
-                </MudCardActions>
-            </MudCard>
-        </MudItem>
-    }
-</MudGrid>
+@if (_authenticated)
+{
+    <LayoutView Layout="@typeof(MainLayout)">
+        <AppHome />
+    </LayoutView>
+}
+else if (_ready)
+{
+    <LayoutView Layout="@typeof(WelcomeLayout)">
+        <WelcomePage />
+    </LayoutView>
+}
 
 @code {
-    private record Atalho(string Titulo, string Descricao, string Href, string Icon);
-
-    private readonly Atalho[] _atalhos =
-    {
-        new("Tipos", "Tipos de componente (resistor, diodo...).", "tipos", Icons.Material.Filled.Category),
-        new("Insumos", "Componentes com saldo e custo.", "insumos", Icons.Material.Filled.Memory),
-        new("Equipamentos", "Modelos e suas listas de insumos.", "equipamentos", Icons.Material.Filled.DeveloperBoard),
-        new("Entrada de estoque", "Compra de insumos com custo médio.", "entradas", Icons.Material.Filled.AddShoppingCart),
-        new("Produção", "Produzir a partir de um modelo.", "producao", Icons.Material.Filled.PrecisionManufacturing),
-        new("Produtos", "Produtos produzidos e custos.", "produtos", Icons.Material.Filled.Inventory2),
-    };
-
-    private bool _reserved;
+    private bool _ready;
+    private bool _authenticated;
 
     [CascadingParameter]
     private Task<AuthenticationState>? AuthState { get; set; }
@@ -63,6 +26,8 @@
     protected override async Task OnInitializedAsync()
     {
         if (AuthState is not null)
-            _reserved = ReservedUsers.IsReservedPrincipal((await AuthState).User);
+            _authenticated = (await AuthState).User.Identity?.IsAuthenticated == true;
+
+        _ready = true;
     }
 }

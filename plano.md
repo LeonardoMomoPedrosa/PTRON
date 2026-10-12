@@ -24,8 +24,10 @@ Aplicativo de controle de produção de equipamentos eletrônicos (uso pessoal).
 | 7 | Acabamento | ✅ Concluído |
 | 8 | Gestão de Usuários | ⏸ Em pausa — S1–S9 concluídas; S10 e S11 pendentes |
 | 9 | Entrada de Estoque com 3 moedas | ✅ Concluído |
+| 10 | Página de boas-vindas | ✅ Concluído |
+| 11 | Idiomas (português, inglês, espanhol) | ⬜ A fazer, depois do 10 |
 
-> Última atualização: Épico 8 em pausa (S10 e S11 ainda pendentes). Épico 9 concluído — produtos, impostos e frete podem usar moedas diferentes; o custo do estoque continua em reais. Épicos E0–E7 completos.
+> Última atualização: Épico 10 concluído — a primeira página de quem não entrou é a boas-vindas; quem já entrou continua no início do aplicativo. Épico 8 segue em pausa (S10 e S11 pendentes). Próximo é o Épico 11 (português, inglês e espanhol). Épico 9 concluído. Épicos E0–E7 completos.
 
 ## Modelo de dados
 
@@ -299,10 +301,129 @@ A entrada deixa de ter uma única moeda. Produtos, impostos e frete podem estar 
 
 ---
 
+## Épico 10 — Página de boas-vindas ✅
+
+Hoje quem abre o endereço cai no login. Quem já entrou vê só o início do aplicativo (atalhos). Este épico coloca na frente uma página pública, no espírito da [home do Onshape](https://www.onshape.com/en/): a pessoa entende o produto e escolhe **Criar conta** ou **Entrar**. O login continua em `/login`.
+
+A referência é a estrutura, não o conteúdo. O Onshape vende CAD para times e pode mostrar clientes, setores e "10× mais rápido". O Makelectron serve para o produto final feito de muitas peças. É aí que estoque, produção e custo deixam de caber na planilha ou na memória. Nasceu na eletrônica, onde um equipamento junta muita coisa, e o mesmo fluxo vale para o artesão ou para qualquer outro produto montado peça por peça. A página só promete o que o sistema já faz.
+
+### Posicionamento
+
+Uma frase, dita para quem monta um produto de lista longa:
+
+> **Muitas peças. Tudo sob controle.**
+>
+> Estoque, produção e o custo de cada unidade.
+
+O apoio, logo abaixo: quando o produto final é feito de muitas partes, controlar isso na mão deixa de funcionar. O Makelectron guarda a lista, confere o estoque na hora de produzir e calcula o custo em reais. Feito para eletrônica, e do mesmo jeito para artesanato ou qualquer outra montagem.
+
+Dois botões, sempre visíveis no topo e de novo no fim da página:
+
+- **Criar conta** — preenchido, leva a `/cadastro`.
+- **Entrar** — contorno, leva a `/login`.
+
+### Decisões
+
+| # | Decisão |
+|---|---------|
+| D1 | `/` passa a ser público. Visitante anônimo vê a boas-vindas e **não** é mandado para `/login`. |
+| D2 | Quem já está autenticado e abre `/` continua no início do aplicativo (os atalhos de hoje). A página de marketing é para quem ainda não entrou; quem usa todo dia não deve atravessá-la para trabalhar. |
+| D3 | A página tem layout próprio, sem gaveta nem menu do aplicativo. Barra fixa: logo, Entrar, Criar conta. Tema claro fixo, com o logo e a cor primária que o app já usa. Sem alternância claro/escuro aqui — a primeira impressão é a mesma para todo mundo. |
+| D4 | Texto em português. O caso é o produto final de muitas peças, em qualquer ofício: eletrônica, artesanato ou outra montagem. Não é uma ferramenta para um item de um material só — o valor aparece quando a lista é longa. Sem uma faixa por ofício e sem número inventado de peças ("dezenas", "10×"). Sem tabela de preço e sem "grátis por N meses". Criar conta é o convite. |
+| D5 | Nada inventado. Sem depoimento, logo de cliente, número de usuários ou frase do tipo "10× mais rápido". Sem captura de tela falsa. O visual do miolo mostra muitas peças entrando num modelo e saindo uma unidade com custo em R$, passando por estoque e produção. |
+| D6 | O aplicativo de celular **não entra** na página. Hoje ele autentica com o token fixo e só enxerga os dados do Leo. Prometer "também no celular" para quem acabou de criar conta seria mentira. Isso volta quando existir o épico de login no app. |
+| D7 | Login, cadastro, ativação, esqueci a senha e redefinição continuam anônimos e no lugar em que estão. As áreas de trabalho (tipos, insumos, equipamentos, entradas, produção, produtos, SQL) continuam exigindo sessão. |
+| D8 | A página não diz que a conta já chega pronta para outros ofícios. Na ativação, os seis tipos padrão continuam os de eletrônica (resistor, capacitor, diodo, transistor, CI, válvula). A pessoa cria os tipos que quiser — madeira, tecido, frasco — porque tipo é só um nome. Trocar ou tornar opcional essa lista padrão fica fora deste épico. |
+
+### A página, de cima para baixo
+
+1. **Barra.** Logo Makelectron à esquerda. À direita, Entrar e Criar conta.
+2. **Abertura.** A frase e o apoio acima, os dois botões, e o diagrama do fluxo ao lado (no celular, o diagrama vai para baixo do texto).
+3. **Para quem é.** Uma linha, não um grid de setores: quem faz um produto final de muitas peças — equipamento eletrônico, trabalho de artesão ou qualquer outra montagem. O exemplo visual é o diagrama único; não há ilustração separada por ofício.
+4. **O que hoje dá errado.** Três situações, as que a lista longa cria:
+   - A lista não cabe na cabeça. Na hora de montar, falta uma peça no meio de muitas.
+   - Cada peça entrou com um preço, às vezes em outra moeda. O custo da unidade não fecha.
+   - Produziu uma unidade, ou desmontou: o estoque de cada peça tem de andar junto.
+5. **Como funciona.** Quatro passos, na ordem em que a pessoa usa o sistema:
+   1. Cadastra cada peça — tipo, foto, saldo e custo. O tipo é um nome: resistor, madeira, tecido, frasco.
+   2. Monta o modelo — a lista inteira do que o produto final leva.
+   3. Dá entrada no estoque — produtos, impostos e frete podem estar em moedas diferentes; o custo de cada peça fica em reais.
+   4. Produz — confere a lista contra o saldo e para se faltar alguma peça. A unidade sai com o custo de todas elas.
+6. **O que passa a ficar registrado.** Grade curta, um ícone e uma frase por item, só com capacidade que já existe: tipos com o nome que você quiser, foto da peça, a lista inteira do modelo, custo médio ponderado, compra em BRL, USD, EUR, GBP ou CNY, produção que confere o saldo de cada peça, custo da unidade congelado (mudar o modelo não reescreve o que já foi feito), exclusão da unidade devolvendo cada peça ao estoque.
+7. **Fecho.** A mesma frase, de novo os dois botões.
+8. **Rodapé.** Nome, a linha "Estoque, produção e custo para produtos feitos de muitas peças.", e os links Entrar e Criar conta.
+
+### Stories
+
+- [x] **E10-S1** — **Rota pública e layout.** `/` deixa de exigir login. Anônimo vê a boas-vindas; autenticado vê o início atual (atalhos, inclusive SQL para o Leo). Novo layout sem gaveta: barra com logo, Entrar (`/login`) e Criar conta (`/cadastro`). Tema claro fixo. `RedirectToLogin` permanece nas páginas de trabalho. Título da aba: "Makelectron".
+- [x] **E10-S2** — **Abertura.** Frase "Muitas peças. Tudo sob controle.", o apoio (estoque, produção e custo do produto final de muitas partes; eletrônica, artesanato ou qualquer outra montagem) e os dois botões. Diagrama de muitas peças entrando num modelo e saindo uma unidade com custo em R$, legível, sem captura de tela. No celular o diagrama fica abaixo do texto; os botões ocupam a largura.
+- [x] **E10-S3** — **Para quem é, o problema e os quatro passos.** A linha do produto de muitas peças, as três situações e a sequência cadastrar cada peça → montar a lista do modelo → dar entrada → produzir, com o texto definido acima. O exemplo do tipo (resistor, madeira, tecido, frasco) aparece no primeiro passo. Um único `h1` na página (a frase da abertura); o resto são títulos de seção.
+- [x] **E10-S4** — **O que fica registrado.** Grade com as oito capacidades reais listadas na seção 6. Cada item é uma frase, não um parágrafo. Ícones do conjunto que o app já usa.
+- [x] **E10-S5** — **Fecho, rodapé e leitura.** Repete a frase e os dois botões. Rodapé mínimo. A página inteira funciona em tela estreita (barra não estoura, seções empilham, botões continuam alcançáveis). Contraste do texto no tema claro e foco visível ao navegar por teclado. Meta description em português, uma frase, para quem cola o link.
+- [x] **E10-S6** — **Conferência no navegador.** Anônimo em `/` não cai no login; Criar conta abre `/cadastro`; Entrar abre `/login` e, depois de autenticar, o início do app. Autenticado em `/` vê os atalhos, não a página de marketing. Tipos, insumos e as demais áreas continuam mandando para o login quando não há sessão. Desktop e celular.
+
+**Implementação:** `WelcomeLayout` (barra, tema claro fixo) e `WelcomePage` (o texto do épico). `Index` em `/` é anônimo: sem sessão mostra a boas-vindas; com sessão mostra o início de antes (`AppHome`, com SQL para o Leo) dentro do `MainLayout`. A abertura usa `fancy_image.jpg` (peças, lista, estoque, produção e o custo). Conferido no navegador em tela larga e no celular: anônimo não cai no login, Criar conta abre `/cadastro`, `/tipos` volta para `/login`, e a conta do Leo em `/` vê os atalhos.
+
+### Ordem sugerida dentro do épico
+
+`E10-S1` → `E10-S2` → `E10-S3` → `E10-S4` → `E10-S5` → `E10-S6`.
+
+### Fora deste épico
+
+Blog, changelog, depoimentos, preços, captura de tela do produto, página "sobre", e qualquer menção ao aplicativo de celular. A página nasce em português; inglês e espanhol ficam no Épico 11. O Épico 8 continua em pausa.
+
+---
+
+## Épico 11 — Idiomas (português, inglês e espanhol) ⬜
+
+A interface, os e-mails e o aplicativo estão em português do Brasil. Este épico acrescenta inglês e espanhol, e deixa a pessoa escolher. Vem **depois** do Épico 10: a página de boas-vindas nasce em português e aqui passa a existir nos três idiomas, junto com o resto do produto.
+
+O que a pessoa cadastrou — nome de tipo, peça, modelo, descrição de produto — não se traduz. Isso é conteúdo dela.
+
+### Decisões
+
+| # | Decisão |
+|---|---------|
+| D1 | Três idiomas: **português (pt-BR)**, **inglês (en)** e **espanhol (es)**. O português continua o do Brasil, que já está no produto. O espanhol é o da América Latina, sem tratar o da Espanha como quarto idioma. O inglês é um só (`en`). |
+| D2 | O padrão continua o português. Conta já existente, inclusive o Leo, fica em pt-BR. Nada que já está gravado muda de idioma sozinho. |
+| D3 | Visitante sem escolha usa o idioma do navegador, se for um dos três; senão, português. Um seletor grava um cookie. Na conta, o idioma fica em `ApplicationUser` e vale mais que o cookie: ao entrar, a interface segue a conta. O cadastro grava o idioma da página em que a pessoa criou a conta. |
+| D4 | O seletor mostra **Português**, **English** e **Español**, cada um escrito na própria língua. Fica na barra da página pública (Épico 10), nas telas de entrar e criar conta, e na barra do aplicativo. No celular, fica nas configurações. |
+| D5 | Textos da interface em recursos do ASP.NET (`IStringLocalizer`), inclusive as mensagens do MudBlazor (paginador e rótulos prontos), os erros de identidade e a lista de países. Brasil continua no topo da lista; o nome do país muda com o idioma, o código ISO não. |
+| D6 | Dinheiro não muda de moeda. O custo segue em reais, com **R$**. O separador de milhar e de decimal, e o formato da data, seguem o idioma ativo. Em inglês, `R$ 1,234.56`; em português e espanhol, `R$ 1.234,56`. |
+| D7 | E-mail de ativação, de redefinição e de senha alterada sai no idioma da conta. No cadastro e no "esqueci a senha", sai no idioma da página, porque a conta ainda pode não ter essa preferência gravada. |
+| D8 | Os seis tipos criados na ativação nascem no idioma da conta. Em português continuam Resistor, Capacitor, Diodo, Transistor, CI e Válvula. Inglês e espanhol têm o equivalente nos recursos. Conta já ativada não é renomeada. |
+| D9 | A API devolve a mensagem de erro no idioma do cabeçalho `Accept-Language` e, sem ele, em português. O aplicativo envia esse cabeçalho conforme a escolha feita nele. |
+
+### Stories
+
+- [ ] **E11-S1** — **Fundação.** Culturas `pt-BR`, `en` e `es` no `UseRequestLocalization`, padrão pt-BR, cookie e `Accept-Language`. `IStringLocalizer` e localização do MudBlazor. `html lang` acompanha o idioma. Seletor que grava o cookie e recarrega. `Format` usa a cultura ativa para número, percentual e data; o símbolo da moeda permanece (R$ para real).
+- [ ] **E11-S2** — **Idioma da conta.** Campo `Idioma` em `ApplicationUser` (migração; contas existentes e o Leo ficam `pt-BR`). O seletor, com sessão, grava na conta e no cookie. O login aplica o idioma da conta. O cadastro grava o idioma da página.
+- [ ] **E11-S3** — **Textos da web.** Páginas, diálogos, menu, avisos, validação, erros de identidade, títulos e a página de boas-vindas do Épico 10. Lista de países nos três idiomas. Um teste confirma que a mesma chave difere nas três culturas.
+- [ ] **E11-S4** — **E-mails.** Ativação, redefinição de senha e aviso de senha alterada, assunto e corpo, nos três idiomas, pela regra da D7.
+- [ ] **E11-S5** — **Tipos padrão.** A ativação cria os seis nomes no idioma da conta. Quem já ativou conserva os nomes que tem.
+- [ ] **E11-S6** — **API e aplicativo.** Mensagens de erro da API seguem `Accept-Language`. As telas do app Expo e o formato de número e data seguem um idioma guardado no aparelho, padrão português, com seletor nas configurações. O app envia `Accept-Language`.
+- [ ] **E11-S7** — **Conferência.** Na web: trocar o idioma na boas-vindas, no login e dentro do app; a escolha sobrevive a recarregar; a conta autenticada manda no idioma; um e-mail de ativação sai na língua da página (no log, em desenvolvimento). No celular: trocar o idioma e ver uma tela de trabalho acompanhando. Cada texto é escrito nos três idiomas no mesmo conjunto de mudanças, não deixado para uma passagem automática rever depois.
+
+### Ordem sugerida dentro do épico
+
+`E11-S1` → `E11-S2` → `E11-S3` → `E11-S4` → `E11-S5` → `E11-S6` → `E11-S7`.
+
+(S4 e S5 dependem de S2 e S3. S6 depende de S1.)
+
+### Fora deste épico
+
+Traduzir o que o usuário digitou. Português de Portugal como idioma separado. Mais idiomas além destes três. Tradução automática de nomes de peças. O Épico 8 continua em pausa.
+
+---
+
 ## Ordem sugerida de execução
 
-~~E0~~ → ~~E1~~ → ~~E2~~ → ~~E3~~ → ~~E4~~ → ~~E5~~ → ~~E6~~ → ~~E7~~ ✅ → E8 (em pausa, S1–S9 feitas) → ~~E9~~ ✅
+~~E0~~ → ~~E1~~ → ~~E2~~ → ~~E3~~ → ~~E4~~ → ~~E5~~ → ~~E6~~ → ~~E7~~ ✅ → E8 (em pausa, S1–S9 feitas) → ~~E9~~ ✅ → **E10** → **E11**
 
 **E8 em pausa.** S1 a S9 concluídas. Faltam S10 (regressão da API) e S11 (testes de isolamento, WAL, backup e README).
 
 **E9 concluído.** Entrada de estoque com moeda dos produtos, moeda dos impostos e moeda do frete; custo do estoque em reais.
+
+**E10 concluído.** Quem não entrou vê a página de boas-vindas. Quem já entrou continua no início do aplicativo.
+
+**E11 a fazer, depois do E10.** Português, inglês e espanhol na web, nos e-mails e no aplicativo. O padrão continua o português.
