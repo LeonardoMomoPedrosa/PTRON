@@ -124,6 +124,10 @@ As fotos enviadas ficam em `src/PTRON/wwwroot/uploads/` — inclua essa pasta no
 
 **Épicos 0–7 e 9 concluídos.** O épico 8 (usuários) está em pausa, com S10 e S11 pendentes. Veja o detalhamento em [`plano.md`](plano.md).
 
+### Licença
+
+[MIT](LICENSE). Vulnerabilidades: veja [`SECURITY.md`](SECURITY.md).
+
 ---
 
 ## English
@@ -245,3 +249,7 @@ Uploaded photos live in `src/PTRON/wwwroot/uploads/` — include that folder in 
 ### Status
 
 **Epics 0–7 and 9 are complete.** Epic 8 (users) is paused, with S10 and S11 still open. See details in [`plano.md`](plano.md).
+
+### License
+
+[MIT](LICENSE). To report vulnerabilities, see [`SECURITY.md`](SECURITY.md).
