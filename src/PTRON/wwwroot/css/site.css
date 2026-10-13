@@ -538,6 +538,17 @@ a, .btn-link {
     flex: 0 0 auto;
 }
 
+.brand-home {
+    display: inline-flex;
+    text-decoration: none;
+}
+
+.brand-home:focus-visible {
+    outline: 3px solid #007AFC;
+    outline-offset: 3px;
+    border-radius: 8px;
+}
+
 .brand-logo img {
     height: 100%;
     width: auto;
