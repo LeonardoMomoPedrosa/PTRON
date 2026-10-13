@@ -26,6 +26,7 @@ Aplicativo de controle de produção de equipamentos eletrônicos (uso pessoal).
 | 9 | Entrada de Estoque com 3 moedas | ✅ Concluído |
 | 10 | Página de boas-vindas | ✅ Concluído |
 | 11 | Idiomas (português, inglês, espanhol) | ⬜ A fazer, depois do 10 |
+| 12 | Código aberto | 🚧 S1 feita (PR #32); S2–S12 pendentes |
 
 > Última atualização: Épico 10 concluído — a primeira página de quem não entrou é a boas-vindas; quem já entrou continua no início do aplicativo. Épico 8 segue em pausa (S10 e S11 pendentes). Próximo é o Épico 11 (português, inglês e espanhol). Épico 9 concluído. Épicos E0–E7 completos.
 
@@ -416,9 +417,46 @@ Traduzir o que o usuário digitou. Português de Portugal como idioma separado. 
 
 ---
 
+## Épico 12 — Código aberto ⬜
+
+O repositório vai ficar público. Este épico deixa o código, a documentação e o serviço hospedado prontos para isso. A primeira parte (licença MIT, `SECURITY.md`, seção de licença no README e o link "Código aberto" no rodapé da boas-vindas) já está no PR #32. Aqui ficam os itens que sobraram.
+
+### Decisões
+
+- **D1.** Licença MIT, com Leonardo Pedrosa como titular. Se for outra (por exemplo AGPL, para impedir cópia hospedada fechada), decidir **antes** de tornar público; trocar depois é difícil.
+- **D2.** O link para o código fica só no rodapé da boas-vindas. Não vai no topo nem no destaque, que seguem com "Criar conta" e "Entrar".
+- **D3.** A licença cobre o código. Nome e logotipo não entram nela; o README diz isso.
+
+### Stories
+
+- [x] **E12-S1** — Licença MIT, `SECURITY.md`, seção de licença no README (PT/EN) e link no rodapé da boas-vindas. *(PR #32)*
+- [ ] **E12-S2** — **Segredos.** `Api:Token` está commitado em `appsettings.json` (`ptron-dev-token-...`). Produção passa a ler de variável de ambiente ou segredo; o valor do repositório vira só um marcador de desenvolvimento. Se o valor já foi usado em produção, trocar. Conferir também `appsettings.Development.json` e a configuração do SMTP.
+- [ ] **E12-S3** — **E-mail pessoal.** `pedrosa.leonardo@gmail.com` aparece em `appsettings.json`, `LeoOptions.cs`, na migração `IdentityFoundation`, nos testes e no `plano.md`. Decidir se fica público; se não, passar o valor do Leo para configuração e usar um endereço neutro nos testes e na documentação. A migração já aplicada não pode ser editada sem cuidado.
+- [ ] **E12-S4** — **Dados e histórico.** Reconferir que nenhum `.db`, foto de usuário ou chave entrou no histórico do git (a conferência inicial não achou nada), com uma ferramenta de varredura de segredos (gitleaks ou trufflehog). Conferir que `.gitignore` cobre tudo.
+- [ ] **E12-S5** — **Nome, logotipo e imagens.** Escolher um nome público (a interface diz Makelectron, o repositório diz PTRON). Confirmar que logotipo e `fancy_image.jpg` podem ser publicados e dizer no README o que a licença cobre.
+- [ ] **E12-S6** — **README.** Captura de tela, texto curto de "por quê", estado beta, como rodar o próprio exemplar (hospedado ou próprio) e links para licença, `SECURITY.md` e contribuição.
+- [ ] **E12-S7** — **Comunidade.** `CONTRIBUTING.md`, modelos de issue (erro e sugestão) e modelo de pull request. `CODE_OF_CONDUCT.md` se houver contribuições externas.
+- [ ] **E12-S8** — **Integração contínua.** Fluxo do GitHub Actions que compila e roda os testes em cada pull request.
+- [ ] **E12-S9** — **Revisão de segurança do serviço público.** Conferir autorização e limite de requisições no cadastro, na API `/api` e no envio de fotos; confirmar que a configuração de produção não tem segredos no repositório; relato privado de vulnerabilidades ativado no GitHub.
+- [ ] **E12-S10** — **Privacidade e termos.** Página curta de privacidade e termos, linkada no rodapé, enquanto o serviço guardar dados de outras pessoas. Aparece nos três idiomas se o Épico 11 já estiver feito.
+- [ ] **E12-S11** — **Documentos e versões.** Decidir onde ficam `plano.md` e `especificacao.md` (por exemplo `docs/`) e se terão versão em inglês. Criar `CHANGELOG.md` e a primeira tag de versão.
+- [ ] **E12-S12** — **Tornar público.** Última conferência (S2 a S5 e S9 feitas), trocar a visibilidade do repositório para pública e conferir o link do rodapé na boas-vindas.
+
+### Ordem sugerida dentro do épico
+
+`E12-S2` → `E12-S3` → `E12-S4` → `E12-S5` → `E12-S6` → `E12-S7` → `E12-S8` → `E12-S9` → `E12-S10` → `E12-S11` → `E12-S12`.
+
+(S2 a S5 e S9 **bloqueiam** S12. S6 a S8, S10 e S11 podem seguir depois de público, mas é melhor antes.)
+
+### Fora deste épico
+
+Aceitar contribuições de código no ritmo de um projeto grande, empacotamento (Docker, instalador) e traduzir a documentação para outros idiomas.
+
+---
+
 ## Ordem sugerida de execução
 
-~~E0~~ → ~~E1~~ → ~~E2~~ → ~~E3~~ → ~~E4~~ → ~~E5~~ → ~~E6~~ → ~~E7~~ ✅ → E8 (em pausa, S1–S9 feitas) → ~~E9~~ ✅ → **E10** → **E11**
+~~E0~~ → ~~E1~~ → ~~E2~~ → ~~E3~~ → ~~E4~~ → ~~E5~~ → ~~E6~~ → ~~E7~~ ✅ → E8 (em pausa, S1–S9 feitas) → ~~E9~~ ✅ → **E10** → **E11** → **E12**
 
 **E8 em pausa.** S1 a S9 concluídas. Faltam S10 (regressão da API) e S11 (testes de isolamento, WAL, backup e README).
 
@@ -427,3 +465,5 @@ Traduzir o que o usuário digitou. Português de Portugal como idioma separado. 
 **E10 concluído.** Quem não entrou vê a página de boas-vindas. Quem já entrou continua no início do aplicativo.
 
 **E11 a fazer, depois do E10.** Português, inglês e espanhol na web, nos e-mails e no aplicativo. O padrão continua o português.
+
+**E12 em andamento.** S1 feita. Faltam segredos, e-mail pessoal, varredura do histórico, nome e imagens, README, comunidade, CI, revisão de segurança, privacidade, documentos e a troca para público.
