@@ -12,7 +12,7 @@
     <ChildContent>
         @foreach (var language in SupportedLanguages.All)
         {
-            <MudMenuItem Href="@LinkFor(language)" ForceLoad="true"
+            <MudMenuItem OnClick="@(() => Select(language))"
                          Class="@(language.Code == _current.Code ? "mud-selected-item" : null)">
                 <span class="d-inline-flex align-center">
                     <FlagIcon Code="@language.Code" Width="22" />
@@ -26,6 +26,11 @@
 @code {
     private Language _current = SupportedLanguages.Current;
 
-    private string LinkFor(Language language) =>
-        $"/idioma?cultura={Uri.EscapeDataString(language.Code)}&retorno={Uri.EscapeDataString(Navigation.ToBaseRelativePath(Navigation.Uri).Insert(0, "/"))}";
+    private void Select(Language language)
+    {
+        var retorno = "/" + Navigation.ToBaseRelativePath(Navigation.Uri);
+        Navigation.NavigateTo(
+            $"/idioma?cultura={Uri.EscapeDataString(language.Code)}&retorno={Uri.EscapeDataString(retorno)}",
+            forceLoad: true);
+    }
 }
