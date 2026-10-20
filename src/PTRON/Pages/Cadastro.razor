@@ -3,6 +3,7 @@
 @attribute [AllowAnonymous]
 @using System.ComponentModel.DataAnnotations
 @using PTRON.Identity
+@using PTRON.Localization
 @inject SignUpService SignUp
 
 <PageTitle>Makelectron — Criar conta</PageTitle>
@@ -99,6 +100,7 @@
                 Email = _model.Email,
                 Pais = _model.Pais,
                 Estado = _model.Estado,
+                Idioma = SupportedLanguages.Current.Code,
                 Senha = _model.Senha,
             });
 

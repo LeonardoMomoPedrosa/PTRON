@@ -10,6 +10,9 @@ public class ApplicationUser : IdentityUser
     /// <summary>Free-text state/province.</summary>
     public string? Estado { get; set; }
 
+    /// <summary>Preferred interface language: pt-BR, en or es.</summary>
+    public string Idioma { get; set; } = "pt-BR";
+
     public DateTime CriadoEm { get; set; } = DateTime.UtcNow;
 
     /// <summary>Reserved (emergency) account, e.g. Leo. Never created through sign-up.</summary>

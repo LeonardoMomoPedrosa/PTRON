@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using PTRON.Identity;
+using PTRON.Localization;
 using PTRON.Models;
 
 namespace PTRON.Controllers;
@@ -109,6 +110,7 @@ public sealed class AccountController : Controller
         switch (result.Outcome)
         {
             case LoginOutcome.Succeeded:
+                LanguageCookie.Write(HttpContext, result.User!.Idioma);
                 await HttpContext.SignInAsync(
                     CookieAuthenticationDefaults.AuthenticationScheme,
                     AuthPrincipal.Create(result.User!),
