@@ -2,6 +2,7 @@ using System.Net.Mail;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using PTRON.Email;
+using PTRON.Localization;
 using PTRON.Models;
 
 namespace PTRON.Identity;
@@ -11,6 +12,7 @@ public sealed class SignUpRequest
     public string? Email { get; set; }
     public string? Pais { get; set; }
     public string? Estado { get; set; }
+    public string? Idioma { get; set; }
     public string? Senha { get; set; }
 }
 
@@ -91,6 +93,7 @@ public sealed class SignUpService
             EmailConfirmed = false,
             Pais = pais,
             Estado = estado,
+            Idioma = SupportedLanguages.Find(request.Idioma)?.Code ?? SupportedLanguages.Default,
             CriadoEm = DateTime.UtcNow,
         };
 

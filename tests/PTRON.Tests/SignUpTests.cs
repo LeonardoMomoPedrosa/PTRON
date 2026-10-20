@@ -61,6 +61,20 @@ public sealed class SignUpTests : IAsyncLifetime
         return await scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>().FindByEmailAsync(email);
     }
 
+    [Theory]
+    [InlineData("en", "en")]
+    [InlineData("es-MX", "es")]
+    [InlineData(null, "pt-BR")]
+    [InlineData("fr", "pt-BR")]
+    public async Task Stores_the_language_of_the_signup_page(string? idioma, string expected)
+    {
+        var request = Valid();
+        request.Idioma = idioma;
+        await Register(request);
+
+        Assert.Equal(expected, (await Find("maria@example.com"))!.Idioma);
+    }
+
     [Fact]
     public async Task Creates_an_inactive_account_and_sends_the_activation_email()
     {

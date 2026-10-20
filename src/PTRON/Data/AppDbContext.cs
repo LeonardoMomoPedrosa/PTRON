@@ -37,6 +37,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
         {
             user.Property(u => u.Pais).HasMaxLength(2);
             user.Property(u => u.Estado).HasMaxLength(100);
+            user.Property(u => u.Idioma).HasMaxLength(10).HasDefaultValue("pt-BR");
             user.HasIndex(u => u.NormalizedEmail).HasDatabaseName("EmailIndex").IsUnique();
         });
 

@@ -1,5 +1,7 @@
 using System.Globalization;
+using System.Security.Claims;
 using System.Text.Json;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +14,7 @@ using PTRON.Data;
 using PTRON.Email;
 using PTRON.Identity;
 using PTRON.Localization;
+using PTRON.Models;
 using PTRON.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -216,23 +219,23 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapHealthChecks("/health");
-app.MapGet("/idioma", (HttpContext http, string? cultura, string? retorno) =>
+app.MapGet("/idioma", async (HttpContext http, UserManager<ApplicationUser> users, string? cultura, string? retorno) =>
 {
     var language = SupportedLanguages.Find(cultura);
     if (language is not null)
     {
-        http.Response.Cookies.Append(
-            Microsoft.AspNetCore.Localization.CookieRequestCultureProvider.DefaultCookieName,
-            Microsoft.AspNetCore.Localization.CookieRequestCultureProvider.MakeCookieValue(
-                new Microsoft.AspNetCore.Localization.RequestCulture(language.Code)),
-            new CookieOptions
+        LanguageCookie.Write(http, language.Code);
+
+        var userId = http.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (http.User.Identity?.IsAuthenticated == true && userId is not null)
+        {
+            var user = await users.FindByIdAsync(userId);
+            if (user is not null && user.Idioma != language.Code)
             {
-                Expires = DateTimeOffset.UtcNow.AddYears(1),
-                IsEssential = true,
-                HttpOnly = true,
-                SameSite = SameSiteMode.Lax,
-                Secure = http.Request.IsHttps
-            });
+                user.Idioma = language.Code;
+                await users.UpdateAsync(user);
+            }
+        }
     }
 
     var destino = !string.IsNullOrEmpty(retorno) && retorno.StartsWith('/') && !retorno.StartsWith("//") && !retorno.StartsWith("/\\")
