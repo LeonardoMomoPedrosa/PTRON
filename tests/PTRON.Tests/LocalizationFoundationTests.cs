@@ -55,7 +55,7 @@ public class LocalizationFoundationTests
         var localizer = provider.GetRequiredService<IStringLocalizer<SharedResource>>();
 
         var texts = SupportedLanguages.All
-            .Select(l => WithCulture(l.Code, () => localizer["Language"].Value))
+            .Select(l => WithCulture(l.Code, () => localizer["Escolher idioma"].Value))
             .ToArray();
 
         Assert.Equal(3, texts.Distinct().Count());

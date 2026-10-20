@@ -5,17 +5,17 @@
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 
-<PageTitle>Entrada de estoque</PageTitle>
+<PageTitle>@L["Entrada de estoque"]</PageTitle>
 
-<MudText Typo="Typo.h5" Class="mb-4">Entrada de estoque</MudText>
+<MudText Typo="Typo.h5" Class="mb-4">@L["Entrada de estoque"]</MudText>
 
 <MudTabs Elevation="1" Rounded="true" ApplyEffectsToContainer="true">
-    <MudTabPanel Text="Nova entrada" Icon="@Icons.Material.Filled.AddShoppingCart">
+    <MudTabPanel Text="@L["Nova entrada"]" Icon="@Icons.Material.Filled.AddShoppingCart">
         <MudPaper Class="pa-4 mb-4 mt-4" Outlined="true">
             <MudGrid Class="align-end">
                 <MudItem xs="12" sm="3">
                     <MudSelect T="string" Value="CartState.MoedaProdutos" ValueChanged="OnMoedaProdutosChanged"
-                               Label="Moeda dos produtos" AnchorOrigin="Origin.BottomCenter">
+                               Label="@L["Moeda dos produtos"]" AnchorOrigin="Origin.BottomCenter">
                         @foreach (var moeda in Moedas.Todas)
                         {
                             <MudSelectItem T="string" Value="@moeda">@Moedas.Symbol(moeda)</MudSelectItem>
@@ -34,7 +34,7 @@
                 }
                 <MudItem xs="12" sm="3">
                     <MudSelect T="string" Value="CartState.MoedaImpostos" ValueChanged="OnMoedaImpostosChanged"
-                               Label="Moeda dos impostos" AnchorOrigin="Origin.BottomCenter">
+                               Label="@L["Moeda dos impostos"]" AnchorOrigin="Origin.BottomCenter">
                         @foreach (var moeda in Moedas.Todas)
                         {
                             <MudSelectItem T="string" Value="@moeda">@Moedas.Symbol(moeda)</MudSelectItem>
@@ -52,7 +52,7 @@
                     </MudItem>
                 }
                 <MudItem xs="12" sm="3">
-                    <MudSelect T="string" @bind-Value="CartState.MoedaFrete" Label="Moeda do frete" AnchorOrigin="Origin.BottomCenter">
+                    <MudSelect T="string" @bind-Value="CartState.MoedaFrete" Label="@L["Moeda do frete"]" AnchorOrigin="Origin.BottomCenter">
                         @foreach (var moeda in MoedasFreteOpcoes)
                         {
                             <MudSelectItem T="string" Value="@moeda">@Moedas.Symbol(moeda)</MudSelectItem>
@@ -61,13 +61,13 @@
                 </MudItem>
                 <MudItem xs="6" sm="3">
                     <MudNumericField T="decimal" @bind-Value="CartState.Frete"
-                                     Label="@($"Frete ({Moedas.Symbol(CartState.MoedaFrete)})")"
+                                     Label="@L["Frete ({0})", Moedas.Symbol(CartState.MoedaFrete)]"
                                      Min="0m" Step="0.01m" Format="N2" Culture="@Format.Culture"
                                      Immediate="true" HideSpinButtons="true" />
                 </MudItem>
                 <MudItem xs="6" sm="3">
                     <MudNumericField T="decimal" @bind-Value="CartState.Impostos"
-                                     Label="@($"Impostos ({Moedas.Symbol(CartState.MoedaImpostos)})")"
+                                     Label="@L["Impostos ({0})", Moedas.Symbol(CartState.MoedaImpostos)]"
                                      Min="0m" Step="0.01m" Format="N2" Culture="@Format.Culture"
                                      Immediate="true" HideSpinButtons="true" />
                 </MudItem>
@@ -75,13 +75,11 @@
             @if (TemMoedaEstrangeira)
             {
                 <MudAlert Severity="Severity.Info" Dense="true" Class="mt-3">
-                    Os preços dos produtos estão em @Moedas.Symbol(CartState.MoedaProdutos),
-                    os impostos em @Moedas.Symbol(CartState.MoedaImpostos)
-                    e o frete em @Moedas.Symbol(CartState.MoedaFrete).
-                    O custo do estoque é gravado em reais.
+                    @L["Os preços dos produtos estão em {0}, os impostos em {1} e o frete em {2}.", Moedas.Symbol(CartState.MoedaProdutos), Moedas.Symbol(CartState.MoedaImpostos), Moedas.Symbol(CartState.MoedaFrete)]
+                    @L["O custo do estoque é gravado em reais."]
                     @if (ImpostosNaMoedaDosProdutos && PrecisaCambioProdutos)
                     {
-                        <span> Produtos e impostos usam o mesmo câmbio.</span>
+                        <span> @L["Produtos e impostos usam o mesmo câmbio."]</span>
                     }
                 </MudAlert>
             }
@@ -93,7 +91,7 @@
                     <MudAutocomplete T="Insumo" @ref="_insumoSearch"
                                      @bind-Value="_novoInsumo"
                                      @bind-Value:after="AfterInsumoChanged"
-                                     Label="Insumo"
+                                     Label="@L["Insumo"]"
                                      SearchFunc="SearchInsumos"
                                      ToStringFunc="@(i => i is null ? string.Empty : InsumoLabel(i))"
                                      ResetValueOnEmptyText="true"
@@ -104,7 +102,7 @@
                 </MudItem>
                 <MudItem xs="6" sm="2">
                     <MudNumericField T="decimal" @ref="_qtdField"
-                                     @bind-Value="_novaQtd" Label="Quantidade"
+                                     @bind-Value="_novaQtd" Label="@L["Quantidade"]"
                                      Min="0m" Step="1m" Immediate="true" HideSpinButtons="true"
                                      OnKeyUp="OnQtdKeyUp" />
                 </MudItem>
@@ -118,7 +116,7 @@
                 <MudItem xs="12" sm="2">
                     <MudButton Variant="Variant.Filled" Color="Color.Secondary"
                                StartIcon="@Icons.Material.Filled.Add" OnClick="AddLinha" FullWidth="true">
-                        Adicionar
+                        @L["Adicionar"]
                     </MudButton>
                 </MudItem>
             </MudGrid>
@@ -127,15 +125,15 @@
         <MudPaper Class="mb-4">
             <MudTable Items="_cart" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm">
                 <HeaderContent>
-                    <MudTh Style="width:64px">Foto</MudTh>
-                    <MudTh>Insumo</MudTh>
-                    <MudTh Style="text-align:right">Qtd</MudTh>
-                    <MudTh Style="text-align:right">Preço unit. (@Moedas.Symbol(CartState.MoedaProdutos))</MudTh>
-                    <MudTh Style="text-align:right">Subtotal</MudTh>
-                    <MudTh Style="text-align:right">Ações</MudTh>
+                    <MudTh Style="width:64px">@L["Foto"]</MudTh>
+                    <MudTh>@L["Insumo"]</MudTh>
+                    <MudTh Style="text-align:right">@L["Qtd"]</MudTh>
+                    <MudTh Style="text-align:right">@L["Preço unit. ({0})", Moedas.Symbol(CartState.MoedaProdutos)]</MudTh>
+                    <MudTh Style="text-align:right">@L["Subtotal"]</MudTh>
+                    <MudTh Style="text-align:right">@L["Ações"]</MudTh>
                 </HeaderContent>
                 <RowTemplate>
-                    <MudTd DataLabel="Foto">
+                    <MudTd DataLabel="@L["Foto"]">
                         @if (!string.IsNullOrEmpty(context.Insumo?.FotoPath))
                         {
                             <MudImage Src="@context.Insumo.FotoPath" Width="40" Height="40"
@@ -146,7 +144,7 @@
                             <MudIcon Icon="@Icons.Material.Filled.Memory" Color="Color.Default" />
                         }
                     </MudTd>
-                    <MudTd DataLabel="Insumo">
+                    <MudTd DataLabel="@L["Insumo"]">
                         @if (context.Insumo is not null)
                         {
                             <MudText Typo="Typo.body2">@context.Insumo.Nome</MudText>
@@ -155,18 +153,18 @@
                             </MudText>
                         }
                     </MudTd>
-                    <MudTd DataLabel="Qtd" Style="text-align:right">
+                    <MudTd DataLabel="@L["Qtd"]" Style="text-align:right">
                         <MudNumericField T="decimal" @bind-Value="context.Qtd" Min="0.0001m"
                                          Variant="Variant.Text" Margin="Margin.Dense"
                                          Style="max-width:100px; margin-left:auto;" HideSpinButtons="true" />
                     </MudTd>
-                    <MudTd DataLabel="Preço unit." Style="text-align:right">
+                    <MudTd DataLabel="@L["Preço unit."]" Style="text-align:right">
                         <MudNumericField T="decimal" @bind-Value="context.PrecoUnitario" Min="0m"
                                          Variant="Variant.Text" Margin="Margin.Dense"
                                          Format="N2" Culture="@Format.Culture"
                                          Style="max-width:120px; margin-left:auto;" HideSpinButtons="true" />
                     </MudTd>
-                    <MudTd DataLabel="Subtotal" Style="text-align:right">
+                    <MudTd DataLabel="@L["Subtotal"]" Style="text-align:right">
                         @Format.Money(context.Qtd * context.PrecoUnitario, CartState.MoedaProdutos)
                     </MudTd>
                     <MudTd Style="text-align:right">
@@ -175,13 +173,13 @@
                     </MudTd>
                 </RowTemplate>
                 <NoRecordsContent>
-                    <MudText>Nenhum item no carrinho. Adicione insumos acima.</MudText>
+                    <MudText>@L["Nenhum item no carrinho. Adicione insumos acima."]</MudText>
                 </NoRecordsContent>
                 <FooterContent>
                     <MudTd></MudTd>
                     <MudTd></MudTd>
                     <MudTd></MudTd>
-                    <MudTd Style="text-align:right"><b>Produtos</b></MudTd>
+                    <MudTd Style="text-align:right"><b>@L["Produtos"]</b></MudTd>
                     <MudTd Style="text-align:right"><b>@Format.Money(TotalProdutos, CartState.MoedaProdutos)</b></MudTd>
                     <MudTd></MudTd>
                 </FooterContent>
@@ -191,28 +189,28 @@
         <MudPaper Class="pa-4 mb-4" Outlined="true">
             <MudGrid>
                 <MudItem xs="6" sm="3">
-                    <MudText Typo="Typo.caption" Class="mud-text-secondary">Produtos</MudText>
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">@L["Produtos"]</MudText>
                     <MudText>@Format.Money(TotalProdutos, CartState.MoedaProdutos)</MudText>
                 </MudItem>
                 <MudItem xs="6" sm="3">
-                    <MudText Typo="Typo.caption" Class="mud-text-secondary">Frete</MudText>
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">@L["Frete"]</MudText>
                     <MudText>@Format.Money(CartState.Frete, CartState.MoedaFrete)</MudText>
                 </MudItem>
                 <MudItem xs="6" sm="3">
-                    <MudText Typo="Typo.caption" Class="mud-text-secondary">Impostos</MudText>
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">@L["Impostos"]</MudText>
                     <MudText>@Format.Money(CartState.Impostos, CartState.MoedaImpostos)</MudText>
                 </MudItem>
                 @if (MoedasIguais)
                 {
                     <MudItem xs="6" sm="3">
-                        <MudText Typo="Typo.caption" Class="mud-text-secondary">Total @Moedas.Symbol(CartState.MoedaProdutos)</MudText>
+                        <MudText Typo="Typo.caption" Class="mud-text-secondary">@L["Total {0}", Moedas.Symbol(CartState.MoedaProdutos)]</MudText>
                         <MudText Typo="Typo.subtitle1"><b>@Format.Money(TotalMoeda, CartState.MoedaProdutos)</b></MudText>
                     </MudItem>
                 }
                 @if (TemMoedaEstrangeira && CambioParaTotalValido)
                 {
                     <MudItem xs="12" sm="3">
-                        <MudText Typo="Typo.caption" Class="mud-text-secondary">Total em R$</MudText>
+                        <MudText Typo="Typo.caption" Class="mud-text-secondary">@L["Total em R$"]</MudText>
                         <MudText Typo="Typo.subtitle1"><b>@Format.Money(TotalBrlEstimado)</b></MudText>
                     </MudItem>
                 }
@@ -221,50 +219,48 @@
 
         <MudStack Row="true" Justify="Justify.FlexEnd" Spacing="2">
             <MudButton Variant="Variant.Outlined" OnClick="LimparCart" Disabled="@(!_cart.Any())">
-                Limpar
+                @L["Limpar"]
             </MudButton>
             <MudButton Variant="Variant.Filled" Color="Color.Primary"
                        StartIcon="@Icons.Material.Filled.Visibility"
                        OnClick="Finalizar" Disabled="@(!_cart.Any())">
-                Pré-visualizar
+                @L["Pré-visualizar"]
             </MudButton>
         </MudStack>
     </MudTabPanel>
 
-    <MudTabPanel Text="Histórico" Icon="@Icons.Material.Filled.History">
+    <MudTabPanel Text="@L["Histórico"]" Icon="@Icons.Material.Filled.History">
         <MudTable Items="_historico" Loading="_loadingHistorico" Dense="true" Hover="true" Class="mt-4"
                   Breakpoint="Breakpoint.Sm" LoadingProgressColor="Color.Primary">
             <HeaderContent>
-                <MudTh>Data</MudTh>
-                <MudTh>Moeda</MudTh>
-                <MudTh Style="text-align:right">Itens</MudTh>
-                <MudTh Style="text-align:right">Total (R$)</MudTh>
-                <MudTh Style="text-align:right">Detalhe</MudTh>
+                <MudTh>@L["Data"]</MudTh>
+                <MudTh>@L["Moeda"]</MudTh>
+                <MudTh Style="text-align:right">@L["Itens"]</MudTh>
+                <MudTh Style="text-align:right">@L["Total (R$)"]</MudTh>
+                <MudTh Style="text-align:right">@L["Detalhe"]</MudTh>
             </HeaderContent>
             <RowTemplate>
-                <MudTd DataLabel="Data">@Format.Date(context.Data)</MudTd>
-                <MudTd DataLabel="Moeda">
+                <MudTd DataLabel="@L["Data"]">@Format.Date(context.Data)</MudTd>
+                <MudTd DataLabel="@L["Moeda"]">
                     @if (context.MoedasIguais)
                     {
                         @Moedas.Symbol(context.MoedaProdutos)
                         @if (context.MoedaProdutos != Moedas.Destino)
                         {
                             <MudText Typo="Typo.caption" Class="mud-text-secondary">
-                                câmbio @Format.Money(context.CambioProdutos)
+                                @L["câmbio {0}", Format.Money(context.CambioProdutos)]
                             </MudText>
                         }
                     }
                     else
                     {
                         <MudText Typo="Typo.body2">
-                            Produtos @Moedas.Symbol(context.MoedaProdutos)
-                            · Impostos @Moedas.Symbol(context.MoedaImpostos)
-                            · Frete @Moedas.Symbol(context.MoedaFrete)
+                            @L["Produtos {0} · Impostos {1} · Frete {2}", Moedas.Symbol(context.MoedaProdutos), Moedas.Symbol(context.MoedaImpostos), Moedas.Symbol(context.MoedaFrete)]
                         </MudText>
                     }
                 </MudTd>
-                <MudTd DataLabel="Itens" Style="text-align:right">@context.Itens.Count</MudTd>
-                <MudTd DataLabel="Total (R$)" Style="text-align:right">
+                <MudTd DataLabel="@L["Itens"]" Style="text-align:right">@context.Itens.Count</MudTd>
+                <MudTd DataLabel="@L["Total (R$)"]" Style="text-align:right">
                     @Format.Money(context.TotalBrl)
                 </MudTd>
                 <MudTd Style="text-align:right">
@@ -273,7 +269,7 @@
                 </MudTd>
             </RowTemplate>
             <NoRecordsContent>
-                <MudText>Nenhuma entrada registrada.</MudText>
+                <MudText>@L["Nenhuma entrada registrada."]</MudText>
             </NoRecordsContent>
         </MudTable>
     </MudTabPanel>
@@ -302,7 +298,7 @@
         ImpostosNaMoedaDosProdutos && CartState.MoedaFrete == CartState.MoedaProdutos;
     private bool TemMoedaEstrangeira =>
         PrecisaCambioProdutos || CartState.MoedaImpostos != Moedas.Destino || CartState.MoedaFrete != Moedas.Destino;
-    private string PrecoLabel => $"Preço unitário ({Moedas.Symbol(CartState.MoedaProdutos)})";
+    private string PrecoLabel => L["Preço unitário ({0})", Moedas.Symbol(CartState.MoedaProdutos)].Value;
     private decimal TotalProdutos => _cart.Sum(c => c.Qtd * c.PrecoUnitario);
     private decimal TotalMoeda => TotalProdutos + CartState.Frete + CartState.Impostos;
     private IReadOnlyList<string> MoedasFreteOpcoes
@@ -348,8 +344,8 @@
         }
     }
 
-    private static string CambioLabel(string moeda) => $"Câmbio (R$ por {Moedas.Symbol(moeda)})";
-    private static string CambioHint(string moeda) => $"Quantos reais valem 1 {Moedas.Nome(moeda)}";
+    private string CambioLabel(string moeda) => L["Câmbio (R$ por {0})", Moedas.Symbol(moeda)].Value;
+    private string CambioHint(string moeda) => L["Quantos reais valem 1 {0}", L[Moedas.Nome(moeda)]].Value;
 
     private void OnMoedaProdutosChanged(string value)
     {
@@ -450,8 +446,8 @@
         return Task.FromResult(result);
     }
 
-    private static string InsumoLabel(Insumo i)
-        => $"{i.Nome} · {InsumoDetalhe(i)} (saldo: {Format.Number(i.Saldo)} · {Format.Money(i.CustoUnitario)})";
+    private string InsumoLabel(Insumo i)
+        => $"{i.Nome} · {InsumoDetalhe(i)} ({L["Saldo"].Value.ToLower()}: {Format.Number(i.Saldo)} · {Format.Money(i.CustoUnitario)})";
 
     private static string InsumoDetalhe(Insumo i)
     {
@@ -542,19 +538,19 @@
     {
         if (_novoInsumo is null)
         {
-            Snackbar.Add("Selecione um insumo.", Severity.Warning);
+            Snackbar.Add(L["Selecione um insumo."], Severity.Warning);
             return Task.CompletedTask;
         }
 
         if (_novaQtd <= 0)
         {
-            Snackbar.Add("A quantidade deve ser maior que zero.", Severity.Warning);
+            Snackbar.Add(L["A quantidade deve ser maior que zero."], Severity.Warning);
             return Task.CompletedTask;
         }
 
         if (_novoPreco < 0)
         {
-            Snackbar.Add("O preço unitário não pode ser negativo.", Severity.Warning);
+            Snackbar.Add(L["O preço unitário não pode ser negativo."], Severity.Warning);
             return Task.CompletedTask;
         }
 
@@ -613,13 +609,13 @@
 
         if (_cart.Any(c => c.Qtd <= 0 || c.PrecoUnitario < 0))
         {
-            Snackbar.Add("Corrija quantidade e preço de todos os itens antes de finalizar.", Severity.Warning);
+            Snackbar.Add(L["Corrija quantidade e preço de todos os itens antes de finalizar."], Severity.Warning);
             return;
         }
 
         if (CartState.Frete < 0 || CartState.Impostos < 0)
         {
-            Snackbar.Add("Frete e impostos não podem ser negativos.", Severity.Warning);
+            Snackbar.Add(L["Frete e impostos não podem ser negativos."], Severity.Warning);
             return;
         }
 
@@ -639,7 +635,7 @@
             var cart = _cart.FirstOrDefault(c => c.InsumoId == linha.InsumoId);
             return new EntradaPreviewDialog.Item
             {
-                Nome = cart?.Insumo?.Nome ?? $"Insumo {linha.InsumoId}",
+                Nome = cart?.Insumo?.Nome ?? L["Insumo {0}", linha.InsumoId].Value,
                 Detalhe = cart?.Insumo is null ? string.Empty : InsumoDetalhe(cart.Insumo),
                 Linha = linha
             };
@@ -651,7 +647,7 @@
             { x => x.Itens, itens }
         };
         var dialog = await DialogService.ShowAsync<EntradaPreviewDialog>(
-            "Pré-visualização da entrada", parameters, PreviewDialogOptions);
+            L["Pré-visualização da entrada"], parameters, PreviewDialogOptions);
         var result = await dialog.Result;
         if (result is { Canceled: true })
         {
@@ -661,7 +657,7 @@
         try
         {
             await EntradaService.FinalizarAsync(BuildCommand());
-            Snackbar.Add("Entrada de estoque finalizada.", Severity.Success);
+            Snackbar.Add(L["Entrada de estoque finalizada."], Severity.Success);
             CartState.Clear();
             _insumos = await InsumoService.GetAllAsync();
             await LoadHistorico();
@@ -679,6 +675,6 @@
             { x => x.Entrada, entrada }
         };
         await DialogService.ShowAsync<EntradaDetalheDialog>(
-            $"Entrada #{entrada.Id} — {Format.Date(entrada.Data)}", parameters, PreviewDialogOptions);
+            L["Entrada #{0} — {1}", entrada.Id, Format.Date(entrada.Data)], parameters, PreviewDialogOptions);
     }
 }

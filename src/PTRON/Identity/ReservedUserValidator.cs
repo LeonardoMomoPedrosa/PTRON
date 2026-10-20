@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using PTRON.Models;
+using PTRON.Localization;
 
 namespace PTRON.Identity;
 
@@ -26,7 +27,7 @@ public sealed class ReservedUserValidator : IUserValidator<ApplicationUser>
             return Task.FromResult(IdentityResult.Failed(new IdentityError
             {
                 Code = "ReservedUser",
-                Description = "Este e-mail não está disponível."
+                Description = StaticText.Get("Este e-mail não está disponível.")
             }));
         }
 

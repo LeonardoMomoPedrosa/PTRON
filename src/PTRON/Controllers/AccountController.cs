@@ -144,7 +144,7 @@ public sealed class AccountController : Controller
     private static string ChangePasswordUrl(IReadOnlyList<string> errors)
     {
         if (errors.Count == 0)
-            return "/conta/senha?erro=" + Uri.EscapeDataString("Não foi possível alterar a senha.");
+            return "/conta/senha?erro=" + Uri.EscapeDataString(StaticText.Get("Não foi possível alterar a senha."));
 
         return "/conta/senha?" + string.Join("&", errors.Select(e => "erro=" + Uri.EscapeDataString(e)));
     }

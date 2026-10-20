@@ -4,17 +4,17 @@
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 
-<PageTitle>Insumos</PageTitle>
+<PageTitle>@L["Insumos"]</PageTitle>
 
 <div class="insumos-page">
     <div class="insumos-toolbar mb-4">
-        <MudText Typo="Typo.h5">Insumos</MudText>
+        <MudText Typo="Typo.h5">@L["Insumos"]</MudText>
         <MudButton StartIcon="@Icons.Material.Filled.Add"
                    Color="Color.Primary"
                    Variant="Variant.Filled"
                    Class="insumos-add"
                    OnClick="OpenCreate">
-            Novo insumo
+            @L["Novo insumo"]
         </MudButton>
     </div>
 
@@ -22,7 +22,7 @@
         <MudGrid>
             <MudItem xs="12" sm="5">
                 <MudTextField @bind-Value="_search"
-                              Label="Buscar por nome"
+                              Label="@L["Buscar por nome"]"
                               Adornment="Adornment.Start"
                               AdornmentIcon="@Icons.Material.Filled.Search"
                               Immediate="true"
@@ -32,7 +32,7 @@
             </MudItem>
             <MudItem xs="12" sm="4">
                 <MudSelect T="int?" @bind-Value="_tipoFiltro" @bind-Value:after="ReloadFromStart"
-                           Label="Filtrar por tipo"
+                           Label="@L["Filtrar por tipo"]"
                            Clearable="true" AnchorOrigin="Origin.BottomCenter">
                     @foreach (var tipo in _tipos)
                     {
@@ -42,7 +42,7 @@
             </MudItem>
             <MudItem xs="12" sm="3">
                 <MudNumericField T="int" Value="_pageSize" ValueChanged="OnPageSizeChanged"
-                                 Label="Itens por página" Min="1" Max="@InsumoService.MaxPageSize"
+                                 Label="@L["Itens por página"]" Min="1" Max="@InsumoService.MaxPageSize"
                                  Variant="Variant.Text" />
             </MudItem>
         </MudGrid>
@@ -56,7 +56,7 @@
         else if (_items.Count == 0)
         {
             <MudPaper Class="pa-4">
-                <MudText>Nenhum insumo encontrado.</MudText>
+                <MudText>@L["Nenhum insumo encontrado."]</MudText>
             </MudPaper>
         }
         else
@@ -89,19 +89,19 @@
                                 {
                                     <span class="insumos-meta">@specs</span>
                                 }
-                                <span class="insumos-meta">Saldo @Format.Number(insumo.Saldo) · @Format.Money(insumo.CustoUnitario)</span>
+                                <span class="insumos-meta">@L["Saldo {0}", Format.Number(insumo.Saldo)] · @Format.Money(insumo.CustoUnitario)</span>
                             </div>
                         </div>
                         <span class="insumos-actions">
                             <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                            Size="Size.Large"
                                            Color="Color.Primary"
-                                           aria-label="@($"Editar {insumo.Nome}")"
+                                           aria-label="@L["Editar {0}", insumo.Nome]"
                                            OnClick="@(() => OpenEdit(insumo))" />
                             <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                            Size="Size.Large"
                                            Color="Color.Error"
-                                           aria-label="@($"Excluir {insumo.Nome}")"
+                                           aria-label="@L["Excluir {0}", insumo.Nome]"
                                            OnClick="@(() => Delete(insumo))" />
                         </span>
                     </div>
@@ -114,14 +114,14 @@
                                    Size="Size.Large"
                                    Color="Color.Primary"
                                    Disabled="@(_page == 0 || _loading)"
-                                   aria-label="Página anterior"
+                                   aria-label="@L["Página anterior"]"
                                    OnClick="PreviousPage" />
                     <span class="insumos-pager-label">@FirstItem-@LastItem de @_totalCount</span>
                     <MudIconButton Icon="@Icons.Material.Filled.ChevronRight"
                                    Size="Size.Large"
                                    Color="Color.Primary"
                                    Disabled="@(!HasNextPage || _loading)"
-                                   aria-label="Próxima página"
+                                   aria-label="@L["Próxima página"]"
                                    OnClick="NextPage" />
                 </div>
             }
@@ -140,16 +140,16 @@
               Breakpoint="Breakpoint.None"
               LoadingProgressColor="Color.Primary">
         <HeaderContent>
-            <MudTh Style="width:64px">Foto</MudTh>
-            <MudTh>Nome</MudTh>
-            <MudTh>Tipo</MudTh>
-            <MudTh>Especificações</MudTh>
-            <MudTh Style="text-align:right">Saldo</MudTh>
-            <MudTh Style="text-align:right">Custo unit.</MudTh>
-            <MudTh Style="text-align:right">Ações</MudTh>
+            <MudTh Style="width:64px">@L["Foto"]</MudTh>
+            <MudTh>@L["Nome"]</MudTh>
+            <MudTh>@L["Tipo"]</MudTh>
+            <MudTh>@L["Especificações"]</MudTh>
+            <MudTh Style="text-align:right">@L["Saldo"]</MudTh>
+            <MudTh Style="text-align:right">@L["Custo unit."]</MudTh>
+            <MudTh Style="text-align:right">@L["Ações"]</MudTh>
         </HeaderContent>
         <RowTemplate>
-            <MudTd DataLabel="Foto">
+            <MudTd DataLabel="@L["Foto"]">
                 @if (!string.IsNullOrEmpty(context.FotoPath))
                 {
                     <MudImage Src="@context.FotoPath" Width="40" Height="40"
@@ -160,12 +160,12 @@
                     <MudIcon Icon="@Icons.Material.Filled.Memory" Color="Color.Default" />
                 }
             </MudTd>
-            <MudTd DataLabel="Nome">@context.Nome</MudTd>
-            <MudTd DataLabel="Tipo">@context.TipoInsumo?.Nome</MudTd>
-            <MudTd DataLabel="Especificações">@Especificacoes(context)</MudTd>
-            <MudTd DataLabel="Saldo" Style="text-align:right">@Format.Number(context.Saldo)</MudTd>
-            <MudTd DataLabel="Custo unit." Style="text-align:right">@Format.Money(context.CustoUnitario)</MudTd>
-            <MudTd DataLabel="Ações" Style="text-align:right">
+            <MudTd DataLabel="@L["Nome"]">@context.Nome</MudTd>
+            <MudTd DataLabel="@L["Tipo"]">@context.TipoInsumo?.Nome</MudTd>
+            <MudTd DataLabel="@L["Especificações"]">@Especificacoes(context)</MudTd>
+            <MudTd DataLabel="@L["Saldo"]" Style="text-align:right">@Format.Number(context.Saldo)</MudTd>
+            <MudTd DataLabel="@L["Custo unit."]" Style="text-align:right">@Format.Money(context.CustoUnitario)</MudTd>
+            <MudTd DataLabel="@L["Ações"]" Style="text-align:right">
                 <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small"
                                Color="Color.Primary" OnClick="@(() => OpenEdit(context))" />
                 <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small"
@@ -173,11 +173,11 @@
             </MudTd>
         </RowTemplate>
         <NoRecordsContent>
-            <MudText>Nenhum insumo encontrado.</MudText>
+            <MudText>@L["Nenhum insumo encontrado."]</MudText>
         </NoRecordsContent>
         <PagerContent>
             <MudTablePager HideRowsPerPage="true"
-                           InfoFormat="{first_item}-{last_item} de {all_items}" />
+                           InfoFormat="@L["{first_item}-{last_item} de {all_items}"]" />
         </PagerContent>
     </MudTable>
 </MudPaper>
@@ -274,7 +274,7 @@
     {
         if (_tipos.Count == 0)
         {
-            Snackbar.Add("Cadastre ao menos um tipo antes de criar insumos.", Severity.Warning);
+            Snackbar.Add(L["Cadastre ao menos um tipo antes de criar insumos."], Severity.Warning);
             return;
         }
 
@@ -282,14 +282,14 @@
         {
             { x => x.DefaultTipoInsumoId, _tipoFiltro }
         };
-        var dialog = await DialogService.ShowAsync<InsumoDialog>("Novo insumo", parameters);
+        var dialog = await DialogService.ShowAsync<InsumoDialog>(L["Novo insumo"], parameters);
         var result = await dialog.Result;
         if (result is { Canceled: false, Data: Insumo novo })
         {
             try
             {
                 await InsumoService.CreateAsync(novo);
-                Snackbar.Add("Insumo criado.", Severity.Success);
+                Snackbar.Add(L["Insumo criado."], Severity.Success);
                 await Reload();
             }
             catch (Exception ex)
@@ -302,7 +302,7 @@
     private async Task OpenEdit(Insumo insumo)
     {
         var parameters = new DialogParameters<InsumoDialog> { { x => x.Insumo, insumo } };
-        var dialog = await DialogService.ShowAsync<InsumoDialog>("Editar insumo", parameters);
+        var dialog = await DialogService.ShowAsync<InsumoDialog>(L["Editar insumo"], parameters);
         var result = await dialog.Result;
         if (result is { Canceled: false, Data: Insumo data })
         {
@@ -312,12 +312,12 @@
                 if (data.Id == 0)
                 {
                     await InsumoService.CreateAsync(data);
-                    Snackbar.Add("Insumo criado (cópia).", Severity.Success);
+                    Snackbar.Add(L["Insumo criado (cópia)."], Severity.Success);
                 }
                 else
                 {
                     await InsumoService.UpdateAsync(data);
-                    Snackbar.Add("Insumo atualizado.", Severity.Success);
+                    Snackbar.Add(L["Insumo atualizado."], Severity.Success);
                 }
 
                 await Reload();
@@ -333,18 +333,18 @@
     {
         var parameters = new DialogParameters<ConfirmDialog>
         {
-            { x => x.Message, $"Excluir o insumo \"{insumo.Nome}\"?" },
-            { x => x.ConfirmText, "Excluir" },
+            { x => x.Message, L["Excluir o insumo \"{0}\"?", insumo.Nome] },
+            { x => x.ConfirmText, L["Excluir"] },
             { x => x.MarkerClass, "insumo-flow-dialog" }
         };
-        var dialog = await DialogService.ShowAsync<ConfirmDialog>("Confirmar exclusão", parameters);
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>(L["Confirmar exclusão"], parameters);
         var result = await dialog.Result;
         if (result is { Canceled: false })
         {
             try
             {
                 await InsumoService.DeleteAsync(insumo.Id);
-                Snackbar.Add("Insumo excluído.", Severity.Success);
+                Snackbar.Add(L["Insumo excluído."], Severity.Success);
                 await Reload();
             }
             catch (Exception ex)

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using PTRON.Data;
 using PTRON.Identity;
+using PTRON.Localization;
 
 namespace PTRON.Services;
 
@@ -25,7 +26,7 @@ public class SignupDashboardService
         if (string.IsNullOrEmpty(userId)
             || !await db.Users.AsNoTracking().AnyAsync(u => u.Id == userId && u.Reservado))
         {
-            throw new InvalidOperationException("O painel de cadastros é exclusivo do usuário reservado.");
+            throw new InvalidOperationException(StaticText.Get("O painel de cadastros é exclusivo do usuário reservado."));
         }
 
         var rows = await db.Users.AsNoTracking()

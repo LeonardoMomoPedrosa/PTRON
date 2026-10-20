@@ -3,13 +3,13 @@
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 
-<PageTitle>Produtos</PageTitle>
+<PageTitle>@L["Produtos"]</PageTitle>
 
 <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4">
-    <MudText Typo="Typo.h5">Produtos</MudText>
+    <MudText Typo="Typo.h5">@L["Produtos"]</MudText>
     <MudSpacer />
     <MudText Typo="Typo.body2" Class="mud-secondary-text">
-        Criados apenas pela produção. Excluir devolve os insumos ao estoque.
+        @L["Criados apenas pela produção. Excluir devolve os insumos ao estoque."]
     </MudText>
 </MudStack>
 
@@ -22,21 +22,21 @@
               LoadingProgressColor="Color.Primary">
         <HeaderContent>
             <MudTh>#</MudTh>
-            <MudTh>Equipamento</MudTh>
-            <MudTh>Descrição</MudTh>
-            <MudTh>Data</MudTh>
-            <MudTh Style="text-align:right">Custo total</MudTh>
-            <MudTh Style="text-align:right">Ações</MudTh>
+            <MudTh>@L["Equipamento"]</MudTh>
+            <MudTh>@L["Descrição"]</MudTh>
+            <MudTh>@L["Data"]</MudTh>
+            <MudTh Style="text-align:right">@L["Custo total"]</MudTh>
+            <MudTh Style="text-align:right">@L["Ações"]</MudTh>
         </HeaderContent>
         <RowTemplate>
             <MudTd DataLabel="#">@context.Id</MudTd>
-            <MudTd DataLabel="Equipamento">@context.Equipamento?.Nome</MudTd>
-            <MudTd DataLabel="Descrição">
+            <MudTd DataLabel="@L["Equipamento"]">@context.Equipamento?.Nome</MudTd>
+            <MudTd DataLabel="@L["Descrição"]">
                 @(string.IsNullOrWhiteSpace(context.DescricaoAdicional) ? "—" : context.DescricaoAdicional)
             </MudTd>
-            <MudTd DataLabel="Data">@Format.Date(context.Data)</MudTd>
-            <MudTd DataLabel="Custo total" Style="text-align:right">@Format.Money(context.CustoTotal)</MudTd>
-            <MudTd DataLabel="Ações" Style="text-align:right">
+            <MudTd DataLabel="@L["Data"]">@Format.Date(context.Data)</MudTd>
+            <MudTd DataLabel="@L["Custo total"]" Style="text-align:right">@Format.Money(context.CustoTotal)</MudTd>
+            <MudTd DataLabel="@L["Ações"]" Style="text-align:right">
                 <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small"
                                Color="Color.Primary" OnClick="@(() => VerDetalhe(context))" />
                 <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small"
@@ -46,7 +46,7 @@
             </MudTd>
         </RowTemplate>
         <NoRecordsContent>
-            <MudText>Nenhum produto produzido ainda.</MudText>
+            <MudText>@L["Nenhum produto produzido ainda."]</MudText>
         </NoRecordsContent>
     </MudTable>
 </MudPaper>
@@ -69,7 +69,7 @@
         var full = await ProdutoService.GetWithInsumosAsync(produto.Id);
         if (full is null)
         {
-            Snackbar.Add("Produto não encontrado.", Severity.Error);
+            Snackbar.Add(L["Produto não encontrado."], Severity.Error);
             await Load();
             return;
         }
@@ -79,7 +79,7 @@
             { x => x.Produto, full }
         };
         await DialogService.ShowAsync<ProdutoDetalheDialog>(
-            $"Produto #{full.Id}", parameters);
+            L["Produto #{0}", full.Id], parameters);
     }
 
     private async Task EditarDescricao(Produto produto)
@@ -90,7 +90,7 @@
             { x => x.Descricao, produto.DescricaoAdicional }
         };
         var dialog = await DialogService.ShowAsync<ProdutoDescricaoDialog>(
-            $"Descrição do produto #{produto.Id}", parameters);
+            L["Descrição do produto #{0}", produto.Id], parameters);
         var result = await dialog.Result;
         if (result is { Canceled: false })
         {
@@ -104,11 +104,11 @@
         {
             {
                 x => x.Message,
-                $"Excluir o produto #{produto.Id} ({produto.Equipamento?.Nome})? Os insumos consumidos voltarão ao estoque."
+                L["Excluir o produto #{0} ({1})? Os insumos consumidos voltarão ao estoque.", produto.Id, produto.Equipamento?.Nome ?? ""]
             },
-            { x => x.ConfirmText, "Excluir" }
+            { x => x.ConfirmText, L["Excluir"] }
         };
-        var dialog = await DialogService.ShowAsync<ConfirmDialog>("Confirmar exclusão", parameters);
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>(L["Confirmar exclusão"], parameters);
         var result = await dialog.Result;
         if (result is { Canceled: true })
         {
@@ -118,7 +118,7 @@
         try
         {
             await ProdutoService.DeleteAsync(produto.Id);
-            Snackbar.Add("Produto excluído. Insumos devolvidos ao estoque.", Severity.Success);
+            Snackbar.Add(L["Produto excluído. Insumos devolvidos ao estoque."], Severity.Success);
             await Load();
         }
         catch (Exception ex)

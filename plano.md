@@ -25,7 +25,7 @@ Aplicativo de controle de produção de equipamentos eletrônicos (uso pessoal).
 | 8 | Gestão de Usuários | ⏸ Em pausa — S1–S9 concluídas; S10 e S11 pendentes |
 | 9 | Entrada de Estoque com 3 moedas | ✅ Concluído |
 | 10 | Página de boas-vindas | ✅ Concluído |
-| 11 | Idiomas (português, inglês, espanhol) | 🚧 S1 e S2 feitas; S3–S7 pendentes |
+| 11 | Idiomas (português, inglês, espanhol) | 🚧 S1 a S3 feitas; S4–S7 pendentes |
 | 12 | Código aberto | 🚧 S1 feita (PR #32); S2–S12 pendentes |
 
 > Última atualização: Épico 10 concluído — a primeira página de quem não entrou é a boas-vindas; quem já entrou continua no início do aplicativo. Épico 8 segue em pausa (S10 e S11 pendentes). Próximo é o Épico 11 (português, inglês e espanhol). Épico 9 concluído. Épicos E0–E7 completos.
@@ -399,7 +399,9 @@ O que a pessoa cadastrou — nome de tipo, peça, modelo, descrição de produto
 
 - [x] **E11-S1** — **Fundação.** Culturas `pt-BR`, `en` e `es` no `UseRequestLocalization`, padrão pt-BR, cookie e `Accept-Language`. `IStringLocalizer` e localização do MudBlazor. `html lang` acompanha o idioma. Seletor que grava o cookie e recarrega. `Format` usa a cultura ativa para número, percentual e data; o símbolo da moeda permanece (R$ para real).
 - [x] **E11-S2** — **Idioma da conta.** Campo `Idioma` em `ApplicationUser` (migração; contas existentes e o Leo ficam `pt-BR`). O seletor, com sessão, grava na conta e no cookie. O login aplica o idioma da conta. O cadastro grava o idioma da página.
-- [ ] **E11-S3** — **Textos da web.** Páginas, diálogos, menu, avisos, validação, erros de identidade, títulos e a página de boas-vindas do Épico 10. Lista de países nos três idiomas. Um teste confirma que a mesma chave difere nas três culturas.
+- [x] **E11-S3** — **Textos da web.** Páginas, diálogos, menu, avisos, validação, erros de identidade, títulos e a página de boas-vindas do Épico 10. Lista de países nos três idiomas. Um teste confirma que a mesma chave difere nas três culturas.
+
+  **Implementação:** textos em `Resources/SharedResource*.resx` (chave = texto em português; `pt-BR` é o padrão, `en` e `es` traduzem). Páginas e diálogos usam `IStringLocalizer`; serviços, erros de identidade e validação do cadastro usam `StaticText`. Países em três idiomas (`Paises`), Brasil primeiro. A API segue em português até a S6 (provedor de cultura fixo em `/api`). `WebTextsTests` falha se uma chave usada no código faltar em algum idioma, se en/es forem cópia do português ou se os `{0}` não casarem.
 - [ ] **E11-S4** — **E-mails.** Ativação, redefinição de senha e aviso de senha alterada, assunto e corpo, nos três idiomas, pela regra da D7.
 - [ ] **E11-S5** — **Tipos padrão.** A ativação cria os seis nomes no idioma da conta. Quem já ativou conserva os nomes que tem.
 - [ ] **E11-S6** — **API e aplicativo.** Mensagens de erro da API seguem `Accept-Language`. As telas do app Expo e o formato de número e data seguem um idioma guardado no aparelho, padrão português, com seletor nas configurações. O app envia `Accept-Language`.

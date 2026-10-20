@@ -4,5 +4,398 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
-  <data name="Language" xml:space="preserve"><value>Escolher idioma</value></data>
+  <data name="Você não tem permissão para acessar esta página." xml:space="preserve"><value>Você não tem permissão para acessar esta página.</value></data>
+  <data name="Página não encontrada" xml:space="preserve"><value>Página não encontrada</value></data>
+  <data name="Não há nada neste endereço." xml:space="preserve"><value>Não há nada neste endereço.</value></data>
+  <data name="Makelectron" xml:space="preserve"><value>Makelectron</value></data>
+  <data name="Beta" xml:space="preserve"><value>Beta</value></data>
+  <data name="Conta" xml:space="preserve"><value>Conta</value></data>
+  <data name="Entrar" xml:space="preserve"><value>Entrar</value></data>
+  <data name="Criar conta" xml:space="preserve"><value>Criar conta</value></data>
+  <data name="Nome" xml:space="preserve"><value>Nome</value></data>
+  <data name="O nome é obrigatório." xml:space="preserve"><value>O nome é obrigatório.</value></data>
+  <data name="Ex.: Resistor, Diodo, Capacitor, Válvula" xml:space="preserve"><value>Ex.: Resistor, Diodo, Capacitor, Válvula</value></data>
+  <data name="Cancelar" xml:space="preserve"><value>Cancelar</value></data>
+  <data name="Salvar" xml:space="preserve"><value>Salvar</value></data>
+  <data name="Makelectron — Início" xml:space="preserve"><value>Makelectron — Início</value></data>
+  <data name="Controle de produção de equipamentos eletrônicos." xml:space="preserve"><value>Controle de produção de equipamentos eletrônicos.</value></data>
+  <data name="Usuários cadastrados" xml:space="preserve"><value>Usuários cadastrados</value></data>
+  <data name="Abrir" xml:space="preserve"><value>Abrir</value></data>
+  <data name="SQL" xml:space="preserve"><value>SQL</value></data>
+  <data name="Consultas e comandos diretos no banco." xml:space="preserve"><value>Consultas e comandos diretos no banco.</value></data>
+  <data name="Ninguém se cadastrou ainda." xml:space="preserve"><value>Ninguém se cadastrou ainda.</value></data>
+  <data name="Todos já ativaram a conta." xml:space="preserve"><value>Todos já ativaram a conta.</value></data>
+  <data name="1 já ativou a conta." xml:space="preserve"><value>1 já ativou a conta.</value></data>
+  <data name="{0} já ativaram a conta." xml:space="preserve"><value>{0} já ativaram a conta.</value></data>
+  <data name="1 ainda aguarda o e-mail." xml:space="preserve"><value>1 ainda aguarda o e-mail.</value></data>
+  <data name="{0} ainda aguardam o e-mail." xml:space="preserve"><value>{0} ainda aguardam o e-mail.</value></data>
+  <data name="Tem certeza?" xml:space="preserve"><value>Tem certeza?</value></data>
+  <data name="Confirmar" xml:space="preserve"><value>Confirmar</value></data>
+  <data name="Início" xml:space="preserve"><value>Início</value></data>
+  <data name="Tipos" xml:space="preserve"><value>Tipos</value></data>
+  <data name="Insumos" xml:space="preserve"><value>Insumos</value></data>
+  <data name="Equipamentos" xml:space="preserve"><value>Equipamentos</value></data>
+  <data name="Entrada de estoque" xml:space="preserve"><value>Entrada de estoque</value></data>
+  <data name="Produção" xml:space="preserve"><value>Produção</value></data>
+  <data name="Produtos" xml:space="preserve"><value>Produtos</value></data>
+  <data name="câmbio {0} / {1} 1" xml:space="preserve"><value>câmbio {0} / {1} 1</value></data>
+  <data name="Frete" xml:space="preserve"><value>Frete</value></data>
+  <data name="Impostos" xml:space="preserve"><value>Impostos</value></data>
+  <data name="Total em R$" xml:space="preserve"><value>Total em R$</value></data>
+  <data name="Insumo" xml:space="preserve"><value>Insumo</value></data>
+  <data name="Qtd" xml:space="preserve"><value>Qtd</value></data>
+  <data name="Preço unit." xml:space="preserve"><value>Preço unit.</value></data>
+  <data name="Subtotal" xml:space="preserve"><value>Subtotal</value></data>
+  <data name="Proporção" xml:space="preserve"><value>Proporção</value></data>
+  <data name="Custo unit. (R$)" xml:space="preserve"><value>Custo unit. (R$)</value></data>
+  <data name="Total (R$)" xml:space="preserve"><value>Total (R$)</value></data>
+  <data name="Total" xml:space="preserve"><value>Total</value></data>
+  <data name="Fechar" xml:space="preserve"><value>Fechar</value></data>
+  <data name="Equipamento:" xml:space="preserve"><value>Equipamento:</value></data>
+  <data name="Data:" xml:space="preserve"><value>Data:</value></data>
+  <data name="Descrição:" xml:space="preserve"><value>Descrição:</value></data>
+  <data name="Custo total:" xml:space="preserve"><value>Custo total:</value></data>
+  <data name="Insumos consumidos (snapshot)" xml:space="preserve"><value>Insumos consumidos (snapshot)</value></data>
+  <data name="Nenhum insumo registrado." xml:space="preserve"><value>Nenhum insumo registrado.</value></data>
+  <data name="Escolher idioma" xml:space="preserve"><value>Escolher idioma</value></data>
+  <data name="Remover foto" xml:space="preserve"><value>Remover foto</value></data>
+  <data name="Foto do equipamento" xml:space="preserve"><value>Foto do equipamento</value></data>
+  <data name="Insumos do equipamento" xml:space="preserve"><value>Insumos do equipamento</value></data>
+  <data name="Cada insumo é salvo assim que você clica em Add." xml:space="preserve"><value>Cada insumo é salvo assim que você clica em Add.</value></data>
+  <data name="Add" xml:space="preserve"><value>Add</value></data>
+  <data name="Nenhum insumo adicionado." xml:space="preserve"><value>Nenhum insumo adicionado.</value></data>
+  <data name="Tipo" xml:space="preserve"><value>Tipo</value></data>
+  <data name="Especificações" xml:space="preserve"><value>Especificações</value></data>
+  <data name="Custo unit." xml:space="preserve"><value>Custo unit.</value></data>
+  <data name="Enviando foto…" xml:space="preserve"><value>Enviando foto…</value></data>
+  <data name="Concluir" xml:space="preserve"><value>Concluir</value></data>
+  <data name="Selecionar foto" xml:space="preserve"><value>Selecionar foto</value></data>
+  <data name="Trocar foto" xml:space="preserve"><value>Trocar foto</value></data>
+  <data name="Selecione um insumo." xml:space="preserve"><value>Selecione um insumo.</value></data>
+  <data name="A quantidade deve ser maior que zero." xml:space="preserve"><value>A quantidade deve ser maior que zero.</value></data>
+  <data name="Descrição adicional do produto" xml:space="preserve"><value>Descrição adicional do produto</value></data>
+  <data name="Ex.: número de série, lote, observação" xml:space="preserve"><value>Ex.: número de série, lote, observação</value></data>
+  <data name="Descrição atualizada." xml:space="preserve"><value>Descrição atualizada.</value></data>
+  <data name="A proporção de cada produto usa só o valor dos itens, na moeda dos produtos." xml:space="preserve"><value>A proporção de cada produto usa só o valor dos itens, na moeda dos produtos.</value></data>
+  <data name="Frete e impostos entram depois, na mesma proporção, cada um na sua moeda." xml:space="preserve"><value>Frete e impostos entram depois, na mesma proporção, cada um na sua moeda.</value></data>
+  <data name="O custo do estoque é gravado em reais." xml:space="preserve"><value>O custo do estoque é gravado em reais.</value></data>
+  <data name="Voltar" xml:space="preserve"><value>Voltar</value></data>
+  <data name="Confirmar entrada" xml:space="preserve"><value>Confirmar entrada</value></data>
+  <data name="Alternar tema claro/escuro" xml:space="preserve"><value>Alternar tema claro/escuro</value></data>
+  <data name="Alterar senha" xml:space="preserve"><value>Alterar senha</value></data>
+  <data name="Sair" xml:space="preserve"><value>Sair</value></data>
+  <data name="O tipo é obrigatório." xml:space="preserve"><value>O tipo é obrigatório.</value></data>
+  <data name="Valor (opcional)" xml:space="preserve"><value>Valor (opcional)</value></data>
+  <data name="Ex.: 8Ω, 5µF" xml:space="preserve"><value>Ex.: 8Ω, 5µF</value></data>
+  <data name="Potência (opcional)" xml:space="preserve"><value>Potência (opcional)</value></data>
+  <data name="Ex.: 2W, 5W" xml:space="preserve"><value>Ex.: 2W, 5W</value></data>
+  <data name="Voltagem (opcional)" xml:space="preserve"><value>Voltagem (opcional)</value></data>
+  <data name="Ex.: 35V, 400V" xml:space="preserve"><value>Ex.: 35V, 400V</value></data>
+  <data name="Cópia do insumo original. Mesmo tipo e nome — altere valor, potência ou voltagem e salve para criar um novo." xml:space="preserve"><value>Cópia do insumo original. Mesmo tipo e nome — altere valor, potência ou voltagem e salve para criar um novo.</value></data>
+  <data name="Saldo (estoque)" xml:space="preserve"><value>Saldo (estoque)</value></data>
+  <data name="Custo unitário" xml:space="preserve"><value>Custo unitário</value></data>
+  <data name="Criar cópia com outro valor" xml:space="preserve"><value>Criar cópia com outro valor</value></data>
+  <data name="Criar" xml:space="preserve"><value>Criar</value></data>
+  <data name="Novo insumo (cópia)" xml:space="preserve"><value>Novo insumo (cópia)</value></data>
+  <data name="Selecione o tipo do insumo." xml:space="preserve"><value>Selecione o tipo do insumo.</value></data>
+  <data name="Salvar as alterações em &quot;{0}&quot;?" xml:space="preserve"><value>Salvar as alterações em "{0}"?</value></data>
+  <data name="Confirmar atualização" xml:space="preserve"><value>Confirmar atualização</value></data>
+  <data name="Estoque, produção e o custo de cada unidade, para o produto final feito de muitas peças." xml:space="preserve"><value>Estoque, produção e o custo de cada unidade, para o produto final feito de muitas peças.</value></data>
+  <data name="Muitas peças. Tudo sob controle." xml:space="preserve"><value>Muitas peças. Tudo sob controle.</value></data>
+  <data name="Estoque, produção e o custo de cada unidade." xml:space="preserve"><value>Estoque, produção e o custo de cada unidade.</value></data>
+  <data name="Quando o produto final é feito de muitas partes, controlar isso na mão deixa de funcionar." xml:space="preserve"><value>Quando o produto final é feito de muitas partes, controlar isso na mão deixa de funcionar.</value></data>
+  <data name="O Makelectron guarda a lista, confere o estoque na hora de produzir e calcula o custo em reais." xml:space="preserve"><value>O Makelectron guarda a lista, confere o estoque na hora de produzir e calcula o custo em reais.</value></data>
+  <data name="Feito para eletrônica, e do mesmo jeito para artesanato ou qualquer outra montagem." xml:space="preserve"><value>Feito para eletrônica, e do mesmo jeito para artesanato ou qualquer outra montagem.</value></data>
+  <data name="Peças entram numa lista, passam pelo estoque e pela produção, e saem como uma unidade que custa R$ 186,40." xml:space="preserve"><value>Peças entram numa lista, passam pelo estoque e pela produção, e saem como uma unidade que custa R$ 186,40.</value></data>
+  <data name="Para quem é" xml:space="preserve"><value>Para quem é</value></data>
+  <data name="Quem faz um produto final de muitas peças — equipamento eletrônico, trabalho de artesão ou qualquer outra montagem." xml:space="preserve"><value>Quem faz um produto final de muitas peças — equipamento eletrônico, trabalho de artesão ou qualquer outra montagem.</value></data>
+  <data name="O que hoje dá errado" xml:space="preserve"><value>O que hoje dá errado</value></data>
+  <data name="A lista não cabe na cabeça" xml:space="preserve"><value>A lista não cabe na cabeça</value></data>
+  <data name="Na hora de montar, falta uma peça no meio de muitas." xml:space="preserve"><value>Na hora de montar, falta uma peça no meio de muitas.</value></data>
+  <data name="O custo da unidade não fecha" xml:space="preserve"><value>O custo da unidade não fecha</value></data>
+  <data name="Cada peça entrou com um preço, às vezes em outra moeda." xml:space="preserve"><value>Cada peça entrou com um preço, às vezes em outra moeda.</value></data>
+  <data name="O estoque tem de andar junto" xml:space="preserve"><value>O estoque tem de andar junto</value></data>
+  <data name="Produziu uma unidade, ou desmontou: o estoque de cada peça tem de andar junto." xml:space="preserve"><value>Produziu uma unidade, ou desmontou: o estoque de cada peça tem de andar junto.</value></data>
+  <data name="Como funciona" xml:space="preserve"><value>Como funciona</value></data>
+  <data name="Cadastra cada peça" xml:space="preserve"><value>Cadastra cada peça</value></data>
+  <data name="Tipo, foto, saldo e custo. O tipo é um nome: resistor, madeira, tecido, frasco." xml:space="preserve"><value>Tipo, foto, saldo e custo. O tipo é um nome: resistor, madeira, tecido, frasco.</value></data>
+  <data name="Monta o modelo" xml:space="preserve"><value>Monta o modelo</value></data>
+  <data name="A lista inteira do que o produto final leva." xml:space="preserve"><value>A lista inteira do que o produto final leva.</value></data>
+  <data name="Dá entrada no estoque" xml:space="preserve"><value>Dá entrada no estoque</value></data>
+  <data name="Produtos, impostos e frete podem estar em moedas diferentes. O custo de cada peça fica em reais." xml:space="preserve"><value>Produtos, impostos e frete podem estar em moedas diferentes. O custo de cada peça fica em reais.</value></data>
+  <data name="Produz" xml:space="preserve"><value>Produz</value></data>
+  <data name="Confere a lista contra o saldo e para se faltar alguma peça. A unidade sai com o custo de todas elas." xml:space="preserve"><value>Confere a lista contra o saldo e para se faltar alguma peça. A unidade sai com o custo de todas elas.</value></data>
+  <data name="O que passa a ficar registrado" xml:space="preserve"><value>O que passa a ficar registrado</value></data>
+  <data name="Tipos com o nome que você quiser." xml:space="preserve"><value>Tipos com o nome que você quiser.</value></data>
+  <data name="Foto da peça." xml:space="preserve"><value>Foto da peça.</value></data>
+  <data name="A lista inteira do que o modelo leva." xml:space="preserve"><value>A lista inteira do que o modelo leva.</value></data>
+  <data name="Custo médio ponderado de cada peça." xml:space="preserve"><value>Custo médio ponderado de cada peça.</value></data>
+  <data name="Compra em BRL, USD, EUR, GBP ou CNY." xml:space="preserve"><value>Compra em BRL, USD, EUR, GBP ou CNY.</value></data>
+  <data name="Produção que confere o saldo de cada peça." xml:space="preserve"><value>Produção que confere o saldo de cada peça.</value></data>
+  <data name="O custo da unidade fica congelado: mudar o modelo não reescreve o que já foi feito." xml:space="preserve"><value>O custo da unidade fica congelado: mudar o modelo não reescreve o que já foi feito.</value></data>
+  <data name="Excluir a unidade devolve cada peça ao estoque." xml:space="preserve"><value>Excluir a unidade devolve cada peça ao estoque.</value></data>
+  <data name="Estoque, produção e custo para produtos feitos de muitas peças." xml:space="preserve"><value>Estoque, produção e custo para produtos feitos de muitas peças.</value></data>
+  <data name="Versão beta, ainda em testes." xml:space="preserve"><value>Versão beta, ainda em testes.</value></data>
+  <data name="Código aberto, licença MIT." xml:space="preserve"><value>Código aberto, licença MIT.</value></data>
+  <data name="Ver no GitHub" xml:space="preserve"><value>Ver no GitHub</value></data>
+  <data name="Novo tipo" xml:space="preserve"><value>Novo tipo</value></data>
+  <data name="Nenhum tipo cadastrado." xml:space="preserve"><value>Nenhum tipo cadastrado.</value></data>
+  <data name="Editar {0}" xml:space="preserve"><value>Editar {0}</value></data>
+  <data name="Excluir {0}" xml:space="preserve"><value>Excluir {0}</value></data>
+  <data name="Ações" xml:space="preserve"><value>Ações</value></data>
+  <data name="Tipo criado." xml:space="preserve"><value>Tipo criado.</value></data>
+  <data name="Editar tipo" xml:space="preserve"><value>Editar tipo</value></data>
+  <data name="Tipo atualizado." xml:space="preserve"><value>Tipo atualizado.</value></data>
+  <data name="Não é possível excluir &quot;{0}&quot;: {1} insumo(s) vinculado(s)." xml:space="preserve"><value>Não é possível excluir "{0}": {1} insumo(s) vinculado(s).</value></data>
+  <data name="Excluir o tipo &quot;{0}&quot;?" xml:space="preserve"><value>Excluir o tipo "{0}"?</value></data>
+  <data name="Excluir" xml:space="preserve"><value>Excluir</value></data>
+  <data name="Confirmar exclusão" xml:space="preserve"><value>Confirmar exclusão</value></data>
+  <data name="Tipo excluído." xml:space="preserve"><value>Tipo excluído.</value></data>
+  <data name="Makelectron — Alterar senha" xml:space="preserve"><value>Makelectron — Alterar senha</value></data>
+  <data name="Sua senha foi alterada. As outras sessões foram encerradas." xml:space="preserve"><value>Sua senha foi alterada. As outras sessões foram encerradas.</value></data>
+  <data name="A página ficou aberta por muito tempo. Tente novamente." xml:space="preserve"><value>A página ficou aberta por muito tempo. Tente novamente.</value></data>
+  <data name="Informe a senha atual e escolha uma nova. As outras sessões desta conta são encerradas." xml:space="preserve"><value>Informe a senha atual e escolha uma nova. As outras sessões desta conta são encerradas.</value></data>
+  <data name="Senha atual" xml:space="preserve"><value>Senha atual</value></data>
+  <data name="Nova senha" xml:space="preserve"><value>Nova senha</value></data>
+  <data name="Mínimo de 8 caracteres, com pelo menos uma letra e um número." xml:space="preserve"><value>Mínimo de 8 caracteres, com pelo menos uma letra e um número.</value></data>
+  <data name="Confirmar nova senha" xml:space="preserve"><value>Confirmar nova senha</value></data>
+  <data name="Makelectron — Ativar conta" xml:space="preserve"><value>Makelectron — Ativar conta</value></data>
+  <data name="Ativando sua conta..." xml:space="preserve"><value>Ativando sua conta...</value></data>
+  <data name="Conta ativada" xml:space="preserve"><value>Conta ativada</value></data>
+  <data name="Seu e-mail foi confirmado. Agora você já pode entrar no Makelectron." xml:space="preserve"><value>Seu e-mail foi confirmado. Agora você já pode entrar no Makelectron.</value></data>
+  <data name="Ir para o login" xml:space="preserve"><value>Ir para o login</value></data>
+  <data name="Conta já ativada" xml:space="preserve"><value>Conta já ativada</value></data>
+  <data name="Esta conta já foi ativada. É só entrar com seu e-mail e senha." xml:space="preserve"><value>Esta conta já foi ativada. É só entrar com seu e-mail e senha.</value></data>
+  <data name="Reenviar e-mail de ativação" xml:space="preserve"><value>Reenviar e-mail de ativação</value></data>
+  <data name="Link inválido ou expirado" xml:space="preserve"><value>Link inválido ou expirado</value></data>
+  <data name="Não foi possível ativar a conta com este link. Ele pode ter expirado (vale por 24 horas) ou já ter sido substituído por um mais novo." xml:space="preserve"><value>Não foi possível ativar a conta com este link. Ele pode ter expirado (vale por 24 horas) ou já ter sido substituído por um mais novo.</value></data>
+  <data name="Se este e-mail estiver aguardando ativação, enviamos um novo link. Confira também a caixa de spam." xml:space="preserve"><value>Se este e-mail estiver aguardando ativação, enviamos um novo link. Confira também a caixa de spam.</value></data>
+  <data name="Informe seu e-mail para receber um novo link de ativação." xml:space="preserve"><value>Informe seu e-mail para receber um novo link de ativação.</value></data>
+  <data name="E-mail" xml:space="preserve"><value>E-mail</value></data>
+  <data name="Voltar ao login" xml:space="preserve"><value>Voltar ao login</value></data>
+  <data name="Nova entrada" xml:space="preserve"><value>Nova entrada</value></data>
+  <data name="Moeda dos produtos" xml:space="preserve"><value>Moeda dos produtos</value></data>
+  <data name="Moeda dos impostos" xml:space="preserve"><value>Moeda dos impostos</value></data>
+  <data name="Moeda do frete" xml:space="preserve"><value>Moeda do frete</value></data>
+  <data name="Frete ({0})" xml:space="preserve"><value>Frete ({0})</value></data>
+  <data name="Impostos ({0})" xml:space="preserve"><value>Impostos ({0})</value></data>
+  <data name="Os preços dos produtos estão em {0}, os impostos em {1} e o frete em {2}." xml:space="preserve"><value>Os preços dos produtos estão em {0}, os impostos em {1} e o frete em {2}.</value></data>
+  <data name="Produtos e impostos usam o mesmo câmbio." xml:space="preserve"><value>Produtos e impostos usam o mesmo câmbio.</value></data>
+  <data name="Quantidade" xml:space="preserve"><value>Quantidade</value></data>
+  <data name="Adicionar" xml:space="preserve"><value>Adicionar</value></data>
+  <data name="Foto" xml:space="preserve"><value>Foto</value></data>
+  <data name="Preço unit. ({0})" xml:space="preserve"><value>Preço unit. ({0})</value></data>
+  <data name="Nenhum item no carrinho. Adicione insumos acima." xml:space="preserve"><value>Nenhum item no carrinho. Adicione insumos acima.</value></data>
+  <data name="Limpar" xml:space="preserve"><value>Limpar</value></data>
+  <data name="Pré-visualizar" xml:space="preserve"><value>Pré-visualizar</value></data>
+  <data name="Histórico" xml:space="preserve"><value>Histórico</value></data>
+  <data name="Data" xml:space="preserve"><value>Data</value></data>
+  <data name="Moeda" xml:space="preserve"><value>Moeda</value></data>
+  <data name="Itens" xml:space="preserve"><value>Itens</value></data>
+  <data name="Detalhe" xml:space="preserve"><value>Detalhe</value></data>
+  <data name="câmbio {0}" xml:space="preserve"><value>câmbio {0}</value></data>
+  <data name="Produtos {0} · Impostos {1} · Frete {2}" xml:space="preserve"><value>Produtos {0} · Impostos {1} · Frete {2}</value></data>
+  <data name="Nenhuma entrada registrada." xml:space="preserve"><value>Nenhuma entrada registrada.</value></data>
+  <data name="Preço unitário ({0})" xml:space="preserve"><value>Preço unitário ({0})</value></data>
+  <data name="Câmbio (R$ por {0})" xml:space="preserve"><value>Câmbio (R$ por {0})</value></data>
+  <data name="Quantos reais valem 1 {0}" xml:space="preserve"><value>Quantos reais valem 1 {0}</value></data>
+  <data name="O preço unitário não pode ser negativo." xml:space="preserve"><value>O preço unitário não pode ser negativo.</value></data>
+  <data name="Corrija quantidade e preço de todos os itens antes de finalizar." xml:space="preserve"><value>Corrija quantidade e preço de todos os itens antes de finalizar.</value></data>
+  <data name="Frete e impostos não podem ser negativos." xml:space="preserve"><value>Frete e impostos não podem ser negativos.</value></data>
+  <data name="Insumo {0}" xml:space="preserve"><value>Insumo {0}</value></data>
+  <data name="Pré-visualização da entrada" xml:space="preserve"><value>Pré-visualização da entrada</value></data>
+  <data name="Entrada de estoque finalizada." xml:space="preserve"><value>Entrada de estoque finalizada.</value></data>
+  <data name="Entrada #{0} — {1}" xml:space="preserve"><value>Entrada #{0} — {1}</value></data>
+  <data name="Novo insumo" xml:space="preserve"><value>Novo insumo</value></data>
+  <data name="Buscar por nome" xml:space="preserve"><value>Buscar por nome</value></data>
+  <data name="Filtrar por tipo" xml:space="preserve"><value>Filtrar por tipo</value></data>
+  <data name="Itens por página" xml:space="preserve"><value>Itens por página</value></data>
+  <data name="Nenhum insumo encontrado." xml:space="preserve"><value>Nenhum insumo encontrado.</value></data>
+  <data name="Página anterior" xml:space="preserve"><value>Página anterior</value></data>
+  <data name="Próxima página" xml:space="preserve"><value>Próxima página</value></data>
+  <data name="Saldo" xml:space="preserve"><value>Saldo</value></data>
+  <data name="Cadastre ao menos um tipo antes de criar insumos." xml:space="preserve"><value>Cadastre ao menos um tipo antes de criar insumos.</value></data>
+  <data name="Insumo criado." xml:space="preserve"><value>Insumo criado.</value></data>
+  <data name="Editar insumo" xml:space="preserve"><value>Editar insumo</value></data>
+  <data name="Insumo criado (cópia)." xml:space="preserve"><value>Insumo criado (cópia).</value></data>
+  <data name="Insumo atualizado." xml:space="preserve"><value>Insumo atualizado.</value></data>
+  <data name="Excluir o insumo &quot;{0}&quot;?" xml:space="preserve"><value>Excluir o insumo "{0}"?</value></data>
+  <data name="Insumo excluído." xml:space="preserve"><value>Insumo excluído.</value></data>
+  <data name="Novo equipamento" xml:space="preserve"><value>Novo equipamento</value></data>
+  <data name="Nenhum equipamento cadastrado." xml:space="preserve"><value>Nenhum equipamento cadastrado.</value></data>
+  <data name="Cadastre ao menos um insumo antes de criar equipamentos." xml:space="preserve"><value>Cadastre ao menos um insumo antes de criar equipamentos.</value></data>
+  <data name="Equipamento não encontrado." xml:space="preserve"><value>Equipamento não encontrado.</value></data>
+  <data name="Editar equipamento" xml:space="preserve"><value>Editar equipamento</value></data>
+  <data name="Excluir o equipamento &quot;{0}&quot; e sua lista de insumos?" xml:space="preserve"><value>Excluir o equipamento "{0}" e sua lista de insumos?</value></data>
+  <data name="Equipamento excluído." xml:space="preserve"><value>Equipamento excluído.</value></data>
+  <data name="Equipamento (modelo)" xml:space="preserve"><value>Equipamento (modelo)</value></data>
+  <data name="Quantos produtos produzir" xml:space="preserve"><value>Quantos produtos produzir</value></data>
+  <data name="Selecione um equipamento para revisar os insumos e o custo estimado." xml:space="preserve"><value>Selecione um equipamento para revisar os insumos e o custo estimado.</value></data>
+  <data name="O equipamento &quot;{0}&quot; não possui insumos cadastrados na BOM." xml:space="preserve"><value>O equipamento "{0}" não possui insumos cadastrados na BOM.</value></data>
+  <data name="Produção concluída. O estoque agora não cobre outra leva de 1 unidade." xml:space="preserve"><value>Produção concluída. O estoque agora não cobre outra leva de 1 unidade.</value></data>
+  <data name="Produção concluída. O estoque agora não cobre outra leva de {0} unidades." xml:space="preserve"><value>Produção concluída. O estoque agora não cobre outra leva de {0} unidades.</value></data>
+  <data name="Não é possível produzir — insumos faltantes:" xml:space="preserve"><value>Não é possível produzir — insumos faltantes:</value></data>
+  <data name="Não é possível produzir {0} unidades — insumos faltantes:" xml:space="preserve"><value>Não é possível produzir {0} unidades — insumos faltantes:</value></data>
+  <data name="necessário {0}, disponível {1} (falta {2})" xml:space="preserve"><value>necessário {0}, disponível {1} (falta {2})</value></data>
+  <data name="Todos os insumos estão disponíveis. Custo estimado:" xml:space="preserve"><value>Todos os insumos estão disponíveis. Custo estimado:</value></data>
+  <data name="Todos os insumos estão disponíveis para {0} unidades." xml:space="preserve"><value>Todos os insumos estão disponíveis para {0} unidades.</value></data>
+  <data name="Custo de cada uma:" xml:space="preserve"><value>Custo de cada uma:</value></data>
+  <data name="Custo das {0}:" xml:space="preserve"><value>Custo das {0}:</value></data>
+  <data name="Necessário" xml:space="preserve"><value>Necessário</value></data>
+  <data name="Disponível" xml:space="preserve"><value>Disponível</value></data>
+  <data name="Status" xml:space="preserve"><value>Status</value></data>
+  <data name="Falta {0}" xml:space="preserve"><value>Falta {0}</value></data>
+  <data name="Custo estimado" xml:space="preserve"><value>Custo estimado</value></data>
+  <data name="Custo de {0}" xml:space="preserve"><value>Custo de {0}</value></data>
+  <data name="1 unidade" xml:space="preserve"><value>1 unidade</value></data>
+  <data name="{0} unidades" xml:space="preserve"><value>{0} unidades</value></data>
+  <data name="custo estimado de {0}" xml:space="preserve"><value>custo estimado de {0}</value></data>
+  <data name="custo de {0} cada ({1} no total)" xml:space="preserve"><value>custo de {0} cada ({1} no total)</value></data>
+  <data name="Produzir {0} de &quot;{1}&quot; com {2}? Os insumos serão subtraídos do estoque." xml:space="preserve"><value>Produzir {0} de "{1}" com {2}? Os insumos serão subtraídos do estoque.</value></data>
+  <data name="Produzir" xml:space="preserve"><value>Produzir</value></data>
+  <data name="Confirmar produção" xml:space="preserve"><value>Confirmar produção</value></data>
+  <data name="Produto #{0} criado. Custo total: {1}." xml:space="preserve"><value>Produto #{0} criado. Custo total: {1}.</value></data>
+  <data name="{0} produtos criados. Custo de cada um: {1}." xml:space="preserve"><value>{0} produtos criados. Custo de cada um: {1}.</value></data>
+  <data name="Makelectron — Criar conta" xml:space="preserve"><value>Makelectron — Criar conta</value></data>
+  <data name="Verifique seu e-mail" xml:space="preserve"><value>Verifique seu e-mail</value></data>
+  <data name="Se o cadastro puder ser concluído, enviamos um link de ativação para" xml:space="preserve"><value>Se o cadastro puder ser concluído, enviamos um link de ativação para</value></data>
+  <data name="Abra o e-mail e clique no link em até 24 horas para ativar sua conta." xml:space="preserve"><value>Abra o e-mail e clique no link em até 24 horas para ativar sua conta.</value></data>
+  <data name="Não encontrou? Confira a caixa de spam. Você só consegue entrar depois de ativar a conta." xml:space="preserve"><value>Não encontrou? Confira a caixa de spam. Você só consegue entrar depois de ativar a conta.</value></data>
+  <data name="Preencha os dados para se cadastrar." xml:space="preserve"><value>Preencha os dados para se cadastrar.</value></data>
+  <data name="País" xml:space="preserve"><value>País</value></data>
+  <data name="Estado" xml:space="preserve"><value>Estado</value></data>
+  <data name="Senha" xml:space="preserve"><value>Senha</value></data>
+  <data name="Confirmar senha" xml:space="preserve"><value>Confirmar senha</value></data>
+  <data name="Não foi possível concluir o cadastro. Tente novamente." xml:space="preserve"><value>Não foi possível concluir o cadastro. Tente novamente.</value></data>
+  <data name="Informe o e-mail." xml:space="preserve"><value>Informe o e-mail.</value></data>
+  <data name="Informe um e-mail válido." xml:space="preserve"><value>Informe um e-mail válido.</value></data>
+  <data name="O e-mail é muito longo." xml:space="preserve"><value>O e-mail é muito longo.</value></data>
+  <data name="Selecione o país." xml:space="preserve"><value>Selecione o país.</value></data>
+  <data name="Informe o estado." xml:space="preserve"><value>Informe o estado.</value></data>
+  <data name="O estado deve ter no máximo 100 caracteres." xml:space="preserve"><value>O estado deve ter no máximo 100 caracteres.</value></data>
+  <data name="Informe a senha." xml:space="preserve"><value>Informe a senha.</value></data>
+  <data name="A senha deve ter pelo menos 8 caracteres." xml:space="preserve"><value>A senha deve ter pelo menos 8 caracteres.</value></data>
+  <data name="Confirme a senha." xml:space="preserve"><value>Confirme a senha.</value></data>
+  <data name="As senhas não conferem." xml:space="preserve"><value>As senhas não conferem.</value></data>
+  <data name="Makelectron — Redefinir senha" xml:space="preserve"><value>Makelectron — Redefinir senha</value></data>
+  <data name="Senha redefinida" xml:space="preserve"><value>Senha redefinida</value></data>
+  <data name="Sua senha foi alterada. Entre com a nova senha." xml:space="preserve"><value>Sua senha foi alterada. Entre com a nova senha.</value></data>
+  <data name="Este link de redefinição não vale mais. Ele dura 1 hora e só pode ser usado uma vez." xml:space="preserve"><value>Este link de redefinição não vale mais. Ele dura 1 hora e só pode ser usado uma vez.</value></data>
+  <data name="Pedir um novo link" xml:space="preserve"><value>Pedir um novo link</value></data>
+  <data name="Escolha a nova senha da sua conta." xml:space="preserve"><value>Escolha a nova senha da sua conta.</value></data>
+  <data name="Redefinir senha" xml:space="preserve"><value>Redefinir senha</value></data>
+  <data name="Não foi possível redefinir a senha. Tente novamente." xml:space="preserve"><value>Não foi possível redefinir a senha. Tente novamente.</value></data>
+  <data name="Informe a nova senha." xml:space="preserve"><value>Informe a nova senha.</value></data>
+  <data name="Confirme a nova senha." xml:space="preserve"><value>Confirme a nova senha.</value></data>
+  <data name="Executar" xml:space="preserve"><value>Executar</value></data>
+  <data name="Console direto no SQLite. SELECT mostra resultados; UPDATE / DELETE / INSERT alteram o banco." xml:space="preserve"><value>Console direto no SQLite. SELECT mostra resultados; UPDATE / DELETE / INSERT alteram o banco.</value></data>
+  <data name="Comando SQL" xml:space="preserve"><value>Comando SQL</value></data>
+  <data name="Ex.: SELECT * FROM Insumos;  |  UPDATE Insumos SET Saldo = 10 WHERE Id = 1;" xml:space="preserve"><value>Ex.: SELECT * FROM Insumos;  |  UPDATE Insumos SET Saldo = 10 WHERE Id = 1;</value></data>
+  <data name="Nenhuma linha retornada." xml:space="preserve"><value>Nenhuma linha retornada.</value></data>
+  <data name="Este comando pode alterar ou apagar dados. Continuar?" xml:space="preserve"><value>Este comando pode alterar ou apagar dados. Continuar?</value></data>
+  <data name="Confirmar comando" xml:space="preserve"><value>Confirmar comando</value></data>
+  <data name="Consulta OK — {0} linha(s)." xml:space="preserve"><value>Consulta OK — {0} linha(s).</value></data>
+  <data name="Comando OK — {0} linha(s) afetada(s)." xml:space="preserve"><value>Comando OK — {0} linha(s) afetada(s).</value></data>
+  <data name="Makelectron — Esqueci a senha" xml:space="preserve"><value>Makelectron — Esqueci a senha</value></data>
+  <data name="Se o e-mail informado pertencer a uma conta ativa, enviamos as instruções para redefinir a senha." xml:space="preserve"><value>Se o e-mail informado pertencer a uma conta ativa, enviamos as instruções para redefinir a senha.</value></data>
+  <data name="O link vale por 1 hora e só pode ser usado uma vez." xml:space="preserve"><value>O link vale por 1 hora e só pode ser usado uma vez.</value></data>
+  <data name="Não encontrou? Confira a caixa de spam." xml:space="preserve"><value>Não encontrou? Confira a caixa de spam.</value></data>
+  <data name="Esqueci a senha" xml:space="preserve"><value>Esqueci a senha</value></data>
+  <data name="Informe o e-mail da sua conta e enviaremos um link para criar uma nova senha." xml:space="preserve"><value>Informe o e-mail da sua conta e enviaremos um link para criar uma nova senha.</value></data>
+  <data name="Enviar link" xml:space="preserve"><value>Enviar link</value></data>
+  <data name="Criados apenas pela produção. Excluir devolve os insumos ao estoque." xml:space="preserve"><value>Criados apenas pela produção. Excluir devolve os insumos ao estoque.</value></data>
+  <data name="Equipamento" xml:space="preserve"><value>Equipamento</value></data>
+  <data name="Descrição" xml:space="preserve"><value>Descrição</value></data>
+  <data name="Custo total" xml:space="preserve"><value>Custo total</value></data>
+  <data name="Nenhum produto produzido ainda." xml:space="preserve"><value>Nenhum produto produzido ainda.</value></data>
+  <data name="Produto não encontrado." xml:space="preserve"><value>Produto não encontrado.</value></data>
+  <data name="Produto #{0}" xml:space="preserve"><value>Produto #{0}</value></data>
+  <data name="Descrição do produto #{0}" xml:space="preserve"><value>Descrição do produto #{0}</value></data>
+  <data name="Excluir o produto #{0} ({1})? Os insumos consumidos voltarão ao estoque." xml:space="preserve"><value>Excluir o produto #{0} ({1})? Os insumos consumidos voltarão ao estoque.</value></data>
+  <data name="Produto excluído. Insumos devolvidos ao estoque." xml:space="preserve"><value>Produto excluído. Insumos devolvidos ao estoque.</value></data>
+  <data name="Makelectron — Entrar" xml:space="preserve"><value>Makelectron — Entrar</value></data>
+  <data name="Entre para continuar." xml:space="preserve"><value>Entre para continuar.</value></data>
+  <data name="Sua conta ainda não foi ativada. Abra o link que enviamos para o seu e-mail ou" xml:space="preserve"><value>Sua conta ainda não foi ativada. Abra o link que enviamos para o seu e-mail ou</value></data>
+  <data name="reenvie o e-mail de ativação" xml:space="preserve"><value>reenvie o e-mail de ativação</value></data>
+  <data name="Muitas tentativas de entrada. Aguarde alguns minutos e tente novamente." xml:space="preserve"><value>Muitas tentativas de entrada. Aguarde alguns minutos e tente novamente.</value></data>
+  <data name="A página ficou aberta por muito tempo. Tente entrar novamente." xml:space="preserve"><value>A página ficou aberta por muito tempo. Tente entrar novamente.</value></data>
+  <data name="E-mail ou senha inválidos." xml:space="preserve"><value>E-mail ou senha inválidos.</value></data>
+  <data name="Ocorreu um erro. O aplicativo pode parar de responder até ser recarregado." xml:space="preserve"><value>Ocorreu um erro. O aplicativo pode parar de responder até ser recarregado.</value></data>
+  <data name="Ocorreu uma exceção não tratada. Veja as ferramentas do navegador para detalhes." xml:space="preserve"><value>Ocorreu uma exceção não tratada. Veja as ferramentas do navegador para detalhes.</value></data>
+  <data name="Recarregar" xml:space="preserve"><value>Recarregar</value></data>
+  <data name="Conectando ao servidor novamente…" xml:space="preserve"><value>Conectando ao servidor novamente…</value></data>
+  <data name="Não foi possível reconectar." xml:space="preserve"><value>Não foi possível reconectar.</value></data>
+  <data name="O estado deve ter no máximo {0} caracteres." xml:space="preserve"><value>O estado deve ter no máximo {0} caracteres.</value></data>
+  <data name="Este e-mail não está disponível." xml:space="preserve"><value>Este e-mail não está disponível.</value></data>
+  <data name="A senha deve ter pelo menos uma letra." xml:space="preserve"><value>A senha deve ter pelo menos uma letra.</value></data>
+  <data name="Não foi possível concluir a operação." xml:space="preserve"><value>Não foi possível concluir a operação.</value></data>
+  <data name="Os dados foram alterados por outra operação. Tente novamente." xml:space="preserve"><value>Os dados foram alterados por outra operação. Tente novamente.</value></data>
+  <data name="Senha incorreta." xml:space="preserve"><value>Senha incorreta.</value></data>
+  <data name="O link é inválido ou expirou." xml:space="preserve"><value>O link é inválido ou expirou.</value></data>
+  <data name="Este login já está associado a uma conta." xml:space="preserve"><value>Este login já está associado a uma conta.</value></data>
+  <data name="O e-mail informado é inválido." xml:space="preserve"><value>O e-mail informado é inválido.</value></data>
+  <data name="A conta já possui uma senha." xml:space="preserve"><value>A conta já possui uma senha.</value></data>
+  <data name="O bloqueio de conta não está habilitado para este usuário." xml:space="preserve"><value>O bloqueio de conta não está habilitado para este usuário.</value></data>
+  <data name="A senha deve ter pelo menos {0} caracteres." xml:space="preserve"><value>A senha deve ter pelo menos {0} caracteres.</value></data>
+  <data name="A senha deve ter pelo menos um caractere especial." xml:space="preserve"><value>A senha deve ter pelo menos um caractere especial.</value></data>
+  <data name="A senha deve ter pelo menos um número." xml:space="preserve"><value>A senha deve ter pelo menos um número.</value></data>
+  <data name="A senha deve ter pelo menos uma letra minúscula." xml:space="preserve"><value>A senha deve ter pelo menos uma letra minúscula.</value></data>
+  <data name="A senha deve ter pelo menos uma letra maiúscula." xml:space="preserve"><value>A senha deve ter pelo menos uma letra maiúscula.</value></data>
+  <data name="A senha deve ter pelo menos {0} caracteres diferentes." xml:space="preserve"><value>A senha deve ter pelo menos {0} caracteres diferentes.</value></data>
+  <data name="Informe a senha atual." xml:space="preserve"><value>Informe a senha atual.</value></data>
+  <data name="A conta ainda não está ativa." xml:space="preserve"><value>A conta ainda não está ativa.</value></data>
+  <data name="A imagem excede o tamanho máximo de 20 MB." xml:space="preserve"><value>A imagem excede o tamanho máximo de 20 MB.</value></data>
+  <data name="Formato de imagem não suportado. Use JPG, PNG, GIF ou WEBP." xml:space="preserve"><value>Formato de imagem não suportado. Use JPG, PNG, GIF ou WEBP.</value></data>
+  <data name="Formato de imagem não suportado ({0}). Use JPG, PNG, GIF ou WEBP." xml:space="preserve"><value>Formato de imagem não suportado ({0}). Use JPG, PNG, GIF ou WEBP.</value></data>
+  <data name="Não há usuário autenticado para salvar a imagem." xml:space="preserve"><value>Não há usuário autenticado para salvar a imagem.</value></data>
+  <data name="Tipo não encontrado." xml:space="preserve"><value>Tipo não encontrado.</value></data>
+  <data name="Insumo não encontrado." xml:space="preserve"><value>Insumo não encontrado.</value></data>
+  <data name="Informe o nome." xml:space="preserve"><value>Informe o nome.</value></data>
+  <data name="Já existe um tipo com o nome &quot;{0}&quot;." xml:space="preserve"><value>Já existe um tipo com o nome "{0}".</value></data>
+  <data name="Não é possível excluir: existem insumos vinculados a este tipo." xml:space="preserve"><value>Não é possível excluir: existem insumos vinculados a este tipo.</value></data>
+  <data name="Selecione a moeda dos produtos." xml:space="preserve"><value>Selecione a moeda dos produtos.</value></data>
+  <data name="Selecione a moeda dos impostos." xml:space="preserve"><value>Selecione a moeda dos impostos.</value></data>
+  <data name="O frete deve estar na moeda dos produtos, dos impostos ou em reais." xml:space="preserve"><value>O frete deve estar na moeda dos produtos, dos impostos ou em reais.</value></data>
+  <data name="O frete não pode ser negativo." xml:space="preserve"><value>O frete não pode ser negativo.</value></data>
+  <data name="Os impostos não podem ser negativos." xml:space="preserve"><value>Os impostos não podem ser negativos.</value></data>
+  <data name="Adicione ao menos um item à entrada." xml:space="preserve"><value>Adicione ao menos um item à entrada.</value></data>
+  <data name="Todos os itens devem ter insumo, quantidade maior que zero e preço não negativo." xml:space="preserve"><value>Todos os itens devem ter insumo, quantidade maior que zero e preço não negativo.</value></data>
+  <data name="Informe o câmbio dos {0} (quantos R$ valem 1 {1})." xml:space="preserve"><value>Informe o câmbio dos {0} (quantos R$ valem 1 {1}).</value></data>
+  <data name="Não é possível excluir: existem produtos produzidos com este equipamento." xml:space="preserve"><value>Não é possível excluir: existem produtos produzidos com este equipamento.</value></data>
+  <data name="O painel de cadastros é exclusivo do usuário reservado." xml:space="preserve"><value>O painel de cadastros é exclusivo do usuário reservado.</value></data>
+  <data name="Não é possível excluir: o insumo faz parte de um ou mais equipamentos." xml:space="preserve"><value>Não é possível excluir: o insumo faz parte de um ou mais equipamentos.</value></data>
+  <data name="Não é possível excluir: o insumo possui movimentações de estoque." xml:space="preserve"><value>Não é possível excluir: o insumo possui movimentações de estoque.</value></data>
+  <data name="Não é possível excluir: o insumo foi utilizado em produtos." xml:space="preserve"><value>Não é possível excluir: o insumo foi utilizado em produtos.</value></data>
+  <data name="Não é possível excluir: o insumo possui saldo em estoque." xml:space="preserve"><value>Não é possível excluir: o insumo possui saldo em estoque.</value></data>
+  <data name="Insumo {0} não encontrado." xml:space="preserve"><value>Insumo {0} não encontrado.</value></data>
+  <data name="Informe quantos produtos produzir (pelo menos 1)." xml:space="preserve"><value>Informe quantos produtos produzir (pelo menos 1).</value></data>
+  <data name="O equipamento não possui insumos na lista (BOM)." xml:space="preserve"><value>O equipamento não possui insumos na lista (BOM).</value></data>
+  <data name="{0}{1}: necessário {2:0.####}, disponível {3:0.####}" xml:space="preserve"><value>{0}{1}: necessário {2:0.####}, disponível {3:0.####}</value></data>
+  <data name="Não é possível produzir — insumos insuficientes:" xml:space="preserve"><value>Não é possível produzir — insumos insuficientes:</value></data>
+  <data name="Não é possível produzir {0} unidades — insumos insuficientes:" xml:space="preserve"><value>Não é possível produzir {0} unidades — insumos insuficientes:</value></data>
+  <data name="Informe um comando SQL." xml:space="preserve"><value>Informe um comando SQL.</value></data>
+  <data name="O console SQL é exclusivo do usuário reservado." xml:space="preserve"><value>O console SQL é exclusivo do usuário reservado.</value></data>
+  <data name="Não foi possível alterar a senha." xml:space="preserve"><value>Não foi possível alterar a senha.</value></data>
+  <data name="produtos" xml:space="preserve"><value>produtos</value></data>
+  <data name="impostos" xml:space="preserve"><value>impostos</value></data>
+  <data name="dólar" xml:space="preserve"><value>dólar</value></data>
+  <data name="euro" xml:space="preserve"><value>euro</value></data>
+  <data name="libra" xml:space="preserve"><value>libra</value></data>
+  <data name="yuan" xml:space="preserve"><value>yuan</value></data>
+  <data name="real" xml:space="preserve"><value>real</value></data>
+  <data name="Tipos de componente (resistor, diodo...)." xml:space="preserve"><value>Tipos de componente (resistor, diodo...).</value></data>
+  <data name="Componentes com saldo e custo." xml:space="preserve"><value>Componentes com saldo e custo.</value></data>
+  <data name="Modelos e suas listas de insumos." xml:space="preserve"><value>Modelos e suas listas de insumos.</value></data>
+  <data name="Compra de insumos com custo médio." xml:space="preserve"><value>Compra de insumos com custo médio.</value></data>
+  <data name="Produzir a partir de um modelo." xml:space="preserve"><value>Produzir a partir de um modelo.</value></data>
+  <data name="Produtos produzidos e custos." xml:space="preserve"><value>Produtos produzidos e custos.</value></data>
+  <data name="Já tem conta?" xml:space="preserve"><value>Já tem conta?</value></data>
+  <data name="Não tem conta?" xml:space="preserve"><value>Não tem conta?</value></data>
+  <data name="Total {0}" xml:space="preserve"><value>Total {0}</value></data>
+  <data name="{0} insumos" xml:space="preserve"><value>{0} insumos</value></data>
+  <data name="Saldo {0}" xml:space="preserve"><value>Saldo {0}</value></data>
+  <data name="{0} linha(s)" xml:space="preserve"><value>{0} linha(s)</value></data>
+  <data name="Remover {0}" xml:space="preserve"><value>Remover {0}</value></data>
+  <data name="Produzir {0}" xml:space="preserve"><value>Produzir {0}</value></data>
+  <data name="{first_item}-{last_item} de {all_items}" xml:space="preserve"><value>{first_item}-{last_item} de {all_items}</value></data>
 </root>

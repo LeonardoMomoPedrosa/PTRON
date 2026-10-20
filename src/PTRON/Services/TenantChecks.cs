@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using PTRON.Data;
+using PTRON.Localization;
 
 namespace PTRON.Services;
 
@@ -13,7 +14,7 @@ internal static class TenantChecks
     {
         if (!await db.TiposInsumo.AnyAsync(t => t.Id == tipoId))
         {
-            throw new InvalidOperationException("Tipo não encontrado.");
+            throw new InvalidOperationException(StaticText.Get("Tipo não encontrado."));
         }
     }
 
@@ -28,7 +29,7 @@ internal static class TenantChecks
         var found = await db.Insumos.CountAsync(i => ids.Contains(i.Id));
         if (found != ids.Count)
         {
-            throw new InvalidOperationException("Insumo não encontrado.");
+            throw new InvalidOperationException(StaticText.Get("Insumo não encontrado."));
         }
     }
 }

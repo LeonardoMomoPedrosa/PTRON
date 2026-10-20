@@ -9,9 +9,9 @@
             <MudGrid>
                 <MudItem xs="12" sm="8">
                     <MudTextField @bind-Value="_model.Nome"
-                                  Label="Nome"
+                                  Label="@L["Nome"]"
                                   Required="true"
-                                  RequiredError="O nome é obrigatório."
+                                  RequiredError="@L["O nome é obrigatório."]"
                                   MaxLength="150"
                                   Immediate="true"
                                   DebounceInterval="0" />
@@ -19,9 +19,9 @@
                 <MudItem xs="12" sm="4">
                     <MudSelect T="int?"
                                @bind-Value="_tipoId"
-                               Label="Tipo"
+                               Label="@L["Tipo"]"
                                Required="true"
-                               RequiredError="O tipo é obrigatório."
+                               RequiredError="@L["O tipo é obrigatório."]"
                                Clearable="false"
                                PopoverFixed="true"
                                MaxHeight="240"
@@ -35,18 +35,18 @@
                 </MudItem>
 
                 <MudItem xs="12" sm="4">
-                    <MudTextField @bind-Value="_model.Valor" Label="Valor (opcional)"
-                                  MaxLength="50" HelperText="Ex.: 8Ω, 5µF"
+                    <MudTextField @bind-Value="_model.Valor" Label="@L["Valor (opcional)"]"
+                                  MaxLength="50" HelperText="@L["Ex.: 8Ω, 5µF"]"
                                   Immediate="true" DebounceInterval="0" />
                 </MudItem>
                 <MudItem xs="12" sm="4">
-                    <MudTextField @bind-Value="_model.Potencia" Label="Potência (opcional)"
-                                  MaxLength="50" HelperText="Ex.: 2W, 5W"
+                    <MudTextField @bind-Value="_model.Potencia" Label="@L["Potência (opcional)"]"
+                                  MaxLength="50" HelperText="@L["Ex.: 2W, 5W"]"
                                   Immediate="true" DebounceInterval="0" />
                 </MudItem>
                 <MudItem xs="12" sm="4">
-                    <MudTextField @bind-Value="_model.Voltagem" Label="Voltagem (opcional)"
-                                  MaxLength="50" HelperText="Ex.: 35V, 400V"
+                    <MudTextField @bind-Value="_model.Voltagem" Label="@L["Voltagem (opcional)"]"
+                                  MaxLength="50" HelperText="@L["Ex.: 35V, 400V"]"
                                   Immediate="true" DebounceInterval="0" />
                 </MudItem>
 
@@ -58,7 +58,7 @@
                                 <MudButton Variant="Variant.Outlined"
                                            StartIcon="@Icons.Material.Filled.Image"
                                            OnClick="@fileUpload.OpenFilePickerAsync">
-                                    @(string.IsNullOrEmpty(_model.FotoPath) ? "Selecionar foto" : "Trocar foto")
+                                    @(string.IsNullOrEmpty(_model.FotoPath) ? L["Selecionar foto"] : L["Trocar foto"])
                                 </MudButton>
                             </CustomContent>
                         </MudFileUpload>
@@ -76,7 +76,7 @@
                 {
                     <MudItem xs="12">
                         <MudAlert Severity="Severity.Info" Dense="true">
-                            Cópia do insumo original. Mesmo tipo e nome — altere valor, potência ou voltagem e salve para criar um novo.
+                            @L["Cópia do insumo original. Mesmo tipo e nome — altere valor, potência ou voltagem e salve para criar um novo."]
                         </MudAlert>
                     </MudItem>
                 }
@@ -84,11 +84,11 @@
                 @if (_model.Id != 0)
                 {
                     <MudItem xs="6">
-                        <MudTextField Value="@Format.Number(_model.Saldo)" Label="Saldo (estoque)"
+                        <MudTextField Value="@Format.Number(_model.Saldo)" Label="@L["Saldo (estoque)"]"
                                       ReadOnly="true" Disabled="true" />
                     </MudItem>
                     <MudItem xs="6">
-                        <MudTextField Value="@Format.Money(_model.CustoUnitario)" Label="Custo unitário"
+                        <MudTextField Value="@Format.Money(_model.CustoUnitario)" Label="@L["Custo unitário"]"
                                       ReadOnly="true" Disabled="true" />
                     </MudItem>
                 }
@@ -102,13 +102,13 @@
                        Color="Color.Secondary"
                        StartIcon="@Icons.Material.Filled.ContentCopy"
                        OnClick="StartCopy">
-                Criar cópia com outro valor
+                @L["Criar cópia com outro valor"]
             </MudButton>
             <MudSpacer />
         }
-        <MudButton OnClick="Cancel">Cancelar</MudButton>
+        <MudButton OnClick="Cancel">@L["Cancelar"]</MudButton>
         <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit">
-            @(_isCopyMode || _model.Id == 0 ? "Criar" : "Salvar")
+            @(_isCopyMode || _model.Id == 0 ? L["Criar"] : L["Salvar"])
         </MudButton>
     </DialogActions>
 </MudDialog>
@@ -165,7 +165,7 @@
         };
         _tipoId = _model.TipoInsumoId == 0 ? null : _model.TipoInsumoId;
         _isCopyMode = true;
-        await MudDialog.SetTitleAsync("Novo insumo (cópia)");
+        await MudDialog.SetTitleAsync(L["Novo insumo (cópia)"]);
     }
 
     private async Task UploadFile(IBrowserFile? file)
@@ -207,7 +207,7 @@
         {
             if (_tipoId is null)
             {
-                Snackbar.Add("Selecione o tipo do insumo.", Severity.Warning);
+                Snackbar.Add(L["Selecione o tipo do insumo."], Severity.Warning);
             }
             return;
         }
@@ -223,12 +223,12 @@
             {
                 var parameters = new DialogParameters<ConfirmDialog>
                 {
-                    { x => x.Message, $"Salvar as alterações em \"{_model.Nome}\"?" },
-                    { x => x.ConfirmText, "Salvar" },
+                    { x => x.Message, L["Salvar as alterações em \"{0}\"?", _model.Nome] },
+                    { x => x.ConfirmText, L["Salvar"] },
                     { x => x.Color, Color.Primary },
                     { x => x.MarkerClass, "insumo-flow-dialog" }
                 };
-                var confirm = await DialogService.ShowAsync<ConfirmDialog>("Confirmar atualização", parameters);
+                var confirm = await DialogService.ShowAsync<ConfirmDialog>(L["Confirmar atualização"], parameters);
                 var confirmResult = await confirm.Result;
                 if (confirmResult is null || confirmResult.Canceled)
                 {

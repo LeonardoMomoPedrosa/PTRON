@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using PTRON.Data;
 using PTRON.Models;
+using PTRON.Localization;
 
 namespace PTRON.Services;
 
@@ -60,7 +61,7 @@ public class ProducaoService
     {
         if (quantidade < 1)
         {
-            throw new InvalidOperationException("Informe quantos produtos produzir (pelo menos 1).");
+            throw new InvalidOperationException(StaticText.Get("Informe quantos produtos produzir (pelo menos 1)."));
         }
 
         await using var db = await _factory.CreateDbContextAsync();
@@ -112,7 +113,7 @@ public class ProducaoService
     {
         if (quantidade < 1)
         {
-            throw new InvalidOperationException("Informe quantos produtos produzir (pelo menos 1).");
+            throw new InvalidOperationException(StaticText.Get("Informe quantos produtos produzir (pelo menos 1)."));
         }
 
         await using var db = await _factory.CreateDbContextAsync();
@@ -125,17 +126,17 @@ public class ProducaoService
                     .ThenInclude(ei => ei.Insumo)
                         .ThenInclude(i => i!.TipoInsumo)
                 .FirstOrDefaultAsync(e => e.Id == equipamentoId)
-                ?? throw new InvalidOperationException("Equipamento não encontrado.");
+                ?? throw new InvalidOperationException(StaticText.Get("Equipamento não encontrado."));
 
             if (equipamento.Insumos.Any(ei => ei.Insumo is null))
             {
-                throw new InvalidOperationException("Insumo não encontrado.");
+                throw new InvalidOperationException(StaticText.Get("Insumo não encontrado."));
             }
 
             if (equipamento.Insumos.Count == 0)
             {
                 throw new InvalidOperationException(
-                    "O equipamento não possui insumos na lista (BOM).");
+                    StaticText.Get("O equipamento não possui insumos na lista (BOM)."));
             }
 
             var faltantes = new List<string>();
@@ -148,15 +149,16 @@ public class ProducaoService
                     var detalhe = Format.InsumoDetalhe(insumo);
                     var sufixo = detalhe.Length > 0 ? " (" + detalhe + ")" : string.Empty;
                     faltantes.Add(
-                        $"{insumo.Nome}{sufixo}: necessário {necessario:0.####}, disponível {insumo.Saldo:0.####}");
+                        StaticText.Format("{0}{1}: necessário {2:0.####}, disponível {3:0.####}", insumo.Nome, sufixo, necessario, insumo.Saldo));
                 }
             }
 
             if (faltantes.Count > 0)
             {
-                var unidades = quantidade == 1 ? "produzir" : $"produzir {quantidade} unidades";
-                throw new InvalidOperationException(
-                    $"Não é possível {unidades} — insumos insuficientes:\n" + string.Join("\n", faltantes));
+                var cabecalho = quantidade == 1
+                    ? StaticText.Get("Não é possível produzir — insumos insuficientes:")
+                    : StaticText.Format("Não é possível produzir {0} unidades — insumos insuficientes:", quantidade);
+                throw new InvalidOperationException(cabecalho + "\n" + string.Join("\n", faltantes));
             }
 
             var descricao = string.IsNullOrWhiteSpace(descricaoAdicional)

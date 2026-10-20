@@ -1,10 +1,7 @@
 @using System.Globalization
-@using Microsoft.Extensions.Localization
-@using PTRON.Localization
-@inject IStringLocalizer<SharedResource> L
 @inject NavigationManager Navigation
 
-<MudMenu Icon="@Icons.Material.Filled.Language" Color="Color.Inherit" AriaLabel="@L["Language"]"
+<MudMenu Icon="@Icons.Material.Filled.Language" Color="Color.Inherit" AriaLabel="@L["Escolher idioma"]"
          AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
     @foreach (var language in SupportedLanguages.All)
     {
