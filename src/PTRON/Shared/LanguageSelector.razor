@@ -1,15 +1,26 @@
 @using System.Globalization
 @inject NavigationManager Navigation
 
-<MudMenu Icon="@Icons.Material.Filled.Language" Color="Color.Inherit" AriaLabel="@L["Escolher idioma"]"
+<MudMenu Color="Color.Inherit" AriaLabel="@L["Escolher idioma"]"
          AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
-    @foreach (var language in SupportedLanguages.All)
-    {
-        <MudMenuItem Href="@LinkFor(language)" ForceLoad="true"
-                     Class="@(language.Code == _current.Code ? "mud-selected-item" : null)">
-            <span lang="@language.Code">@language.Name</span>
-        </MudMenuItem>
-    }
+    <ActivatorContent>
+        <MudButton Color="Color.Inherit" Class="language-button" aria-label="@L["Escolher idioma"]">
+            <FlagIcon Code="@_current.Code" Width="22" />
+            <span lang="@_current.Code" class="ml-2">@_current.Name</span>
+        </MudButton>
+    </ActivatorContent>
+    <ChildContent>
+        @foreach (var language in SupportedLanguages.All)
+        {
+            <MudMenuItem Href="@LinkFor(language)" ForceLoad="true"
+                         Class="@(language.Code == _current.Code ? "mud-selected-item" : null)">
+                <span class="d-inline-flex align-center">
+                    <FlagIcon Code="@language.Code" Width="22" />
+                    <span lang="@language.Code" class="ml-2">@language.Name</span>
+                </span>
+            </MudMenuItem>
+        }
+    </ChildContent>
 </MudMenu>
 
 @code {
