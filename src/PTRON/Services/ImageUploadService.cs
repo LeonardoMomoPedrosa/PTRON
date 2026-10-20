@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Components.Forms;
 using PTRON.Identity;
+using PTRON.Localization;
 
 namespace PTRON.Services;
 
@@ -50,7 +51,7 @@ public class ImageUploadService
 
         if (length > MaxFileSize)
         {
-            throw new InvalidOperationException("A imagem excede o tamanho máximo de 20 MB.");
+            throw new InvalidOperationException(StaticText.Get("A imagem excede o tamanho máximo de 20 MB."));
         }
 
         var userId = RequireUserId();
@@ -96,8 +97,8 @@ public class ImageUploadService
 
         throw new InvalidOperationException(
             string.IsNullOrEmpty(extension)
-                ? "Formato de imagem não suportado. Use JPG, PNG, GIF ou WEBP."
-                : $"Formato de imagem não suportado ({extension}). Use JPG, PNG, GIF ou WEBP.");
+                ? StaticText.Get("Formato de imagem não suportado. Use JPG, PNG, GIF ou WEBP.")
+                : StaticText.Format("Formato de imagem não suportado ({0}). Use JPG, PNG, GIF ou WEBP.", extension));
     }
 
     /// <summary>
@@ -119,7 +120,7 @@ public class ImageUploadService
         var userId = _currentUser.UserId;
         if (string.IsNullOrEmpty(userId) || !UserIdPattern.IsMatch(userId))
         {
-            throw new InvalidOperationException("Não há usuário autenticado para salvar a imagem.");
+            throw new InvalidOperationException(StaticText.Get("Não há usuário autenticado para salvar a imagem."));
         }
 
         return userId;

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using PTRON.Email;
 using PTRON.Models;
+using PTRON.Localization;
 
 namespace PTRON.Identity;
 
@@ -38,17 +39,17 @@ public sealed class ChangePasswordService
             return ChangePasswordResult.Fail("Entre novamente para alterar a senha.");
 
         if (string.IsNullOrEmpty(currentPassword))
-            return ChangePasswordResult.Fail("Informe a senha atual.");
+            return ChangePasswordResult.Fail(StaticText.Get("Informe a senha atual."));
 
         if (!string.Equals(newPassword, confirmPassword, StringComparison.Ordinal))
-            return ChangePasswordResult.Fail("As senhas não conferem.");
+            return ChangePasswordResult.Fail(StaticText.Get("As senhas não conferem."));
 
         var user = await _users.FindByIdAsync(userId);
         if (user is null)
             return ChangePasswordResult.Fail("Entre novamente para alterar a senha.");
 
         if (!user.EmailConfirmed)
-            return ChangePasswordResult.Fail("A conta ainda não está ativa.");
+            return ChangePasswordResult.Fail(StaticText.Get("A conta ainda não está ativa."));
 
         var result = await _users.ChangePasswordAsync(user, currentPassword, newPassword ?? "");
         if (!result.Succeeded)
@@ -58,7 +59,10 @@ public sealed class ChangePasswordService
         {
             try
             {
-                await _email.SendPasswordChangedAsync(user.Email);
+                using (CultureScope.Use(user.Idioma))
+                {
+                    await _email.SendPasswordChangedAsync(user.Email);
+                }
             }
             catch (Exception ex)
             {

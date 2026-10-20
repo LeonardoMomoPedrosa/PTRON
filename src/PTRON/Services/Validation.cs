@@ -1,13 +1,14 @@
+using PTRON.Localization;
 namespace PTRON.Services;
 
 internal static class Validation
 {
-    public static string RequireName(string? nome, string campo = "nome")
+    public static string RequireName(string? nome)
     {
         var trimmed = (nome ?? string.Empty).Trim();
         if (string.IsNullOrEmpty(trimmed))
         {
-            throw new InvalidOperationException($"Informe o {campo}.");
+            throw new InvalidOperationException(StaticText.Get("Informe o nome."));
         }
 
         return trimmed;

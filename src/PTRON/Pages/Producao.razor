@@ -4,15 +4,15 @@
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 
-<PageTitle>Produção</PageTitle>
+<PageTitle>@L["Produção"]</PageTitle>
 
-<MudText Typo="Typo.h5" Class="mb-4">Produção</MudText>
+<MudText Typo="Typo.h5" Class="mb-4">@L["Produção"]</MudText>
 
 <MudPaper Class="pa-4 mb-4" Outlined="true">
     <MudGrid>
         <MudItem xs="12" md="5">
             <MudSelect T="int?" @bind-Value="_equipamentoId" @bind-Value:after="OnEquipamentoChanged"
-                       Label="Equipamento (modelo)"
+                       Label="@L["Equipamento (modelo)"]"
                        Clearable="true"
                        AnchorOrigin="Origin.BottomCenter">
                 @foreach (var eq in _equipamentos)
@@ -23,29 +23,29 @@
         </MudItem>
         <MudItem xs="12" sm="4" md="2">
             <MudNumericField T="int" @bind-Value="_quantidade" @bind-Value:after="OnQuantidadeChanged"
-                             Label="Quantidade"
+                             Label="@L["Quantidade"]"
                              Min="1" Max="10000" Step="1"
-                             HelperText="Quantos produtos produzir"
+                             HelperText="@L["Quantos produtos produzir"]"
                              Immediate="true" HideSpinButtons="false" />
         </MudItem>
         <MudItem xs="12" md="5">
             <MudTextField @bind-Value="_descricao"
-                          Label="Descrição adicional do produto"
+                          Label="@L["Descrição adicional do produto"]"
                           MaxLength="1000"
                           Immediate="true"
-                          HelperText="Ex.: número de série, lote, observação" />
+                          HelperText="@L["Ex.: número de série, lote, observação"]" />
         </MudItem>
     </MudGrid>
 </MudPaper>
 
 @if (_preview is null)
 {
-    <MudAlert Severity="Severity.Info">Selecione um equipamento para revisar os insumos e o custo estimado.</MudAlert>
+    <MudAlert Severity="Severity.Info">@L["Selecione um equipamento para revisar os insumos e o custo estimado."]</MudAlert>
 }
 else if (_preview.Linhas.Count == 0)
 {
     <MudAlert Severity="Severity.Warning">
-        O equipamento "@_preview.EquipamentoNome" não possui insumos cadastrados na BOM.
+        @L["O equipamento \"{0}\" não possui insumos cadastrados na BOM.", _preview.EquipamentoNome]
     </MudAlert>
 }
 else
@@ -53,23 +53,24 @@ else
     @if (!_preview.PodeProduzir && _concluida)
     {
         <MudAlert Severity="Severity.Success" Class="mb-4" Dense="true">
-            Produção concluída. O estoque agora não cobre outra leva de @_preview.Quantidade
-            @(_preview.Quantidade == 1 ? "unidade" : "unidades").
+            @(_preview.Quantidade == 1
+                ? L["Produção concluída. O estoque agora não cobre outra leva de 1 unidade."]
+                : L["Produção concluída. O estoque agora não cobre outra leva de {0} unidades.", _preview.Quantidade])
         </MudAlert>
     }
     else if (!_preview.PodeProduzir)
     {
         <MudAlert Severity="Severity.Error" Class="mb-4" Dense="true">
             <MudText Typo="Typo.subtitle2">
-                Não é possível produzir@(_preview.Quantidade == 1 ? "" : $" {_preview.Quantidade} unidades") — insumos faltantes:
+                @(_preview.Quantidade == 1
+                    ? L["Não é possível produzir — insumos faltantes:"]
+                    : L["Não é possível produzir {0} unidades — insumos faltantes:", _preview.Quantidade])
             </MudText>
             <ul class="mt-2 mb-0">
                 @foreach (var f in _preview.Faltantes)
                 {
                     <li>
-                        <b>@f.InsumoNome</b>@DetalheSuffix(f): necessário @Format.Number(f.QtdNecessaria),
-                        disponível @Format.Number(f.SaldoDisponivel)
-                        (falta @Format.Number(f.Faltante))
+                        <b>@f.InsumoNome</b>@DetalheSuffix(f): @L["necessário {0}, disponível {1} (falta {2})", Format.Number(f.QtdNecessaria), Format.Number(f.SaldoDisponivel), Format.Number(f.Faltante)]
                     </li>
                 }
             </ul>
@@ -80,14 +81,14 @@ else
         <MudAlert Severity="Severity.Success" Class="mb-4" Dense="true">
             @if (_preview.Quantidade == 1)
             {
-                <span>Todos os insumos estão disponíveis. Custo estimado: <b>@Format.Money(_preview.CustoEstimado)</b></span>
+                <span>@L["Todos os insumos estão disponíveis. Custo estimado:"] <b>@Format.Money(_preview.CustoEstimado)</b></span>
             }
             else
             {
                 <span>
-                    Todos os insumos estão disponíveis para @_preview.Quantidade unidades.
-                    Custo de cada uma: <b>@Format.Money(_preview.CustoPorUnidade)</b>.
-                    Custo das @_preview.Quantidade: <b>@Format.Money(_preview.CustoEstimado)</b>.
+                    @L["Todos os insumos estão disponíveis para {0} unidades.", _preview.Quantidade]
+                    @L["Custo de cada uma:"] <b>@Format.Money(_preview.CustoPorUnidade)</b>.
+                    @L["Custo das {0}:", _preview.Quantidade] <b>@Format.Money(_preview.CustoEstimado)</b>.
                 </span>
             }
         </MudAlert>
@@ -96,22 +97,22 @@ else
     <MudPaper Class="mb-4">
         <MudTable Items="_preview.Linhas" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm">
             <HeaderContent>
-                <MudTh>Insumo</MudTh>
-                <MudTh Style="text-align:right">Necessário</MudTh>
-                <MudTh Style="text-align:right">Disponível</MudTh>
-                <MudTh Style="text-align:right">Custo unit.</MudTh>
-                <MudTh Style="text-align:right">Subtotal</MudTh>
-                <MudTh Style="text-align:center">Status</MudTh>
+                <MudTh>@L["Insumo"]</MudTh>
+                <MudTh Style="text-align:right">@L["Necessário"]</MudTh>
+                <MudTh Style="text-align:right">@L["Disponível"]</MudTh>
+                <MudTh Style="text-align:right">@L["Custo unit."]</MudTh>
+                <MudTh Style="text-align:right">@L["Subtotal"]</MudTh>
+                <MudTh Style="text-align:center">@L["Status"]</MudTh>
             </HeaderContent>
             <RowTemplate>
-                <MudTd DataLabel="Insumo">
+                <MudTd DataLabel="@L["Insumo"]">
                     @context.InsumoNome
                     @if (!string.IsNullOrEmpty(context.InsumoDetalhe))
                     {
                         <MudText Typo="Typo.caption" Class="mud-text-secondary">@context.InsumoDetalhe</MudText>
                     }
                 </MudTd>
-                <MudTd DataLabel="Necessário" Style="text-align:right">
+                <MudTd DataLabel="@L["Necessário"]" Style="text-align:right">
                     @Format.Number(context.QtdNecessaria)
                     @if (_preview.Quantidade > 1)
                     {
@@ -120,13 +121,13 @@ else
                         </MudText>
                     }
                 </MudTd>
-                <MudTd DataLabel="Disponível" Style="text-align:right"
+                <MudTd DataLabel="@L["Disponível"]" Style="text-align:right"
                        Class="@(context.Disponivel ? null : "mud-error-text")">
                     @Format.Number(context.SaldoDisponivel)
                 </MudTd>
-                <MudTd DataLabel="Custo unit." Style="text-align:right">@Format.Money(context.CustoUnitario)</MudTd>
-                <MudTd DataLabel="Subtotal" Style="text-align:right">@Format.Money(context.Subtotal)</MudTd>
-                <MudTd DataLabel="Status" Style="text-align:center">
+                <MudTd DataLabel="@L["Custo unit."]" Style="text-align:right">@Format.Money(context.CustoUnitario)</MudTd>
+                <MudTd DataLabel="@L["Subtotal"]" Style="text-align:right">@Format.Money(context.Subtotal)</MudTd>
+                <MudTd DataLabel="@L["Status"]" Style="text-align:center">
                     @if (context.Disponivel)
                     {
                         <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Small" />
@@ -134,7 +135,7 @@ else
                     else
                     {
                         <MudChip T="string" Color="Color.Error" Size="Size.Small">
-                            Falta @Format.Number(context.Faltante)
+                            @L["Falta {0}", Format.Number(context.Faltante)]
                         </MudChip>
                     }
                 </MudTd>
@@ -143,7 +144,7 @@ else
                 <MudTd></MudTd>
                 <MudTd></MudTd>
                 <MudTd></MudTd>
-                <MudTd Style="text-align:right"><b>@(_preview.Quantidade == 1 ? "Custo estimado" : $"Custo de {_preview.Quantidade}")</b></MudTd>
+                <MudTd Style="text-align:right"><b>@(_preview.Quantidade == 1 ? L["Custo estimado"] : L["Custo de {0}", _preview.Quantidade])</b></MudTd>
                 <MudTd Style="text-align:right"><b>@Format.Money(_preview.CustoEstimado)</b></MudTd>
                 <MudTd></MudTd>
             </FooterContent>
@@ -156,7 +157,7 @@ else
                    StartIcon="@Icons.Material.Filled.PrecisionManufacturing"
                    Disabled="@(!_preview.PodeProduzir || _produzindo || _carregandoPreview || _quantidade < 1)"
                    OnClick="Produzir">
-            @(_quantidade == 1 ? "Produzir" : $"Produzir {_quantidade}")
+            @(_quantidade == 1 ? L["Produzir"] : L["Produzir {0}", _quantidade])
         </MudButton>
     </MudStack>
 }
@@ -234,20 +235,20 @@ else
             return;
         }
 
-        var unidades = _quantidade == 1 ? "1 unidade" : $"{_quantidade} unidades";
+        var unidades = _quantidade == 1 ? L["1 unidade"].Value : L["{0} unidades", _quantidade].Value;
         var custo = _quantidade == 1
-            ? $"custo estimado de {Format.Money(_preview.CustoEstimado)}"
-            : $"custo de {Format.Money(_preview.CustoPorUnidade)} cada ({Format.Money(_preview.CustoEstimado)} no total)";
+            ? L["custo estimado de {0}", Format.Money(_preview.CustoEstimado)].Value
+            : L["custo de {0} cada ({1} no total)", Format.Money(_preview.CustoPorUnidade), Format.Money(_preview.CustoEstimado)].Value;
         var parameters = new DialogParameters<ConfirmDialog>
         {
             {
                 x => x.Message,
-                $"Produzir {unidades} de \"{_preview.EquipamentoNome}\" com {custo}? Os insumos serão subtraídos do estoque."
+                L["Produzir {0} de \"{1}\" com {2}? Os insumos serão subtraídos do estoque.", unidades, _preview.EquipamentoNome, custo]
             },
-            { x => x.ConfirmText, "Produzir" },
+            { x => x.ConfirmText, L["Produzir"] },
             { x => x.Color, Color.Primary }
         };
-        var dialog = await DialogService.ShowAsync<ConfirmDialog>("Confirmar produção", parameters);
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>(L["Confirmar produção"], parameters);
         var result = await dialog.Result;
         if (result is { Canceled: true })
         {
@@ -260,8 +261,8 @@ else
             var resultado = await ProducaoService.ProduzirAsync(
                 _preview.EquipamentoId, _descricao, _quantidade);
             var mensagem = resultado.Quantidade == 1
-                ? $"Produto #{resultado.Produtos[0].Id} criado. Custo total: {Format.Money(resultado.CustoUnitario)}."
-                : $"{resultado.Quantidade} produtos criados. Custo de cada um: {Format.Money(resultado.CustoUnitario)}.";
+                ? L["Produto #{0} criado. Custo total: {1}.", resultado.Produtos[0].Id, Format.Money(resultado.CustoUnitario)].Value
+                : L["{0} produtos criados. Custo de cada um: {1}.", resultado.Quantidade, Format.Money(resultado.CustoUnitario)].Value;
             Snackbar.Add(mensagem, Severity.Success);
 
             _descricao = null;

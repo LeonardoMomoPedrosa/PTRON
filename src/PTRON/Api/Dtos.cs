@@ -1,3 +1,4 @@
+using PTRON.Localization;
 using System.ComponentModel.DataAnnotations;
 using PTRON.Services;
 
@@ -23,7 +24,7 @@ public sealed class TipoDto
 
 public sealed class TipoWriteDto
 {
-    [Required(ErrorMessage = "Informe o nome.")]
+    [LRequired(ErrorMessage = "Informe o nome.")]
     [MaxLength(100)]
     public string Nome { get; set; } = string.Empty;
 }
@@ -44,11 +45,11 @@ public sealed class InsumoDto
 
 public sealed class InsumoWriteDto
 {
-    [Required(ErrorMessage = "Selecione o tipo do insumo.")]
-    [Range(1, int.MaxValue, ErrorMessage = "Selecione o tipo do insumo.")]
+    [LRequired(ErrorMessage = "Selecione o tipo do insumo.")]
+    [LRange(1, int.MaxValue, ErrorMessage = "Selecione o tipo do insumo.")]
     public int TipoInsumoId { get; set; }
 
-    [Required(ErrorMessage = "Informe o nome.")]
+    [LRequired(ErrorMessage = "Informe o nome.")]
     [MaxLength(150)]
     public string Nome { get; set; } = string.Empty;
 
@@ -92,7 +93,7 @@ public sealed class BomItemDto
 
 public sealed class EquipamentoWriteDto
 {
-    [Required(ErrorMessage = "Informe o nome.")]
+    [LRequired(ErrorMessage = "Informe o nome.")]
     [MaxLength(150)]
     public string Nome { get; set; } = string.Empty;
 
@@ -104,10 +105,10 @@ public sealed class EquipamentoWriteDto
 
 public sealed class BomItemWriteDto
 {
-    [Range(1, int.MaxValue, ErrorMessage = "Selecione o insumo.")]
+    [LRange(1, int.MaxValue, ErrorMessage = "Selecione o insumo.")]
     public int InsumoId { get; set; }
 
-    [Range(typeof(decimal), "0.0001", "79228162514264337593543950335", ParseLimitsInInvariantCulture = true, ErrorMessage = "A quantidade deve ser maior que zero.")]
+    [LRange(typeof(decimal), "0.0001", "79228162514264337593543950335", ParseLimitsInInvariantCulture = true, ErrorMessage = "A quantidade deve ser maior que zero.")]
     public decimal Qtd { get; set; }
 }
 
@@ -169,13 +170,13 @@ public sealed class EntradaEstoqueWriteDto : IValidatableObject
     public decimal CambioImpostos { get; set; }
     public string? MoedaFrete { get; set; }
 
-    [Range(typeof(decimal), "0", "79228162514264337593543950335", ParseLimitsInInvariantCulture = true, ErrorMessage = "O frete não pode ser negativo.")]
+    [LRange(typeof(decimal), "0", "79228162514264337593543950335", ParseLimitsInInvariantCulture = true, ErrorMessage = "O frete não pode ser negativo.")]
     public decimal Frete { get; set; }
 
-    [Range(typeof(decimal), "0", "79228162514264337593543950335", ParseLimitsInInvariantCulture = true, ErrorMessage = "Os impostos não podem ser negativos.")]
+    [LRange(typeof(decimal), "0", "79228162514264337593543950335", ParseLimitsInInvariantCulture = true, ErrorMessage = "Os impostos não podem ser negativos.")]
     public decimal Impostos { get; set; }
 
-    [MinLength(1, ErrorMessage = "Adicione ao menos um item à entrada.")]
+    [LMinLength(1, ErrorMessage = "Adicione ao menos um item à entrada.")]
     public List<EntradaEstoqueItemWriteDto> Itens { get; set; } = new();
 
     public EntradaCommand ToCommand()
@@ -241,13 +242,13 @@ public sealed class EntradaEstoqueWriteDto : IValidatableObject
 
 public sealed class EntradaEstoqueItemWriteDto
 {
-    [Range(1, int.MaxValue, ErrorMessage = "Selecione o insumo.")]
+    [LRange(1, int.MaxValue, ErrorMessage = "Selecione o insumo.")]
     public int InsumoId { get; set; }
 
-    [Range(typeof(decimal), "0.0001", "79228162514264337593543950335", ParseLimitsInInvariantCulture = true, ErrorMessage = "A quantidade deve ser maior que zero.")]
+    [LRange(typeof(decimal), "0.0001", "79228162514264337593543950335", ParseLimitsInInvariantCulture = true, ErrorMessage = "A quantidade deve ser maior que zero.")]
     public decimal Qtd { get; set; }
 
-    [Range(typeof(decimal), "0", "79228162514264337593543950335", ParseLimitsInInvariantCulture = true, ErrorMessage = "O preço não pode ser negativo.")]
+    [LRange(typeof(decimal), "0", "79228162514264337593543950335", ParseLimitsInInvariantCulture = true, ErrorMessage = "O preço não pode ser negativo.")]
     public decimal PrecoUnitario { get; set; }
 }
 
@@ -279,10 +280,10 @@ public sealed class BomLinhaPreviewDto
 
 public sealed class ProduzirDto
 {
-    [Range(1, int.MaxValue, ErrorMessage = "Selecione o equipamento.")]
+    [LRange(1, int.MaxValue, ErrorMessage = "Selecione o equipamento.")]
     public int EquipamentoId { get; set; }
 
-    [Range(1, 10000, ErrorMessage = "A quantidade deve ser entre 1 e 10000.")]
+    [LRange(1, 10000, ErrorMessage = "A quantidade deve ser entre 1 e 10000.")]
     public int Quantidade { get; set; } = 1;
 
     [MaxLength(1000)]

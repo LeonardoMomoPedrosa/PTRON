@@ -114,7 +114,7 @@ public class EntradaCustoCalculatorTests
     [Fact]
     public void Dolar_sem_cambio_falha()
     {
-        var ex = Assert.Throws<InvalidOperationException>(() => EntradaCustoCalculator.Calcular(new EntradaCommand
+        var ex = Assert.ThrowsAny<InvalidOperationException>(() => EntradaCustoCalculator.Calcular(new EntradaCommand
         {
             MoedaProdutos = Moedas.Usd,
             Itens = new[]
@@ -247,7 +247,7 @@ public class EntradaCustoCalculatorTests
     [Fact]
     public void Frete_em_moeda_que_nao_e_nenhuma_das_tres_falha()
     {
-        var ex = Assert.Throws<InvalidOperationException>(() => EntradaCustoCalculator.Calcular(new EntradaCommand
+        var ex = Assert.ThrowsAny<InvalidOperationException>(() => EntradaCustoCalculator.Calcular(new EntradaCommand
         {
             MoedaProdutos = Moedas.Usd,
             CambioProdutos = 5m,

@@ -1,3 +1,4 @@
+using PTRON.Localization;
 using Microsoft.AspNetCore.Mvc;
 using PTRON.Models;
 using PTRON.Services;
@@ -29,7 +30,7 @@ public sealed class TiposController : ControllerBase
         var tipo = await _service.GetAsync(id);
         if (tipo is null)
         {
-            return NotFound(new ErrorDto { Error = "Tipo não encontrado." });
+            return NotFound(new ErrorDto { Error = StaticText.Get("Tipo não encontrado.") });
         }
 
         return Ok(DtoMapper.ToDto(tipo, await _service.CountInsumosAsync(tipo.Id)));

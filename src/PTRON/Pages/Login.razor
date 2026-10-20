@@ -2,7 +2,7 @@
 @layout LoginLayout
 @attribute [AllowAnonymous]
 
-<PageTitle>Makelectron — Entrar</PageTitle>
+<PageTitle>@L["Makelectron — Entrar"]</PageTitle>
 
 <MudPaper Class="pa-6" Elevation="3">
     <div class="d-flex justify-center mb-4">
@@ -10,31 +10,31 @@
             <BrandLogo Height="56" />
         </a>
     </div>
-    <MudText Typo="Typo.body2" Class="mb-4">Entre para continuar.</MudText>
+    <MudText Typo="Typo.body2" Class="mb-4">@L["Entre para continuar."]</MudText>
 
     @if (_error == "inactive")
     {
         <MudAlert Severity="Severity.Warning" Class="mb-4" Dense="true">
-            Sua conta ainda não foi ativada. Abra o link que enviamos para o seu e-mail ou
-            <MudLink Href="@ResendHref">reenvie o e-mail de ativação</MudLink>.
+            @L["Sua conta ainda não foi ativada. Abra o link que enviamos para o seu e-mail ou"]
+            <MudLink Href="@ResendHref">@L["reenvie o e-mail de ativação"]</MudLink>.
         </MudAlert>
     }
     else if (_error == "locked")
     {
         <MudAlert Severity="Severity.Error" Class="mb-4" Dense="true">
-            Muitas tentativas de entrada. Aguarde alguns minutos e tente novamente.
+            @L["Muitas tentativas de entrada. Aguarde alguns minutos e tente novamente."]
         </MudAlert>
     }
     else if (_error == "expired")
     {
         <MudAlert Severity="Severity.Warning" Class="mb-4" Dense="true">
-            A página ficou aberta por muito tempo. Tente entrar novamente.
+            @L["A página ficou aberta por muito tempo. Tente entrar novamente."]
         </MudAlert>
     }
     else if (!string.IsNullOrEmpty(_error))
     {
         <MudAlert Severity="Severity.Error" Class="mb-4" Dense="true">
-            E-mail ou senha inválidos.
+            @L["E-mail ou senha inválidos."]
         </MudAlert>
     }
 
@@ -42,28 +42,28 @@
         <AntiforgeryToken />
         <input type="hidden" name="returnUrl" value="@_returnUrl" />
 
-        <MudText Typo="Typo.caption">E-mail</MudText>
+        <MudText Typo="Typo.caption">@L["E-mail"]</MudText>
         <input name="username" type="text" autocomplete="username" required maxlength="256" value="@_email"
                class="mud-input mud-input-outlined mud-input-outlined-border pa-3 mb-3"
                style="width:100%; box-sizing:border-box; border:1px solid var(--mud-palette-lines-inputs); border-radius:4px; background:transparent; color:inherit;" />
 
-        <MudText Typo="Typo.caption">Senha</MudText>
+        <MudText Typo="Typo.caption">@L["Senha"]</MudText>
         <input name="password" type="password" autocomplete="current-password" required
                class="mud-input mud-input-outlined mud-input-outlined-border pa-3 mb-4"
                style="width:100%; box-sizing:border-box; border:1px solid var(--mud-palette-lines-inputs); border-radius:4px; background:transparent; color:inherit;" />
 
         <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
                    FullWidth="true" Size="Size.Large">
-            Entrar
+            @L["Entrar"]
         </MudButton>
     </form>
 
     <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-3">
-        <MudLink Href="/esqueci-senha">Esqueci a senha</MudLink>
+        <MudLink Href="/esqueci-senha">@L["Esqueci a senha"]</MudLink>
     </MudText>
 
     <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-4">
-        Não tem conta? <MudLink Href="/cadastro">Criar conta</MudLink>
+        @L["Não tem conta?"] <MudLink Href="/cadastro">@L["Criar conta"]</MudLink>
     </MudText>
 </MudPaper>
 

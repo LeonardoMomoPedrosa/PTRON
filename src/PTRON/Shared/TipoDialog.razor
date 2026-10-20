@@ -2,18 +2,18 @@
     <DialogContent>
         <MudForm @ref="_form" Model="_model" Class="tipo-flow-dialog">
             <MudTextField @bind-Value="_model.Nome"
-                          Label="Nome"
+                          Label="@L["Nome"]"
                           Required="true"
-                          RequiredError="O nome é obrigatório."
+                          RequiredError="@L["O nome é obrigatório."]"
                           MaxLength="100"
                           Immediate="true"
                           DebounceInterval="0"
-                          HelperText="Ex.: Resistor, Diodo, Capacitor, Válvula" />
+                          HelperText="@L["Ex.: Resistor, Diodo, Capacitor, Válvula"]" />
         </MudForm>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel">Cancelar</MudButton>
-        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit">Salvar</MudButton>
+        <MudButton OnClick="Cancel">@L["Cancelar"]</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit">@L["Salvar"]</MudButton>
     </DialogActions>
 </MudDialog>
 

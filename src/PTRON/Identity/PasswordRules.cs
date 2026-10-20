@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using PTRON.Models;
+using PTRON.Localization;
 
 namespace PTRON.Identity;
 
@@ -13,7 +14,7 @@ public sealed class LetterPasswordValidator : IPasswordValidator<ApplicationUser
             return Task.FromResult(IdentityResult.Failed(new IdentityError
             {
                 Code = "PasswordRequiresLetter",
-                Description = "A senha deve ter pelo menos uma letra."
+                Description = StaticText.Get("A senha deve ter pelo menos uma letra.")
             }));
         }
 

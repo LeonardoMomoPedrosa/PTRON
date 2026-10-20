@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using PTRON.Data;
 using PTRON.Models;
+using PTRON.Localization;
 
 namespace PTRON.Services;
 
@@ -131,7 +132,7 @@ public class InsumoService
         insumo.Nome = Validation.RequireName(insumo.Nome);
         if (insumo.TipoInsumoId == 0)
         {
-            throw new InvalidOperationException("Selecione o tipo do insumo.");
+            throw new InvalidOperationException(StaticText.Get("Selecione o tipo do insumo."));
         }
 
         await TenantChecks.RequireTipoAsync(db, insumo.TipoInsumoId);
@@ -149,7 +150,7 @@ public class InsumoService
     {
         await using var db = await _factory.CreateDbContextAsync();
         var existing = await db.Insumos.FirstOrDefaultAsync(i => i.Id == insumo.Id)
-            ?? throw new InvalidOperationException("Insumo não encontrado.");
+            ?? throw new NotFoundException(StaticText.Get("Insumo não encontrado."));
 
         // Delete the previously stored photo if it was replaced or removed.
         if (!string.IsNullOrEmpty(existing.FotoPath) && existing.FotoPath != insumo.FotoPath)
@@ -160,7 +161,7 @@ public class InsumoService
         existing.Nome = Validation.RequireName(insumo.Nome);
         if (insumo.TipoInsumoId == 0)
         {
-            throw new InvalidOperationException("Selecione o tipo do insumo.");
+            throw new InvalidOperationException(StaticText.Get("Selecione o tipo do insumo."));
         }
 
         await TenantChecks.RequireTipoAsync(db, insumo.TipoInsumoId);
@@ -190,25 +191,25 @@ public class InsumoService
         if (await db.EquipamentoInsumos.AnyAsync(ei => ei.InsumoId == id))
         {
             throw new InvalidOperationException(
-                "Não é possível excluir: o insumo faz parte de um ou mais equipamentos.");
+                StaticText.Get("Não é possível excluir: o insumo faz parte de um ou mais equipamentos."));
         }
 
         if (await db.EntradaEstoqueItens.AnyAsync(it => it.InsumoId == id))
         {
             throw new InvalidOperationException(
-                "Não é possível excluir: o insumo possui movimentações de estoque.");
+                StaticText.Get("Não é possível excluir: o insumo possui movimentações de estoque."));
         }
 
         if (await db.ProdutoInsumos.AnyAsync(pi => pi.InsumoId == id))
         {
             throw new InvalidOperationException(
-                "Não é possível excluir: o insumo foi utilizado em produtos.");
+                StaticText.Get("Não é possível excluir: o insumo foi utilizado em produtos."));
         }
 
         if (insumo.Saldo != 0m)
         {
             throw new InvalidOperationException(
-                "Não é possível excluir: o insumo possui saldo em estoque.");
+                StaticText.Get("Não é possível excluir: o insumo possui saldo em estoque."));
         }
 
         _images.Delete(insumo.FotoPath);

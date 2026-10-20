@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using PTRON.Data;
 using PTRON.Models;
+using PTRON.Localization;
 
 namespace PTRON.Services;
 
@@ -53,7 +54,7 @@ public class EquipamentoService
         var existing = await db.Equipamentos
             .Include(e => e.Insumos)
             .FirstOrDefaultAsync(e => e.Id == equipamento.Id)
-            ?? throw new InvalidOperationException("Equipamento não encontrado.");
+            ?? throw new NotFoundException(StaticText.Get("Equipamento não encontrado."));
 
         var previousPhoto = existing.FotoPath;
         existing.Nome = Validation.RequireName(equipamento.Nome);
@@ -101,7 +102,7 @@ public class EquipamentoService
         }
 
         var existing = await db.Equipamentos.FirstOrDefaultAsync(e => e.Id == equipamento.Id)
-            ?? throw new InvalidOperationException("Equipamento não encontrado.");
+            ?? throw new NotFoundException(StaticText.Get("Equipamento não encontrado."));
 
         var previousPhoto = existing.FotoPath;
         existing.Nome = nome;
@@ -121,13 +122,13 @@ public class EquipamentoService
     {
         if (qtd <= 0)
         {
-            throw new InvalidOperationException("A quantidade deve ser maior que zero.");
+            throw new InvalidOperationException(StaticText.Get("A quantidade deve ser maior que zero."));
         }
 
         await using var db = await _factory.CreateDbContextAsync();
         if (!await db.Equipamentos.AnyAsync(e => e.Id == equipamentoId))
         {
-            throw new InvalidOperationException("Equipamento não encontrado.");
+            throw new NotFoundException(StaticText.Get("Equipamento não encontrado."));
         }
 
         await TenantChecks.RequireInsumosAsync(db, new[] { insumoId });
@@ -187,7 +188,7 @@ public class EquipamentoService
         if (await db.Produtos.AnyAsync(p => p.EquipamentoId == id))
         {
             throw new InvalidOperationException(
-                "Não é possível excluir: existem produtos produzidos com este equipamento.");
+                StaticText.Get("Não é possível excluir: existem produtos produzidos com este equipamento."));
         }
 
         _images.Delete(equipamento.FotoPath);

@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using PTRON.Data;
 using PTRON.Email;
 using PTRON.Models;
+using PTRON.Localization;
 
 namespace PTRON.Identity;
 
@@ -100,7 +101,10 @@ public sealed class ActivationService
         try
         {
             var token = await _users.GenerateEmailConfirmationTokenAsync(user);
-            await _email.SendActivationAsync(user.Email!, user.Id, token, cancellationToken);
+            using (CultureScope.Use(user.Idioma))
+            {
+                await _email.SendActivationAsync(user.Email!, user.Id, token, cancellationToken);
+            }
         }
         catch (Exception ex)
         {

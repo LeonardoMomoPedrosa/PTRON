@@ -139,7 +139,7 @@ builder.Services.AddControllers(options =>
             .SelectMany(v => v.Errors)
             .Select(e => string.IsNullOrWhiteSpace(e.ErrorMessage) ? e.Exception?.Message : e.ErrorMessage)
             .FirstOrDefault(m => !string.IsNullOrWhiteSpace(m))
-            ?? "Requisição inválida.";
+            ?? StaticText.Get("Requisição inválida.");
         return new BadRequestObjectResult(new ErrorDto { Error = message! });
     };
 });
@@ -187,12 +187,23 @@ using (var scope = app.Services.CreateScope())
     Directory.CreateDirectory(Path.Combine(env.WebRootPath, "uploads"));
 }
 
-app.UseRequestLocalization(new Microsoft.AspNetCore.Builder.RequestLocalizationOptions
+var localizationOptions = new Microsoft.AspNetCore.Builder.RequestLocalizationOptions
 {
     DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture(ptBr),
     SupportedCultures = SupportedLanguages.Cultures,
     SupportedUICultures = SupportedLanguages.Cultures
-});
+};
+// The API ignores the web cookie: it answers in the Accept-Language of the client, Portuguese by default.
+localizationOptions.RequestCultureProviders.Insert(0, new Microsoft.AspNetCore.Localization.CustomRequestCultureProvider(
+    context => Task.FromResult<Microsoft.AspNetCore.Localization.ProviderCultureResult?>(
+        context.Request.Path.StartsWithSegments("/api")
+            ? new Microsoft.AspNetCore.Localization.ProviderCultureResult(
+                context.Request.GetTypedHeaders().AcceptLanguage
+                    .OrderByDescending(h => h.Quality ?? 1)
+                    .Select(h => SupportedLanguages.Find(h.Value.Value)?.Code)
+                    .FirstOrDefault(code => code is not null) ?? SupportedLanguages.Default)
+            : null)));
+app.UseRequestLocalization(localizationOptions);
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -245,7 +256,7 @@ app.MapGet("/idioma", async (HttpContext http, UserManager<ApplicationUser> user
 }).AllowAnonymous();
 app.MapControllers();
 app.MapFallback("/api/{**slug}", () => Results.Json(
-    new ErrorDto { Error = "Endpoint não encontrado." },
+    new ErrorDto { Error = StaticText.Get("Endpoint não encontrado.") },
     statusCode: StatusCodes.Status404NotFound));
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");

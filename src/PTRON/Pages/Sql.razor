@@ -5,22 +5,22 @@
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 
-<PageTitle>SQL</PageTitle>
+<PageTitle>@L["SQL"]</PageTitle>
 
 <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4">
-    <MudText Typo="Typo.h5">SQL</MudText>
+    <MudText Typo="Typo.h5">@L["SQL"]</MudText>
     <MudSpacer />
     <MudButton StartIcon="@Icons.Material.Filled.PlayArrow"
                Color="Color.Primary"
                Variant="Variant.Filled"
                Disabled="_running || string.IsNullOrWhiteSpace(_sql)"
                OnClick="Execute">
-        Executar
+        @L["Executar"]
     </MudButton>
 </MudStack>
 
 <MudAlert Severity="Severity.Warning" Dense="true" Class="mb-4">
-    Console direto no SQLite. SELECT mostra resultados; UPDATE / DELETE / INSERT alteram o banco.
+    @L["Console direto no SQLite. SELECT mostra resultados; UPDATE / DELETE / INSERT alteram o banco."]
 </MudAlert>
 
 @if (_tables.Count > 0)
@@ -39,12 +39,12 @@
 }
 
 <MudTextField @bind-Value="_sql"
-              Label="Comando SQL"
+              Label="@L["Comando SQL"]"
               Lines="8"
               Immediate="true"
               Class="mb-4"
               Style="font-family: Consolas, monospace;"
-              HelperText="Ex.: SELECT * FROM Insumos;  |  UPDATE Insumos SET Saldo = 10 WHERE Id = 1;" />
+              HelperText="@L["Ex.: SELECT * FROM Insumos;  |  UPDATE Insumos SET Saldo = 10 WHERE Id = 1;"]" />
 
 @if (!string.IsNullOrEmpty(_message))
 {
@@ -76,11 +76,11 @@
                 }
             </RowTemplate>
             <NoRecordsContent>
-                <MudText>Nenhuma linha retornada.</MudText>
+                <MudText>@L["Nenhuma linha retornada."]</MudText>
             </NoRecordsContent>
         </MudTable>
     </MudPaper>
-    <MudText Typo="Typo.caption" Class="mt-2">@_result.RowsAffected linha(s)</MudText>
+    <MudText Typo="Typo.caption" Class="mt-2">@L["{0} linha(s)", _result.RowsAffected]</MudText>
 }
 
 @code {
@@ -115,11 +115,11 @@
         {
             var parameters = new DialogParameters<ConfirmDialog>
             {
-                { x => x.Message, "Este comando pode alterar ou apagar dados. Continuar?" },
-                { x => x.ConfirmText, "Executar" },
+                { x => x.Message, L["Este comando pode alterar ou apagar dados. Continuar?"] },
+                { x => x.ConfirmText, L["Executar"] },
                 { x => x.Color, Color.Warning }
             };
-            var dialog = await DialogService.ShowAsync<ConfirmDialog>("Confirmar comando", parameters);
+            var dialog = await DialogService.ShowAsync<ConfirmDialog>(L["Confirmar comando"], parameters);
             var result = await dialog.Result;
             if (result is null || result.Canceled)
             {
@@ -135,8 +135,8 @@
             var result = await SqlService.ExecuteAsync(sql);
             _result = result.IsQuery ? result : null;
             _message = result.IsQuery
-                ? $"Consulta OK — {result.RowsAffected} linha(s)."
-                : $"Comando OK — {result.RowsAffected} linha(s) afetada(s).";
+                ? L["Consulta OK — {0} linha(s).", result.RowsAffected].Value
+                : L["Comando OK — {0} linha(s) afetada(s).", result.RowsAffected].Value;
             _messageSeverity = Severity.Success;
 
             if (!result.IsQuery)

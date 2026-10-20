@@ -63,20 +63,20 @@ public sealed class SignUpService
 
         var errors = new List<string>();
         if (!IsValidEmail(email))
-            errors.Add("Informe um e-mail válido.");
+            errors.Add(StaticText.Get("Informe um e-mail válido."));
         if (!Paises.IsValid(pais))
-            errors.Add("Selecione o país.");
+            errors.Add(StaticText.Get("Selecione o país."));
         if (estado.Length == 0)
-            errors.Add("Informe o estado.");
+            errors.Add(StaticText.Get("Informe o estado."));
         else if (estado.Length > MaxEstadoLength)
-            errors.Add($"O estado deve ter no máximo {MaxEstadoLength} caracteres.");
+            errors.Add(StaticText.Format("O estado deve ter no máximo {0} caracteres.", MaxEstadoLength));
         if (senha.Length == 0)
-            errors.Add("Informe a senha.");
+            errors.Add(StaticText.Get("Informe a senha."));
         if (errors.Count > 0)
             return new SignUpResult(false, errors);
 
         if (ReservedUsers.IsReservedEmail(email, _leo.Email))
-            return SignUpResult.Fail("Este e-mail não está disponível.");
+            return SignUpResult.Fail(StaticText.Get("Este e-mail não está disponível."));
 
         var existing = await _users.FindByEmailAsync(email);
         if (existing is not null)

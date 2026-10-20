@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using PTRON.Data;
 using PTRON.Models;
+using PTRON.Localization;
 
 namespace PTRON.Services;
 
@@ -81,7 +82,7 @@ public class EntradaEstoqueService
             foreach (var item in rateio.Linhas)
             {
                 var insumo = await db.Insumos.FirstOrDefaultAsync(i => i.Id == item.InsumoId)
-                    ?? throw new InvalidOperationException($"Insumo {item.InsumoId} não encontrado.");
+                    ?? throw new NotFoundException(StaticText.Format("Insumo {0} não encontrado.", item.InsumoId));
 
                 var saldoAnterior = insumo.Saldo;
                 var custoAnterior = insumo.CustoUnitario;

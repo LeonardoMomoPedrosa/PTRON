@@ -1,3 +1,4 @@
+using PTRON.Localization;
 using Microsoft.AspNetCore.Mvc;
 using PTRON.Services;
 
@@ -28,7 +29,7 @@ public sealed class InsumosController : ControllerBase
         var insumo = await _service.GetAsync(id);
         if (insumo is null)
         {
-            return NotFound(new ErrorDto { Error = "Insumo não encontrado." });
+            return NotFound(new ErrorDto { Error = StaticText.Get("Insumo não encontrado.") });
         }
 
         return Ok(DtoMapper.ToDto(insumo));

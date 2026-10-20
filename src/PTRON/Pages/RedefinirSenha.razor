@@ -5,7 +5,7 @@
 @using PTRON.Identity
 @inject PasswordResetService PasswordReset
 
-<PageTitle>Makelectron — Redefinir senha</PageTitle>
+<PageTitle>@L["Makelectron — Redefinir senha"]</PageTitle>
 
 <MudPaper Class="pa-6" Elevation="3">
     <div class="d-flex justify-center mb-4">
@@ -19,28 +19,28 @@
             break;
 
         case State.Done:
-            <MudText Typo="Typo.h6" Class="mb-2">Senha redefinida</MudText>
+            <MudText Typo="Typo.h6" Class="mb-2">@L["Senha redefinida"]</MudText>
             <MudAlert Severity="Severity.Success" Class="mb-4">
-                Sua senha foi alterada. Entre com a nova senha.
+                @L["Sua senha foi alterada. Entre com a nova senha."]
             </MudAlert>
             <MudButton Href="/login" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Size="Size.Large">
-                Ir para o login
+                @L["Ir para o login"]
             </MudButton>
             break;
 
         case State.Invalid:
-            <MudText Typo="Typo.h6" Class="mb-2">Link inválido ou expirado</MudText>
+            <MudText Typo="Typo.h6" Class="mb-2">@L["Link inválido ou expirado"]</MudText>
             <MudAlert Severity="Severity.Warning" Class="mb-4">
-                Este link de redefinição não vale mais. Ele dura 1 hora e só pode ser usado uma vez.
+                @L["Este link de redefinição não vale mais. Ele dura 1 hora e só pode ser usado uma vez."]
             </MudAlert>
             <MudButton Href="/esqueci-senha" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Size="Size.Large">
-                Pedir um novo link
+                @L["Pedir um novo link"]
             </MudButton>
             break;
 
         default:
-            <MudText Typo="Typo.h6" Class="mb-1">Nova senha</MudText>
-            <MudText Typo="Typo.body2" Class="mb-4">Escolha a nova senha da sua conta.</MudText>
+            <MudText Typo="Typo.h6" Class="mb-1">@L["Nova senha"]</MudText>
+            <MudText Typo="Typo.body2" Class="mb-4">@L["Escolha a nova senha da sua conta."]</MudText>
 
             @if (_errors.Count > 0)
             {
@@ -56,17 +56,17 @@
                 <DataAnnotationsValidator />
 
                 <MudTextField @bind-Value="_model.Senha" For="() => _model.Senha"
-                              Label="Nova senha" InputType="InputType.Password" Variant="Variant.Outlined"
-                              HelperText="Mínimo de 8 caracteres, com pelo menos uma letra e um número."
+                              Label="@L["Nova senha"]" InputType="InputType.Password" Variant="Variant.Outlined"
+                              HelperText="@L["Mínimo de 8 caracteres, com pelo menos uma letra e um número."]"
                               Class="mb-3" autocomplete="new-password" />
 
                 <MudTextField @bind-Value="_model.ConfirmarSenha" For="() => _model.ConfirmarSenha"
-                              Label="Confirmar nova senha" InputType="InputType.Password" Variant="Variant.Outlined"
+                              Label="@L["Confirmar nova senha"]" InputType="InputType.Password" Variant="Variant.Outlined"
                               Class="mb-4" autocomplete="new-password" />
 
                 <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
                            FullWidth="true" Size="Size.Large" Disabled="_busy">
-                    Redefinir senha
+                    @L["Redefinir senha"]
                 </MudButton>
             </EditForm>
             break;
@@ -118,7 +118,7 @@
         }
         catch (Exception)
         {
-            _errors = new List<string> { "Não foi possível redefinir a senha. Tente novamente." };
+            _errors = new List<string> { L["Não foi possível redefinir a senha. Tente novamente."].Value };
         }
         finally
         {
@@ -128,12 +128,12 @@
 
     private sealed class ResetModel
     {
-        [Required(ErrorMessage = "Informe a nova senha.")]
-        [MinLength(8, ErrorMessage = "A senha deve ter pelo menos 8 caracteres.")]
+        [LRequired(ErrorMessage = "Informe a nova senha.")]
+        [LMinLength(8, ErrorMessage = "A senha deve ter pelo menos 8 caracteres.")]
         public string? Senha { get; set; }
 
-        [Required(ErrorMessage = "Confirme a nova senha.")]
-        [Compare(nameof(Senha), ErrorMessage = "As senhas não conferem.")]
+        [LRequired(ErrorMessage = "Confirme a nova senha.")]
+        [LCompare(nameof(Senha), ErrorMessage = "As senhas não conferem.")]
         public string? ConfirmarSenha { get; set; }
     }
 }

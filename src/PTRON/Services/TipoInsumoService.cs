@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using PTRON.Data;
 using PTRON.Models;
+using PTRON.Localization;
 
 namespace PTRON.Services;
 
@@ -51,7 +52,7 @@ public class TipoInsumoService
         var exists = await db.TiposInsumo.AnyAsync(t => t.Nome.ToLower() == tipo.Nome.ToLower());
         if (exists)
         {
-            throw new InvalidOperationException($"Já existe um tipo com o nome \"{tipo.Nome}\".");
+            throw new InvalidOperationException(StaticText.Format("Já existe um tipo com o nome \"{0}\".", tipo.Nome));
         }
 
         db.TiposInsumo.Add(tipo);
@@ -62,14 +63,14 @@ public class TipoInsumoService
     {
         await using var db = await _factory.CreateDbContextAsync();
         var existing = await db.TiposInsumo.FirstOrDefaultAsync(t => t.Id == tipo.Id)
-            ?? throw new InvalidOperationException("Tipo não encontrado.");
+            ?? throw new NotFoundException(StaticText.Get("Tipo não encontrado."));
 
         var nome = Validation.RequireName(tipo.Nome);
         var duplicate = await db.TiposInsumo.AnyAsync(t =>
             t.Id != tipo.Id && t.Nome.ToLower() == nome.ToLower());
         if (duplicate)
         {
-            throw new InvalidOperationException($"Já existe um tipo com o nome \"{nome}\".");
+            throw new InvalidOperationException(StaticText.Format("Já existe um tipo com o nome \"{0}\".", nome));
         }
 
         existing.Nome = nome;
@@ -86,7 +87,7 @@ public class TipoInsumoService
         if (hasInsumos)
         {
             throw new InvalidOperationException(
-                "Não é possível excluir: existem insumos vinculados a este tipo.");
+                StaticText.Get("Não é possível excluir: existem insumos vinculados a este tipo."));
         }
 
         var tipo = await db.TiposInsumo.FirstOrDefaultAsync(t => t.Id == id);

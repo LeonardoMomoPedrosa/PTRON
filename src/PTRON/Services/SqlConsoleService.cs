@@ -3,6 +3,7 @@ using System.Data.Common;
 using Microsoft.EntityFrameworkCore;
 using PTRON.Data;
 using PTRON.Identity;
+using PTRON.Localization;
 
 namespace PTRON.Services;
 
@@ -23,7 +24,7 @@ public class SqlConsoleService
 
         if (string.IsNullOrWhiteSpace(sql))
         {
-            throw new InvalidOperationException("Informe um comando SQL.");
+            throw new InvalidOperationException(StaticText.Get("Informe um comando SQL."));
         }
 
         await using var db = await _factory.CreateDbContextAsync();
@@ -91,7 +92,7 @@ public class SqlConsoleService
                 return;
         }
 
-        throw new InvalidOperationException("O console SQL é exclusivo do usuário reservado.");
+        throw new InvalidOperationException(StaticText.Get("O console SQL é exclusivo do usuário reservado."));
     }
 
     private static bool IsQuery(string sql)

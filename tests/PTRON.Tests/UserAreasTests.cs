@@ -91,7 +91,7 @@ public sealed class UserAreasTests : IAsyncLifetime
         var images = new ImageUploadService(new TempHost(_webRoot), new FixedUser(""));
         await using var stream = new MemoryStream(new byte[] { 1 });
 
-        var error = await Assert.ThrowsAsync<InvalidOperationException>(
+        var error = await Assert.ThrowsAnyAsync<InvalidOperationException>(
             () => images.SaveAsync(stream, "foto.png", stream.Length));
         Assert.Equal("Não há usuário autenticado para salvar a imagem.", error.Message);
     }
@@ -115,7 +115,7 @@ public sealed class UserAreasTests : IAsyncLifetime
         Assert.Equal(2, counts.Ativos);
 
         var other = new SignupDashboardService(new UserFactory(_options, "ana-1"), new FixedUser("ana-1"));
-        var denied = await Assert.ThrowsAsync<InvalidOperationException>(() => other.GetAsync());
+        var denied = await Assert.ThrowsAnyAsync<InvalidOperationException>(() => other.GetAsync());
         Assert.Equal("O painel de cadastros é exclusivo do usuário reservado.", denied.Message);
     }
 
@@ -143,13 +143,13 @@ public sealed class UserAreasTests : IAsyncLifetime
         Assert.Single(query.Rows);
 
         var other = new SqlConsoleService(new UserFactory(_options, "ana-1"), new FixedUser("ana-1"));
-        var denied = await Assert.ThrowsAsync<InvalidOperationException>(() => other.ExecuteAsync("SELECT 1"));
+        var denied = await Assert.ThrowsAnyAsync<InvalidOperationException>(() => other.ExecuteAsync("SELECT 1"));
         Assert.Equal("O console SQL é exclusivo do usuário reservado.", denied.Message);
-        var listed = await Assert.ThrowsAsync<InvalidOperationException>(() => other.GetTableNamesAsync());
+        var listed = await Assert.ThrowsAnyAsync<InvalidOperationException>(() => other.GetTableNamesAsync());
         Assert.Equal("O console SQL é exclusivo do usuário reservado.", listed.Message);
 
         var anonymous = new SqlConsoleService(new UserFactory(_options, ""), new FixedUser(""));
-        await Assert.ThrowsAsync<InvalidOperationException>(() => anonymous.ExecuteAsync("SELECT 1"));
+        await Assert.ThrowsAnyAsync<InvalidOperationException>(() => anonymous.ExecuteAsync("SELECT 1"));
     }
 
     private string Write(params string[] parts)

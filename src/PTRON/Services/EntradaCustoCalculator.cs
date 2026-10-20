@@ -1,3 +1,4 @@
+using PTRON.Localization;
 namespace PTRON.Services;
 
 public sealed class EntradaLinhaInput
@@ -108,18 +109,18 @@ public static class EntradaCustoCalculator
 
         if (!Moedas.IsValid(moedaProdutos))
         {
-            throw new InvalidOperationException("Selecione a moeda dos produtos.");
+            throw new InvalidOperationException(StaticText.Get("Selecione a moeda dos produtos."));
         }
 
         if (!Moedas.IsValid(moedaImpostos))
         {
-            throw new InvalidOperationException("Selecione a moeda dos impostos.");
+            throw new InvalidOperationException(StaticText.Get("Selecione a moeda dos impostos."));
         }
 
         if (moedaFrete != moedaProdutos && moedaFrete != moedaImpostos && moedaFrete != Moedas.Destino)
         {
             throw new InvalidOperationException(
-                "O frete deve estar na moeda dos produtos, dos impostos ou em reais.");
+                StaticText.Get("O frete deve estar na moeda dos produtos, dos impostos ou em reais."));
         }
 
         var cambioProdutos = ResolveCambio(moedaProdutos, command.CambioProdutos, "produtos");
@@ -131,12 +132,12 @@ public static class EntradaCustoCalculator
 
         if (command.Frete < 0)
         {
-            throw new InvalidOperationException("O frete não pode ser negativo.");
+            throw new InvalidOperationException(StaticText.Get("O frete não pode ser negativo."));
         }
 
         if (command.Impostos < 0)
         {
-            throw new InvalidOperationException("Os impostos não podem ser negativos.");
+            throw new InvalidOperationException(StaticText.Get("Os impostos não podem ser negativos."));
         }
 
         var frete = RoundMoney(command.Frete);
@@ -144,13 +145,13 @@ public static class EntradaCustoCalculator
 
         if (command.Itens is null || command.Itens.Count == 0)
         {
-            throw new InvalidOperationException("Adicione ao menos um item à entrada.");
+            throw new InvalidOperationException(StaticText.Get("Adicione ao menos um item à entrada."));
         }
 
         if (command.Itens.Any(i => i.InsumoId <= 0 || i.Qtd <= 0 || i.PrecoUnitario < 0))
         {
             throw new InvalidOperationException(
-                "Todos os itens devem ter insumo, quantidade maior que zero e preço não negativo.");
+                StaticText.Get("Todos os itens devem ter insumo, quantidade maior que zero e preço não negativo."));
         }
 
         var agregados = command.Itens
@@ -246,7 +247,7 @@ public static class EntradaCustoCalculator
         if (cambio <= 0)
         {
             throw new InvalidOperationException(
-                $"Informe o câmbio dos {papel} (quantos R$ valem 1 {Moedas.Symbol(moeda)}).");
+                StaticText.Format("Informe o câmbio dos {0} (quantos R$ valem 1 {1}).", StaticText.Get(papel), Moedas.Symbol(moeda)));
         }
 
         return cambio;

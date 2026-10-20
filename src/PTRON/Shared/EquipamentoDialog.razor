@@ -10,9 +10,9 @@
                 <MudGrid>
                 <MudItem xs="12">
                     <MudTextField @bind-Value="_model.Nome"
-                                  Label="Nome"
+                                  Label="@L["Nome"]"
                                   Required="true"
-                                  RequiredError="O nome é obrigatório."
+                                  RequiredError="@L["O nome é obrigatório."]"
                                   MaxLength="150"
                                   Immediate="true"
                                   DebounceInterval="0" />
@@ -35,12 +35,12 @@
                             @if (!string.IsNullOrEmpty(_model.FotoPath))
                             {
                                 <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
-                                               Size="Size.Medium" aria-label="Remover foto" OnClick="RemovePhoto" />
+                                               Size="Size.Medium" aria-label="@L["Remover foto"]" OnClick="RemovePhoto" />
                             }
                         </MudStack>
                         @if (!string.IsNullOrEmpty(_model.FotoPath))
                         {
-                            <img @key="_model.FotoPath" src="@_model.FotoPath" alt="Foto do equipamento"
+                            <img @key="_model.FotoPath" src="@_model.FotoPath" alt="@L["Foto do equipamento"]"
                                  class="rounded equipamento-photo-preview" />
                         }
                     </MudStack>
@@ -51,14 +51,14 @@
                 </MudItem>
             </MudGrid>
 
-            <MudText Typo="Typo.subtitle1" Class="mt-4 mb-2">Insumos do equipamento</MudText>
-            <MudText Typo="Typo.caption" Class="mud-text-secondary mb-2">Cada insumo é salvo assim que você clica em Add.</MudText>
+            <MudText Typo="Typo.subtitle1" Class="mt-4 mb-2">@L["Insumos do equipamento"]</MudText>
+            <MudText Typo="Typo.caption" Class="mud-text-secondary mb-2">@L["Cada insumo é salvo assim que você clica em Add."]</MudText>
 
             <MudGrid Class="align-end">
                 <MudItem xs="12" sm="7">
                     <MudAutocomplete T="Insumo"
                                      @bind-Value="_novoInsumo"
-                                     Label="Insumo"
+                                     Label="@L["Insumo"]"
                                      SearchFunc="SearchInsumos"
                                      ToStringFunc="@(i => i is null ? string.Empty : InsumoLabel(i))"
                                      ResetValueOnEmptyText="true"
@@ -73,7 +73,7 @@
                                 <MudText Typo="Typo.body2">@insumo.Nome</MudText>
                                 <MudText Typo="Typo.caption" Class="mud-text-secondary">
                                     @InsumoDetalhe(insumo)
-                                    · saldo @Format.Number(insumo.Saldo)
+                                    · @L["Saldo {0}", Format.Number(insumo.Saldo)]
                                     · @Format.Money(insumo.CustoUnitario)
                                 </MudText>
                             </MudStack>
@@ -81,7 +81,7 @@
                     </MudAutocomplete>
                 </MudItem>
                 <MudItem xs="12" sm="3">
-                    <MudNumericField T="decimal" @bind-Value="_novaQtd" Label="Qtd"
+                    <MudNumericField T="decimal" @bind-Value="_novaQtd" Label="@L["Qtd"]"
                                      Min="0" Step="1"
                                      Immediate="true" DebounceInterval="0" />
                 </MudItem>
@@ -90,7 +90,7 @@
                                StartIcon="@Icons.Material.Filled.Add" OnClick="AddInsumo" FullWidth="true"
                                Disabled="@(_enviandoFoto || _salvando)"
                                Class="equipamento-add-insumo">
-                        Add
+                        @L["Add"]
                     </MudButton>
                 </MudItem>
             </MudGrid>
@@ -98,7 +98,7 @@
             <div class="equipamentos-bom-phone mt-2">
                 @if (_bom.Count == 0)
                 {
-                    <MudText Typo="Typo.body2">Nenhum insumo adicionado.</MudText>
+                    <MudText Typo="Typo.body2">@L["Nenhum insumo adicionado."]</MudText>
                 }
                 else
                 {
@@ -114,7 +114,7 @@
                                 <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                                Size="Size.Large"
                                                Color="Color.Error"
-                                               aria-label="@($"Remover {row.Insumo?.Nome}")"
+                                               aria-label="@L["Remover {0}", row.Insumo?.Nome ?? ""]"
                                                Disabled="_salvando"
                                                OnClick="@(() => RemoveRow(row))" />
                             </div>
@@ -125,35 +125,35 @@
 
             <MudTable Items="_bom" Dense="true" Hover="true" Class="mt-2 equipamentos-bom-desktop" Elevation="0" Breakpoint="Breakpoint.None">
                 <HeaderContent>
-                    <MudTh>Insumo</MudTh>
-                    <MudTh>Tipo</MudTh>
-                    <MudTh>Especificações</MudTh>
-                    <MudTh Style="text-align:right">Custo unit.</MudTh>
-                    <MudTh Style="text-align:right">Qtd</MudTh>
+                    <MudTh>@L["Insumo"]</MudTh>
+                    <MudTh>@L["Tipo"]</MudTh>
+                    <MudTh>@L["Especificações"]</MudTh>
+                    <MudTh Style="text-align:right">@L["Custo unit."]</MudTh>
+                    <MudTh Style="text-align:right">@L["Qtd"]</MudTh>
                     <MudTh Style="text-align:right"></MudTh>
                 </HeaderContent>
                 <RowTemplate>
-                    <MudTd DataLabel="Insumo">@context.Insumo?.Nome</MudTd>
-                    <MudTd DataLabel="Tipo">@(context.Insumo?.TipoInsumo?.Nome ?? "—")</MudTd>
-                    <MudTd DataLabel="Especificações">@Especificacoes(context.Insumo)</MudTd>
-                    <MudTd DataLabel="Custo unit." Style="text-align:right">
+                    <MudTd DataLabel="@L["Insumo"]">@context.Insumo?.Nome</MudTd>
+                    <MudTd DataLabel="@L["Tipo"]">@(context.Insumo?.TipoInsumo?.Nome ?? "—")</MudTd>
+                    <MudTd DataLabel="@L["Especificações"]">@Especificacoes(context.Insumo)</MudTd>
+                    <MudTd DataLabel="@L["Custo unit."]" Style="text-align:right">
                         @(context.Insumo is null ? "—" : Format.Money(context.Insumo.CustoUnitario))
                     </MudTd>
-                    <MudTd DataLabel="Qtd" Style="text-align:right">@Format.Number(context.Qtd)</MudTd>
+                    <MudTd DataLabel="@L["Qtd"]" Style="text-align:right">@Format.Number(context.Qtd)</MudTd>
                     <MudTd Style="text-align:right">
                         <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small"
                                        Color="Color.Error" Disabled="_salvando" OnClick="@(() => RemoveRow(context))" />
                     </MudTd>
                 </RowTemplate>
                 <NoRecordsContent>
-                    <MudText Typo="Typo.body2">Nenhum insumo adicionado.</MudText>
+                    <MudText Typo="Typo.body2">@L["Nenhum insumo adicionado."]</MudText>
                 </NoRecordsContent>
             </MudTable>
             </MudForm>
     </DialogContent>
     <DialogActions>
         <MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="@(_enviandoFoto || _salvando)" OnClick="Finish">
-            @(_enviandoFoto ? "Enviando foto…" : "Concluir")
+            @(_enviandoFoto ? L["Enviando foto…"] : L["Concluir"])
         </MudButton>
     </DialogActions>
 </MudDialog>
@@ -180,7 +180,7 @@
 
     private string PhotoButtonText => _enviandoFoto
         ? "Enviando…"
-        : string.IsNullOrEmpty(_model.FotoPath) ? "Selecionar foto" : "Trocar foto";
+        : string.IsNullOrEmpty(_model.FotoPath) ? L["Selecionar foto"].Value : L["Trocar foto"].Value;
 
     protected override async Task OnInitializedAsync()
     {
@@ -213,8 +213,8 @@
         return Task.FromResult(result);
     }
 
-    private static string InsumoLabel(Insumo i)
-        => $"{i.Nome} · {InsumoDetalhe(i)} (saldo: {Format.Number(i.Saldo)} · {Format.Money(i.CustoUnitario)})";
+    private string InsumoLabel(Insumo i)
+        => $"{i.Nome} · {InsumoDetalhe(i)} ({L["Saldo"].Value.ToLower()}: {Format.Number(i.Saldo)} · {Format.Money(i.CustoUnitario)})";
 
     private static string InsumoDetalhe(Insumo i)
     {
@@ -249,13 +249,13 @@
 
         if (_novoInsumo is null)
         {
-            Snackbar.Add("Selecione um insumo.", Severity.Warning);
+            Snackbar.Add(L["Selecione um insumo."], Severity.Warning);
             return;
         }
 
         if (_novaQtd <= 0)
         {
-            Snackbar.Add("A quantidade deve ser maior que zero.", Severity.Warning);
+            Snackbar.Add(L["A quantidade deve ser maior que zero."], Severity.Warning);
             return;
         }
 
