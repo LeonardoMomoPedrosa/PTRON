@@ -59,7 +59,10 @@ public sealed class ChangePasswordService
         {
             try
             {
-                await _email.SendPasswordChangedAsync(user.Email);
+                using (CultureScope.Use(user.Idioma))
+                {
+                    await _email.SendPasswordChangedAsync(user.Email);
+                }
             }
             catch (Exception ex)
             {

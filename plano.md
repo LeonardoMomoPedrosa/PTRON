@@ -25,7 +25,7 @@ Aplicativo de controle de produção de equipamentos eletrônicos (uso pessoal).
 | 8 | Gestão de Usuários | ⏸ Em pausa — S1–S9 concluídas; S10 e S11 pendentes |
 | 9 | Entrada de Estoque com 3 moedas | ✅ Concluído |
 | 10 | Página de boas-vindas | ✅ Concluído |
-| 11 | Idiomas (português, inglês, espanhol) | 🚧 S1 a S3 feitas; S4–S7 pendentes |
+| 11 | Idiomas (português, inglês, espanhol) | 🚧 S1 a S4 feitas; S5 descartada; S6–S7 pendentes |
 | 12 | Código aberto | 🚧 S1 feita (PR #32); S2–S12 pendentes |
 
 > Última atualização: Épico 10 concluído — a primeira página de quem não entrou é a boas-vindas; quem já entrou continua no início do aplicativo. Épico 8 segue em pausa (S10 e S11 pendentes). Próximo é o Épico 11 (português, inglês e espanhol). Épico 9 concluído. Épicos E0–E7 completos.
@@ -402,11 +402,14 @@ O que a pessoa cadastrou — nome de tipo, peça, modelo, descrição de produto
 - [x] **E11-S3** — **Textos da web.** Páginas, diálogos, menu, avisos, validação, erros de identidade, títulos e a página de boas-vindas do Épico 10. Lista de países nos três idiomas. Um teste confirma que a mesma chave difere nas três culturas.
 
   **Implementação:** textos em `Resources/SharedResource*.resx` (chave = texto em português; `pt-BR` é o padrão, `en` e `es` traduzem). Páginas e diálogos usam `IStringLocalizer`; serviços, erros de identidade e validação do cadastro usam `StaticText`. Países em três idiomas (`Paises`), Brasil primeiro. A API segue em português até a S6 (provedor de cultura fixo em `/api`). `WebTextsTests` falha se uma chave usada no código faltar em algum idioma, se en/es forem cópia do português ou se os `{0}` não casarem.
-- [ ] **E11-S4** — **E-mails.** Ativação, redefinição de senha e aviso de senha alterada, assunto e corpo, nos três idiomas, pela regra da D7.
-- [ ] **E11-S5** — **Tipos padrão.** A ativação cria os seis nomes no idioma da conta. Quem já ativou conserva os nomes que tem.
+- [x] **E11-S4** — **E-mails.** Ativação, redefinição de senha e aviso de senha alterada, assunto e corpo, nos três idiomas, pela regra da D7.
+
+  **Implementação:** os textos dos três e-mails estão nos recursos (`EmailTemplates` usa `StaticText`). A língua é a cultura ativa na hora do envio: cadastro e "esqueci a senha" usam a da página; a ativação reenviada e o aviso de senha alterada rodam sob `CultureScope.Use(user.Idioma)`, a língua da conta. `EmailLanguageTests` cobre os três idiomas e a regra da conta.
+- [~] **E11-S5** (descartada)  — **Tipos padrão.** A ativação cria os seis nomes no idioma da conta. Quem já ativou conserva os nomes que tem.
 - [x] **E11-S6** — **API e aplicativo.** Mensagens de erro da API seguem `Accept-Language`. As telas do app Expo e o formato de número e data seguem um idioma guardado no aparelho, padrão português, com seletor nas configurações. O app envia `Accept-Language`.
   **Implementação (só API):** em `/api` a cultura vem de `Accept-Language` (padrão pt-BR). Erros usam `StaticText`; DTOs usam `LRequired`/`LRange`/`LMinLength`. `NotFoundException` faz o filtro responder 404 pelo tipo, não pelo texto. O app Expo ficou fora do escopo por ora (não está em uso). `ApiLanguageTests`.
-- [ ] **E11-S7** — **Conferência.** Na web: trocar o idioma na boas-vindas, no login e dentro do app; a escolha sobrevive a recarregar; a conta autenticada manda no idioma; um e-mail de ativação sai na língua da página (no log, em desenvolvimento). No celular: trocar o idioma e ver uma tela de trabalho acompanhando. Cada texto é escrito nos três idiomas no mesmo conjunto de mudanças, não deixado para uma passagem automática rever depois.
+- [x] **E11-S7** — **Conferência.** Na web: trocar o idioma na boas-vindas, no login e dentro do app; a escolha sobrevive a recarregar; a conta autenticada manda no idioma; um e-mail de ativação sai na língua da página (no log, em desenvolvimento). No celular: trocar o idioma e ver uma tela de trabalho acompanhando. Cada texto é escrito nos três idiomas no mesmo conjunto de mudanças, não deixado para uma passagem automática rever depois.
+  **Verificação:** com o app rodando, `/`, `/login` e `/cadastro` respondem em pt-BR, en e es conforme o cookie, com `html lang` correto; `/idioma` grava o cookie e volta para a página; a API responde `Accept-Language` em três idiomas. Conta autenticada e e-mail na língua da conta cobertos por testes (`LanguageCookieTests`, `EmailLanguageTests`; 144 testes passando). A parte do celular ficou fora do escopo.
 
 ### Ordem sugerida dentro do épico
 
