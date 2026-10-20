@@ -398,4 +398,18 @@
   <data name="Remover {0}" xml:space="preserve"><value>Remover {0}</value></data>
   <data name="Produzir {0}" xml:space="preserve"><value>Produzir {0}</value></data>
   <data name="{first_item}-{last_item} de {all_items}" xml:space="preserve"><value>{first_item}-{last_item} de {all_items}</value></data>
+  <data name="Ative sua conta no Makelectron" xml:space="preserve"><value>Ative sua conta no Makelectron</value></data>
+  <data name="Ative sua conta" xml:space="preserve"><value>Ative sua conta</value></data>
+  <data name="Confirme seu e-mail para começar a usar o Makelectron. Este link vale por 24 horas." xml:space="preserve"><value>Confirme seu e-mail para começar a usar o Makelectron. Este link vale por 24 horas.</value></data>
+  <data name="Ativar conta" xml:space="preserve"><value>Ativar conta</value></data>
+  <data name="Se você não criou esta conta, ignore esta mensagem." xml:space="preserve"><value>Se você não criou esta conta, ignore esta mensagem.</value></data>
+  <data name="Redefina sua senha no Makelectron" xml:space="preserve"><value>Redefina sua senha no Makelectron</value></data>
+  <data name="Redefina sua senha" xml:space="preserve"><value>Redefina sua senha</value></data>
+  <data name="Recebemos um pedido para redefinir a senha da sua conta. Este link vale por 1 hora e só pode ser usado uma vez." xml:space="preserve"><value>Recebemos um pedido para redefinir a senha da sua conta. Este link vale por 1 hora e só pode ser usado uma vez.</value></data>
+  <data name="Se você não pediu esta alteração, ignore esta mensagem. Sua senha continua a mesma." xml:space="preserve"><value>Se você não pediu esta alteração, ignore esta mensagem. Sua senha continua a mesma.</value></data>
+  <data name="Sua senha do Makelectron foi alterada" xml:space="preserve"><value>Sua senha do Makelectron foi alterada</value></data>
+  <data name="Sua senha foi alterada" xml:space="preserve"><value>Sua senha foi alterada</value></data>
+  <data name="A senha da sua conta Makelectron foi alterada agora." xml:space="preserve"><value>A senha da sua conta Makelectron foi alterada agora.</value></data>
+  <data name="Se não foi você, use &quot;Esqueci a senha&quot; na tela de entrada." xml:space="preserve"><value>Se não foi você, use "Esqueci a senha" na tela de entrada.</value></data>
+  <data name="Se o botão não funcionar, copie este endereço no navegador:" xml:space="preserve"><value>Se o botão não funcionar, copie este endereço no navegador:</value></data>
 </root>

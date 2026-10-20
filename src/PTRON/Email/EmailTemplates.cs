@@ -1,4 +1,6 @@
+using System.Globalization;
 using System.Net;
+using PTRON.Localization;
 
 namespace PTRON.Email;
 
@@ -10,34 +12,34 @@ public static class EmailTemplates
     public static EmailMessage Activation(string to, string url, string? logoUrl)
         => Build(
             to,
-            "Ative sua conta no Makelectron",
-            "Ative sua conta",
-            "Confirme seu e-mail para começar a usar o Makelectron. Este link vale por 24 horas.",
-            "Ativar conta",
+            StaticText.Get("Ative sua conta no Makelectron"),
+            StaticText.Get("Ative sua conta"),
+            StaticText.Get("Confirme seu e-mail para começar a usar o Makelectron. Este link vale por 24 horas."),
+            StaticText.Get("Ativar conta"),
             url,
-            "Se você não criou esta conta, ignore esta mensagem.",
+            StaticText.Get("Se você não criou esta conta, ignore esta mensagem."),
             logoUrl);
 
     public static EmailMessage PasswordReset(string to, string url, string? logoUrl)
         => Build(
             to,
-            "Redefina sua senha no Makelectron",
-            "Redefina sua senha",
-            "Recebemos um pedido para redefinir a senha da sua conta. Este link vale por 1 hora e só pode ser usado uma vez.",
-            "Redefinir senha",
+            StaticText.Get("Redefina sua senha no Makelectron"),
+            StaticText.Get("Redefina sua senha"),
+            StaticText.Get("Recebemos um pedido para redefinir a senha da sua conta. Este link vale por 1 hora e só pode ser usado uma vez."),
+            StaticText.Get("Redefinir senha"),
             url,
-            "Se você não pediu esta alteração, ignore esta mensagem. Sua senha continua a mesma.",
+            StaticText.Get("Se você não pediu esta alteração, ignore esta mensagem. Sua senha continua a mesma."),
             logoUrl);
 
     public static EmailMessage PasswordChanged(string to, string loginUrl, string? logoUrl)
         => Build(
             to,
-            "Sua senha do Makelectron foi alterada",
-            "Sua senha foi alterada",
-            "A senha da sua conta Makelectron foi alterada agora.",
-            "Ir para o login",
+            StaticText.Get("Sua senha do Makelectron foi alterada"),
+            StaticText.Get("Sua senha foi alterada"),
+            StaticText.Get("A senha da sua conta Makelectron foi alterada agora."),
+            StaticText.Get("Ir para o login"),
             loginUrl,
-            "Se não foi você, use \"Esqueci a senha\" na tela de entrada.",
+            StaticText.Get("Se não foi você, use \"Esqueci a senha\" na tela de entrada."),
             logoUrl);
 
     private static EmailMessage Build(
@@ -68,7 +70,7 @@ public static class EmailTemplates
 
         var html = $"""
             <!DOCTYPE html>
-            <html lang="pt-BR">
+            <html lang="{CultureInfo.CurrentUICulture.Name}">
             <body style="margin:0;padding:0;background:#f4f7fb;font-family:Segoe UI,Arial,sans-serif;color:{Navy};">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f7fb;">
                 <tr><td align="center" style="padding:32px 16px;">
@@ -81,7 +83,7 @@ public static class EmailTemplates
                       <p style="margin:0 0 24px;">
                         <a href="{safeUrl}" style="display:inline-block;background:{Navy};color:#ffffff;text-decoration:none;font-weight:600;padding:12px 22px;border-radius:4px;">{WebUtility.HtmlEncode(button)}</a>
                       </p>
-                      <p style="margin:0 0 8px;font-size:13px;line-height:1.5;color:#5c6b80;">Se o botão não funcionar, copie este endereço no navegador:</p>
+                      <p style="margin:0 0 8px;font-size:13px;line-height:1.5;color:#5c6b80;">{WebUtility.HtmlEncode(StaticText.Get("Se o botão não funcionar, copie este endereço no navegador:"))}</p>
                       <p style="margin:0 0 20px;font-size:13px;line-height:1.5;word-break:break-all;"><a href="{safeUrl}" style="color:{Blue};">{safeUrl}</a></p>
                       <p style="margin:0;font-size:13px;line-height:1.5;color:#5c6b80;">{WebUtility.HtmlEncode(footnote)}</p>
                     </td></tr>

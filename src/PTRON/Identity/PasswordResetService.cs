@@ -2,6 +2,7 @@ using System.Net.Mail;
 using Microsoft.AspNetCore.Identity;
 using PTRON.Email;
 using PTRON.Models;
+using PTRON.Localization;
 
 namespace PTRON.Identity;
 
@@ -94,7 +95,10 @@ public sealed class PasswordResetService
 
         try
         {
-            await _email.SendPasswordChangedAsync(user.Email!);
+            using (CultureScope.Use(user.Idioma))
+            {
+                await _email.SendPasswordChangedAsync(user.Email!);
+            }
         }
         catch (Exception ex)
         {
