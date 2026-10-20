@@ -95,7 +95,7 @@ public class WebTextsTests
                 Assert.Equal("BR", Paises.Todos[0].Codigo);
                 Assert.Equal(name, Paises.Todos[0].Nome);
                 Assert.Equal(germany, Paises.Nome("DE"));
-                Assert.Equal(Paises.Todos.Skip(1).Select(p => p.Nome).Count(), 248);
+                Assert.Equal(248, Paises.Todos.Skip(1).Count());
             }
 
             CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("en");

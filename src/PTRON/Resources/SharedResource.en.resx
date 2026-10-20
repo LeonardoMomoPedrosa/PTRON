@@ -398,4 +398,18 @@
   <data name="Remover {0}" xml:space="preserve"><value>Remove {0}</value></data>
   <data name="Produzir {0}" xml:space="preserve"><value>Produce {0}</value></data>
   <data name="{first_item}-{last_item} de {all_items}" xml:space="preserve"><value>{first_item}-{last_item} of {all_items}</value></data>
+  <data name="Ative sua conta no Makelectron" xml:space="preserve"><value>Activate your Makelectron account</value></data>
+  <data name="Ative sua conta" xml:space="preserve"><value>Activate your account</value></data>
+  <data name="Confirme seu e-mail para começar a usar o Makelectron. Este link vale por 24 horas." xml:space="preserve"><value>Confirm your e-mail to start using Makelectron. This link is valid for 24 hours.</value></data>
+  <data name="Ativar conta" xml:space="preserve"><value>Activate account</value></data>
+  <data name="Se você não criou esta conta, ignore esta mensagem." xml:space="preserve"><value>If you did not create this account, ignore this message.</value></data>
+  <data name="Redefina sua senha no Makelectron" xml:space="preserve"><value>Reset your Makelectron password</value></data>
+  <data name="Redefina sua senha" xml:space="preserve"><value>Reset your password</value></data>
+  <data name="Recebemos um pedido para redefinir a senha da sua conta. Este link vale por 1 hora e só pode ser usado uma vez." xml:space="preserve"><value>We received a request to reset your account password. This link is valid for 1 hour and can only be used once.</value></data>
+  <data name="Se você não pediu esta alteração, ignore esta mensagem. Sua senha continua a mesma." xml:space="preserve"><value>If you did not ask for this change, ignore this message. Your password stays the same.</value></data>
+  <data name="Sua senha do Makelectron foi alterada" xml:space="preserve"><value>Your Makelectron password was changed</value></data>
+  <data name="Sua senha foi alterada" xml:space="preserve"><value>Your password was changed</value></data>
+  <data name="A senha da sua conta Makelectron foi alterada agora." xml:space="preserve"><value>Your Makelectron account password was just changed.</value></data>
+  <data name="Se não foi você, use &quot;Esqueci a senha&quot; na tela de entrada." xml:space="preserve"><value>If it was not you, use "Forgot password" on the sign-in screen.</value></data>
+  <data name="Se o botão não funcionar, copie este endereço no navegador:" xml:space="preserve"><value>If the button does not work, copy this address into your browser:</value></data>
 </root>
