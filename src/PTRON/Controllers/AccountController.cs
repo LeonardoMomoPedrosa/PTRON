@@ -83,7 +83,7 @@ public sealed class AccountController : Controller
             new AuthenticationProperties
             {
                 IsPersistent = true,
-                ExpiresUtc = DateTimeOffset.UtcNow.AddDays(7),
+                ExpiresUtc = DateTimeOffset.UtcNow.Add(AuthSession.IdleTimeout),
             });
         return Redirect("/conta/senha?ok=1");
     }
@@ -115,7 +115,7 @@ public sealed class AccountController : Controller
                     new AuthenticationProperties
                     {
                         IsPersistent = true,
-                        ExpiresUtc = DateTimeOffset.UtcNow.AddDays(7),
+                        ExpiresUtc = DateTimeOffset.UtcNow.Add(AuthSession.IdleTimeout),
                     });
                 return Redirect(safeReturnUrl ?? "~/");
 
