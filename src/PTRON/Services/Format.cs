@@ -3,13 +3,14 @@ using System.Globalization;
 namespace PTRON.Services;
 
 /// <summary>
-/// Formatting helpers using the Brazilian (pt-BR) culture.
+/// Formatting helpers. Numbers and dates follow the active culture (pt-BR, en or es);
+/// the currency symbol does not change with the language.
 /// </summary>
 public static class Format
 {
-    public static readonly CultureInfo Culture = CultureInfo.GetCultureInfo("pt-BR");
+    public static CultureInfo Culture => CultureInfo.CurrentCulture;
 
-    /// <summary>Formats a value as Brazilian currency, e.g. "R$ 1.234,56".</summary>
+    /// <summary>Formats a value as Brazilian reais, e.g. "R$ 1.234,56" (pt-BR, es) or "R$ 1,234.56" (en).</summary>
     public static string Money(decimal value) => Money(value, Moedas.Brl);
 
     /// <summary>Formats a value in the given currency (R$, US$, €, £ or CN¥).</summary>
@@ -18,7 +19,7 @@ public static class Format
         var code = Moedas.Normalize(moeda);
         if (code == Moedas.Brl || string.IsNullOrEmpty(code))
         {
-            return value.ToString("C", Culture);
+            return Moedas.Symbol(Moedas.Brl) + " " + value.ToString("N2", Culture);
         }
 
         return Moedas.Symbol(code) + " " + value.ToString("N2", Culture);
@@ -40,5 +41,5 @@ public static class Format
         return string.Join(" · ", parts);
     }
 
-    public static string Date(DateTime value) => value.ToString("dd/MM/yyyy HH:mm", Culture);
+    public static string Date(DateTime value) => value.ToString("g", Culture);
 }

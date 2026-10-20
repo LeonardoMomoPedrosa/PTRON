@@ -11,6 +11,7 @@ using PTRON.Api;
 using PTRON.Data;
 using PTRON.Email;
 using PTRON.Identity;
+using PTRON.Localization;
 using PTRON.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,8 +22,8 @@ builder.Configuration.AddEnvironmentVariables(prefix: "PTRON_");
 using var startupLogs = LoggerFactory.Create(l => l.AddSimpleConsole());
 var startupLogger = startupLogs.CreateLogger("PTRON.Startup");
 
-// Brazilian culture for currency/number/date formatting.
-var ptBr = CultureInfo.GetCultureInfo("pt-BR");
+// Default culture; each request/circuit switches to pt-BR, en or es (see UseRequestLocalization).
+var ptBr = CultureInfo.GetCultureInfo(SupportedLanguages.Default);
 CultureInfo.DefaultThreadCurrentCulture = ptBr;
 CultureInfo.DefaultThreadCurrentUICulture = ptBr;
 
@@ -80,6 +81,8 @@ builder.Services.AddMudServices(config =>
     // portrait the menu and the browser chrome resize each other in a loop.
     config.PopoverOptions.OverflowBehavior = OverflowBehavior.FlipOnOpen;
 });
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+builder.Services.AddSingleton<MudLocalizer, PtronMudLocalizer>();
 builder.Services.AddHealthChecks();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.Configure<ApiAuthOptions>(builder.Configuration.GetSection(ApiAuthOptions.SectionName));
@@ -181,12 +184,11 @@ using (var scope = app.Services.CreateScope())
     Directory.CreateDirectory(Path.Combine(env.WebRootPath, "uploads"));
 }
 
-var supportedCultures = new[] { ptBr };
 app.UseRequestLocalization(new Microsoft.AspNetCore.Builder.RequestLocalizationOptions
 {
     DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture(ptBr),
-    SupportedCultures = supportedCultures,
-    SupportedUICultures = supportedCultures
+    SupportedCultures = SupportedLanguages.Cultures,
+    SupportedUICultures = SupportedLanguages.Cultures
 });
 
 // Configure the HTTP request pipeline.
@@ -214,6 +216,30 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapHealthChecks("/health");
+app.MapGet("/idioma", (HttpContext http, string? cultura, string? retorno) =>
+{
+    var language = SupportedLanguages.Find(cultura);
+    if (language is not null)
+    {
+        http.Response.Cookies.Append(
+            Microsoft.AspNetCore.Localization.CookieRequestCultureProvider.DefaultCookieName,
+            Microsoft.AspNetCore.Localization.CookieRequestCultureProvider.MakeCookieValue(
+                new Microsoft.AspNetCore.Localization.RequestCulture(language.Code)),
+            new CookieOptions
+            {
+                Expires = DateTimeOffset.UtcNow.AddYears(1),
+                IsEssential = true,
+                HttpOnly = true,
+                SameSite = SameSiteMode.Lax,
+                Secure = http.Request.IsHttps
+            });
+    }
+
+    var destino = !string.IsNullOrEmpty(retorno) && retorno.StartsWith('/') && !retorno.StartsWith("//") && !retorno.StartsWith("/\\")
+        ? retorno
+        : "/";
+    return Results.LocalRedirect(destino);
+}).AllowAnonymous();
 app.MapControllers();
 app.MapFallback("/api/{**slug}", () => Results.Json(
     new ErrorDto { Error = "Endpoint não encontrado." },

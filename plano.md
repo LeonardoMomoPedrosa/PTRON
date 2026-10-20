@@ -25,7 +25,7 @@ Aplicativo de controle de produção de equipamentos eletrônicos (uso pessoal).
 | 8 | Gestão de Usuários | ⏸ Em pausa — S1–S9 concluídas; S10 e S11 pendentes |
 | 9 | Entrada de Estoque com 3 moedas | ✅ Concluído |
 | 10 | Página de boas-vindas | ✅ Concluído |
-| 11 | Idiomas (português, inglês, espanhol) | ⬜ A fazer, depois do 10 |
+| 11 | Idiomas (português, inglês, espanhol) | 🚧 S1 feita; S2–S7 pendentes |
 | 12 | Código aberto | 🚧 S1 feita (PR #32); S2–S12 pendentes |
 
 > Última atualização: Épico 10 concluído — a primeira página de quem não entrou é a boas-vindas; quem já entrou continua no início do aplicativo. Épico 8 segue em pausa (S10 e S11 pendentes). Próximo é o Épico 11 (português, inglês e espanhol). Épico 9 concluído. Épicos E0–E7 completos.
@@ -375,7 +375,7 @@ Blog, changelog, depoimentos, preços, captura de tela do produto, página "sobr
 
 ---
 
-## Épico 11 — Idiomas (português, inglês e espanhol) ⬜
+## Épico 11 — Idiomas (português, inglês e espanhol) 🚧
 
 A interface, os e-mails e o aplicativo estão em português do Brasil. Este épico acrescenta inglês e espanhol, e deixa a pessoa escolher. Vem **depois** do Épico 10: a página de boas-vindas nasce em português e aqui passa a existir nos três idiomas, junto com o resto do produto.
 
@@ -397,7 +397,7 @@ O que a pessoa cadastrou — nome de tipo, peça, modelo, descrição de produto
 
 ### Stories
 
-- [ ] **E11-S1** — **Fundação.** Culturas `pt-BR`, `en` e `es` no `UseRequestLocalization`, padrão pt-BR, cookie e `Accept-Language`. `IStringLocalizer` e localização do MudBlazor. `html lang` acompanha o idioma. Seletor que grava o cookie e recarrega. `Format` usa a cultura ativa para número, percentual e data; o símbolo da moeda permanece (R$ para real).
+- [x] **E11-S1** — **Fundação.** Culturas `pt-BR`, `en` e `es` no `UseRequestLocalization`, padrão pt-BR, cookie e `Accept-Language`. `IStringLocalizer` e localização do MudBlazor. `html lang` acompanha o idioma. Seletor que grava o cookie e recarrega. `Format` usa a cultura ativa para número, percentual e data; o símbolo da moeda permanece (R$ para real).
 - [ ] **E11-S2** — **Idioma da conta.** Campo `Idioma` em `ApplicationUser` (migração; contas existentes e o Leo ficam `pt-BR`). O seletor, com sessão, grava na conta e no cookie. O login aplica o idioma da conta. O cadastro grava o idioma da página.
 - [ ] **E11-S3** — **Textos da web.** Páginas, diálogos, menu, avisos, validação, erros de identidade, títulos e a página de boas-vindas do Épico 10. Lista de países nos três idiomas. Um teste confirma que a mesma chave difere nas três culturas.
 - [ ] **E11-S4** — **E-mails.** Ativação, redefinição de senha e aviso de senha alterada, assunto e corpo, nos três idiomas, pela regra da D7.

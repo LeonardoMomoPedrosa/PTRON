@@ -1,0 +1,23 @@
+@using System.Globalization
+@using Microsoft.Extensions.Localization
+@using PTRON.Localization
+@inject IStringLocalizer<SharedResource> L
+@inject NavigationManager Navigation
+
+<MudMenu Icon="@Icons.Material.Filled.Language" Color="Color.Inherit" AriaLabel="@L["Language"]"
+         AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
+    @foreach (var language in SupportedLanguages.All)
+    {
+        <MudMenuItem Href="@LinkFor(language)" ForceLoad="true"
+                     Class="@(language.Code == _current.Code ? "mud-selected-item" : null)">
+            <span lang="@language.Code">@language.Name</span>
+        </MudMenuItem>
+    }
+</MudMenu>
+
+@code {
+    private Language _current = SupportedLanguages.Current;
+
+    private string LinkFor(Language language) =>
+        $"/idioma?cultura={Uri.EscapeDataString(language.Code)}&retorno={Uri.EscapeDataString(Navigation.ToBaseRelativePath(Navigation.Uri).Insert(0, "/"))}";
+}
