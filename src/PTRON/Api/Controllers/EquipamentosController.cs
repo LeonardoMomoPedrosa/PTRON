@@ -1,3 +1,4 @@
+using PTRON.Localization;
 using Microsoft.AspNetCore.Mvc;
 using PTRON.Services;
 
@@ -27,7 +28,7 @@ public sealed class EquipamentosController : ControllerBase
         var equipamento = await _service.GetWithBomAsync(id);
         if (equipamento is null)
         {
-            return NotFound(new ErrorDto { Error = "Equipamento não encontrado." });
+            return NotFound(new ErrorDto { Error = StaticText.Get("Equipamento não encontrado.") });
         }
 
         return Ok(DtoMapper.ToDto(equipamento));

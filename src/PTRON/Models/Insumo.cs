@@ -1,3 +1,4 @@
+using PTRON.Localization;
 using System.ComponentModel.DataAnnotations;
 
 namespace PTRON.Models;
@@ -8,11 +9,11 @@ public class Insumo : IUserOwned
 
     public string UserId { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "O tipo é obrigatório.")]
+    [LRequired(ErrorMessage = "O tipo é obrigatório.")]
     public int TipoInsumoId { get; set; }
     public TipoInsumo? TipoInsumo { get; set; }
 
-    [Required(ErrorMessage = "O nome é obrigatório.")]
+    [LRequired(ErrorMessage = "O nome é obrigatório.")]
     [MaxLength(150)]
     public string Nome { get; set; } = string.Empty;
 

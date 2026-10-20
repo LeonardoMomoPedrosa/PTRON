@@ -82,7 +82,7 @@ public class EntradaEstoqueService
             foreach (var item in rateio.Linhas)
             {
                 var insumo = await db.Insumos.FirstOrDefaultAsync(i => i.Id == item.InsumoId)
-                    ?? throw new InvalidOperationException(StaticText.Format("Insumo {0} não encontrado.", item.InsumoId));
+                    ?? throw new NotFoundException(StaticText.Format("Insumo {0} não encontrado.", item.InsumoId));
 
                 var saldoAnterior = insumo.Saldo;
                 var custoAnterior = insumo.CustoUnitario;

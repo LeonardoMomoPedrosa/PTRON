@@ -126,11 +126,11 @@ public class ProducaoService
                     .ThenInclude(ei => ei.Insumo)
                         .ThenInclude(i => i!.TipoInsumo)
                 .FirstOrDefaultAsync(e => e.Id == equipamentoId)
-                ?? throw new InvalidOperationException(StaticText.Get("Equipamento não encontrado."));
+                ?? throw new NotFoundException(StaticText.Get("Equipamento não encontrado."));
 
             if (equipamento.Insumos.Any(ei => ei.Insumo is null))
             {
-                throw new InvalidOperationException(StaticText.Get("Insumo não encontrado."));
+                throw new NotFoundException(StaticText.Get("Insumo não encontrado."));
             }
 
             if (equipamento.Insumos.Count == 0)

@@ -104,7 +104,7 @@ public sealed class ProducaoQuantidadeTests : IAsyncLifetime
     {
         var service = new ProducaoService(new UserFactory(_options, "leo"));
 
-        var erro = await Assert.ThrowsAsync<InvalidOperationException>(
+        var erro = await Assert.ThrowsAnyAsync<InvalidOperationException>(
             () => service.ProduzirAsync(_equipamentoId, null, 3));
         Assert.Contains("3 unidades", erro.Message);
         Assert.Contains("insuficientes", erro.Message);
@@ -118,7 +118,7 @@ public sealed class ProducaoQuantidadeTests : IAsyncLifetime
     public async Task Quantidade_menor_que_um_falha()
     {
         var service = new ProducaoService(new UserFactory(_options, "leo"));
-        var erro = await Assert.ThrowsAsync<InvalidOperationException>(
+        var erro = await Assert.ThrowsAnyAsync<InvalidOperationException>(
             () => service.ProduzirAsync(_equipamentoId, null, 0));
         Assert.Contains("pelo menos 1", erro.Message);
     }

@@ -1,3 +1,4 @@
+using PTRON.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PTRON.Data;
@@ -31,7 +32,7 @@ public sealed class EntradasEstoqueController : ControllerBase
         var entrada = await _service.GetAsync(id);
         if (entrada is null)
         {
-            return NotFound(new ErrorDto { Error = "Entrada de estoque não encontrada." });
+            return NotFound(new ErrorDto { Error = StaticText.Get("Entrada de estoque não encontrada.") });
         }
 
         return Ok(DtoMapper.ToDto(entrada));

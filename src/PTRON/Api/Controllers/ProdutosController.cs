@@ -1,3 +1,4 @@
+using PTRON.Localization;
 using Microsoft.AspNetCore.Mvc;
 using PTRON.Services;
 
@@ -27,7 +28,7 @@ public sealed class ProdutosController : ControllerBase
         var produto = await _service.GetWithInsumosAsync(id);
         if (produto is null)
         {
-            return NotFound(new ErrorDto { Error = "Produto não encontrado." });
+            return NotFound(new ErrorDto { Error = StaticText.Get("Produto não encontrado.") });
         }
 
         return Ok(DtoMapper.ToDto(produto));
@@ -39,7 +40,7 @@ public sealed class ProdutosController : ControllerBase
         await _service.UpdateDescricaoAsync(id, dto.DescricaoAdicional);
         var produto = await _service.GetWithInsumosAsync(id);
         return produto is null
-            ? NotFound(new ErrorDto { Error = "Produto não encontrado." })
+            ? NotFound(new ErrorDto { Error = StaticText.Get("Produto não encontrado.") })
             : Ok(DtoMapper.ToDto(produto));
     }
 

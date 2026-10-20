@@ -398,6 +398,15 @@
   <data name="Remover {0}" xml:space="preserve"><value>Remover {0}</value></data>
   <data name="Produzir {0}" xml:space="preserve"><value>Produzir {0}</value></data>
   <data name="{first_item}-{last_item} de {all_items}" xml:space="preserve"><value>{first_item}-{last_item} de {all_items}</value></data>
+  <data name="Requisição inválida." xml:space="preserve"><value>Requisição inválida.</value></data>
+  <data name="Endpoint não encontrado." xml:space="preserve"><value>Endpoint não encontrado.</value></data>
+  <data name="Não autorizado." xml:space="preserve"><value>Não autorizado.</value></data>
+  <data name="Selecione o insumo." xml:space="preserve"><value>Selecione o insumo.</value></data>
+  <data name="O preço não pode ser negativo." xml:space="preserve"><value>O preço não pode ser negativo.</value></data>
+  <data name="Selecione o equipamento." xml:space="preserve"><value>Selecione o equipamento.</value></data>
+  <data name="A quantidade deve ser entre 1 e 10000." xml:space="preserve"><value>A quantidade deve ser entre 1 e 10000.</value></data>
+  <data name="Envie um arquivo de imagem no campo &quot;file&quot;." xml:space="preserve"><value>Envie um arquivo de imagem no campo "file".</value></data>
+  <data name="Entrada de estoque não encontrada." xml:space="preserve"><value>Entrada de estoque não encontrada.</value></data>
   <data name="Ative sua conta no Makelectron" xml:space="preserve"><value>Ative sua conta no Makelectron</value></data>
   <data name="Ative sua conta" xml:space="preserve"><value>Ative sua conta</value></data>
   <data name="Confirme seu e-mail para começar a usar o Makelectron. Este link vale por 24 horas." xml:space="preserve"><value>Confirme seu e-mail para começar a usar o Makelectron. Este link vale por 24 horas.</value></data>

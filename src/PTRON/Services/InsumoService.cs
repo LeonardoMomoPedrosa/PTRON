@@ -150,7 +150,7 @@ public class InsumoService
     {
         await using var db = await _factory.CreateDbContextAsync();
         var existing = await db.Insumos.FirstOrDefaultAsync(i => i.Id == insumo.Id)
-            ?? throw new InvalidOperationException(StaticText.Get("Insumo não encontrado."));
+            ?? throw new NotFoundException(StaticText.Get("Insumo não encontrado."));
 
         // Delete the previously stored photo if it was replaced or removed.
         if (!string.IsNullOrEmpty(existing.FotoPath) && existing.FotoPath != insumo.FotoPath)

@@ -1,3 +1,4 @@
+using PTRON.Localization;
 using Microsoft.AspNetCore.Mvc;
 using PTRON.Services;
 
@@ -28,7 +29,7 @@ public sealed class UploadsController : ControllerBase
     {
         if (file is null || file.Length == 0)
         {
-            return BadRequest(new ErrorDto { Error = "Envie um arquivo de imagem no campo \"file\"." });
+            return BadRequest(new ErrorDto { Error = StaticText.Get("Envie um arquivo de imagem no campo \"file\".") });
         }
 
         var path = await _images.SaveAsync(file, cancellationToken);
