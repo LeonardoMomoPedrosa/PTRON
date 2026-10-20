@@ -14,7 +14,7 @@ internal static class TenantChecks
     {
         if (!await db.TiposInsumo.AnyAsync(t => t.Id == tipoId))
         {
-            throw new InvalidOperationException(StaticText.Get("Tipo não encontrado."));
+            throw new NotFoundException(StaticText.Get("Tipo não encontrado."));
         }
     }
 
@@ -29,7 +29,7 @@ internal static class TenantChecks
         var found = await db.Insumos.CountAsync(i => ids.Contains(i.Id));
         if (found != ids.Count)
         {
-            throw new InvalidOperationException(StaticText.Get("Insumo não encontrado."));
+            throw new NotFoundException(StaticText.Get("Insumo não encontrado."));
         }
     }
 }

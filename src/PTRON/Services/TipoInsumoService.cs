@@ -63,7 +63,7 @@ public class TipoInsumoService
     {
         await using var db = await _factory.CreateDbContextAsync();
         var existing = await db.TiposInsumo.FirstOrDefaultAsync(t => t.Id == tipo.Id)
-            ?? throw new InvalidOperationException(StaticText.Get("Tipo não encontrado."));
+            ?? throw new NotFoundException(StaticText.Get("Tipo não encontrado."));
 
         var nome = Validation.RequireName(tipo.Nome);
         var duplicate = await db.TiposInsumo.AnyAsync(t =>

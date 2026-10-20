@@ -32,7 +32,7 @@ public class WebTextsTests
                         && !f.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}")
                         && !f.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}")
                         && !f.Contains("Migrations"));
-        var pattern = new Regex(@"(?:\bL\[|StaticText\.(?:Get|Format)\()""((?:[^""\\]|\\.)*)""");
+        var pattern = new Regex(@"(?:\bL\[|StaticText\.(?:Get|Format)\(|ErrorMessage = )""((?:[^""\\]|\\.)*)""");
         foreach (var file in files)
             foreach (Match m in pattern.Matches(File.ReadAllText(file)))
                 yield return m.Groups[1].Value.Replace("\\\"", "\"").Replace("\\\\", "\\");

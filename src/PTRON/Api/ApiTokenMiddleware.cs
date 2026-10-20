@@ -1,3 +1,4 @@
+using PTRON.Localization;
 using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
@@ -56,7 +57,7 @@ public sealed class ApiTokenMiddleware
         context.Response.StatusCode = StatusCodes.Status401Unauthorized;
         context.Response.ContentType = "application/json; charset=utf-8";
         await context.Response.WriteAsync(
-            JsonSerializer.Serialize(new ErrorDto { Error = "Não autorizado." }, JsonOptions));
+            JsonSerializer.Serialize(new ErrorDto { Error = StaticText.Get("Não autorizado.") }, JsonOptions));
     }
 
     private bool TokenMatches(HttpContext context)

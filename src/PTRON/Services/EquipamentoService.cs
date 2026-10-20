@@ -54,7 +54,7 @@ public class EquipamentoService
         var existing = await db.Equipamentos
             .Include(e => e.Insumos)
             .FirstOrDefaultAsync(e => e.Id == equipamento.Id)
-            ?? throw new InvalidOperationException(StaticText.Get("Equipamento não encontrado."));
+            ?? throw new NotFoundException(StaticText.Get("Equipamento não encontrado."));
 
         var previousPhoto = existing.FotoPath;
         existing.Nome = Validation.RequireName(equipamento.Nome);
@@ -102,7 +102,7 @@ public class EquipamentoService
         }
 
         var existing = await db.Equipamentos.FirstOrDefaultAsync(e => e.Id == equipamento.Id)
-            ?? throw new InvalidOperationException(StaticText.Get("Equipamento não encontrado."));
+            ?? throw new NotFoundException(StaticText.Get("Equipamento não encontrado."));
 
         var previousPhoto = existing.FotoPath;
         existing.Nome = nome;
@@ -128,7 +128,7 @@ public class EquipamentoService
         await using var db = await _factory.CreateDbContextAsync();
         if (!await db.Equipamentos.AnyAsync(e => e.Id == equipamentoId))
         {
-            throw new InvalidOperationException(StaticText.Get("Equipamento não encontrado."));
+            throw new NotFoundException(StaticText.Get("Equipamento não encontrado."));
         }
 
         await TenantChecks.RequireInsumosAsync(db, new[] { insumoId });

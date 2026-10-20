@@ -398,4 +398,13 @@
   <data name="Remover {0}" xml:space="preserve"><value>Quitar {0}</value></data>
   <data name="Produzir {0}" xml:space="preserve"><value>Producir {0}</value></data>
   <data name="{first_item}-{last_item} de {all_items}" xml:space="preserve"><value>{first_item}-{last_item} de {all_items}</value></data>
+  <data name="Requisição inválida." xml:space="preserve"><value>Solicitud inválida.</value></data>
+  <data name="Endpoint não encontrado." xml:space="preserve"><value>Endpoint no encontrado.</value></data>
+  <data name="Não autorizado." xml:space="preserve"><value>No autorizado.</value></data>
+  <data name="Selecione o insumo." xml:space="preserve"><value>Selecciona la pieza.</value></data>
+  <data name="O preço não pode ser negativo." xml:space="preserve"><value>El precio no puede ser negativo.</value></data>
+  <data name="Selecione o equipamento." xml:space="preserve"><value>Selecciona el equipo.</value></data>
+  <data name="A quantidade deve ser entre 1 e 10000." xml:space="preserve"><value>La cantidad debe estar entre 1 y 10000.</value></data>
+  <data name="Envie um arquivo de imagem no campo &quot;file&quot;." xml:space="preserve"><value>Envía un archivo de imagen en el campo "file".</value></data>
+  <data name="Entrada de estoque não encontrada." xml:space="preserve"><value>Entrada de stock no encontrada.</value></data>
 </root>

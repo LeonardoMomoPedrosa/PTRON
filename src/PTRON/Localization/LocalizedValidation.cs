@@ -60,3 +60,20 @@ public sealed class LCompareAttribute : CompareAttribute
 
     public override string FormatErrorMessage(string name) => StaticText.Get(ErrorMessageString);
 }
+
+public sealed class LRangeAttribute : RangeAttribute
+{
+    public LRangeAttribute(int minimum, int maximum) : base(minimum, maximum)
+    {
+    }
+
+    public LRangeAttribute(double minimum, double maximum) : base(minimum, maximum)
+    {
+    }
+
+    public LRangeAttribute(Type type, string minimum, string maximum) : base(type, minimum, maximum)
+    {
+    }
+
+    public override string FormatErrorMessage(string name) => StaticText.Get(ErrorMessageString);
+}

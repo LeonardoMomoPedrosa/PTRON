@@ -40,7 +40,7 @@ public class ProdutoService
     {
         await using var db = await _factory.CreateDbContextAsync();
         var produto = await db.Produtos.FirstOrDefaultAsync(p => p.Id == id)
-            ?? throw new InvalidOperationException(StaticText.Get("Produto não encontrado."));
+            ?? throw new NotFoundException(StaticText.Get("Produto não encontrado."));
 
         produto.DescricaoAdicional = string.IsNullOrWhiteSpace(descricaoAdicional)
             ? null
@@ -63,7 +63,7 @@ public class ProdutoService
             var produto = await db.Produtos
                 .Include(p => p.Insumos)
                 .FirstOrDefaultAsync(p => p.Id == id)
-                ?? throw new InvalidOperationException(StaticText.Get("Produto não encontrado."));
+                ?? throw new NotFoundException(StaticText.Get("Produto não encontrado."));
 
             foreach (var item in produto.Insumos)
             {

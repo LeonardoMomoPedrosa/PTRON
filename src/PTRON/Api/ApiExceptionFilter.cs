@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using PTRON.Services;
 
 namespace PTRON.Api;
 
@@ -12,7 +13,7 @@ public sealed class ApiExceptionFilter : IExceptionFilter
             return;
         }
 
-        var status = ex.Message.Contains("não encontrado", StringComparison.OrdinalIgnoreCase)
+        var status = ex is NotFoundException
             ? StatusCodes.Status404NotFound
             : StatusCodes.Status400BadRequest;
 

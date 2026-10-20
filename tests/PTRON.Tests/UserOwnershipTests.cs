@@ -102,7 +102,7 @@ public sealed class UserOwnershipTests : IAsyncLifetime
         var leoTipo = (await leoTipos.GetAllAsync()).Single();
 
         Assert.Null(await anaTipos.GetAsync(leoTipo.Id));
-        var error = await Assert.ThrowsAsync<InvalidOperationException>(
+        var error = await Assert.ThrowsAnyAsync<InvalidOperationException>(
             () => anaTipos.UpdateAsync(new TipoInsumo { Id = leoTipo.Id, Nome = "Outro" }));
         Assert.Equal("Tipo não encontrado.", error.Message);
     }
@@ -115,7 +115,7 @@ public sealed class UserOwnershipTests : IAsyncLifetime
         var tipoId = (await leoTipos.GetAllAsync()).Single().Id;
 
         var anaInsumos = new InsumoService(new UserFactory(_options, _anaId), new ImageUploadService(new TempHost(), new FixedUser(_anaId)));
-        var error = await Assert.ThrowsAsync<InvalidOperationException>(
+        var error = await Assert.ThrowsAnyAsync<InvalidOperationException>(
             () => anaInsumos.CreateAsync(new Insumo { Nome = "1N4007", TipoInsumoId = tipoId }));
         Assert.Equal("Tipo não encontrado.", error.Message);
     }
@@ -149,7 +149,7 @@ public sealed class UserOwnershipTests : IAsyncLifetime
         }
 
         var anaEntradas = new EntradaEstoqueService(new UserFactory(_options, _anaId));
-        var entradaError = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        var entradaError = await Assert.ThrowsAnyAsync<InvalidOperationException>(() =>
             anaEntradas.FinalizarAsync(new EntradaCommand
             {
                 MoedaProdutos = Moedas.Brl,
@@ -160,7 +160,7 @@ public sealed class UserOwnershipTests : IAsyncLifetime
 
         var anaEquipamentos = new EquipamentoService(
             new UserFactory(_options, _anaId), new ImageUploadService(new TempHost(), new FixedUser(_anaId)));
-        var bomError = await Assert.ThrowsAsync<InvalidOperationException>(
+        var bomError = await Assert.ThrowsAnyAsync<InvalidOperationException>(
             () => anaEquipamentos.AddInsumoAsync(equipamentoId, insumoId, 1));
         Assert.Equal("Equipamento não encontrado.", bomError.Message);
 
@@ -176,7 +176,7 @@ public sealed class UserOwnershipTests : IAsyncLifetime
     {
         await using var db = new AppDbContext(_options, "");
         db.TiposInsumo.Add(new TipoInsumo { Nome = "Válvula" });
-        var error = await Assert.ThrowsAsync<InvalidOperationException>(() => db.SaveChangesAsync());
+        var error = await Assert.ThrowsAnyAsync<InvalidOperationException>(() => db.SaveChangesAsync());
         Assert.Equal("Não há usuário autenticado para gravar estes dados.", error.Message);
     }
 
