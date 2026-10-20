@@ -1,10 +1,10 @@
 <MudDialog>
     <DialogContent>
-        <MudText Class="@MarkerClass">@Message</MudText>
+        <MudText Class="@MarkerClass">@(Message ?? L["Tem certeza?"])</MudText>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel">@CancelText</MudButton>
-        <MudButton Color="@Color" Variant="Variant.Filled" OnClick="Confirm">@ConfirmText</MudButton>
+        <MudButton OnClick="Cancel">@(CancelText ?? L["Cancelar"])</MudButton>
+        <MudButton Color="@Color" Variant="Variant.Filled" OnClick="Confirm">@(ConfirmText ?? L["Confirmar"])</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -12,10 +12,10 @@
     [CascadingParameter]
     private IMudDialogInstance MudDialog { get; set; } = default!;
 
-    [Parameter] public string Message { get; set; } = "Tem certeza?";
+    [Parameter] public string? Message { get; set; }
     [Parameter] public string? MarkerClass { get; set; }
-    [Parameter] public string ConfirmText { get; set; } = "Confirmar";
-    [Parameter] public string CancelText { get; set; } = "Cancelar";
+    [Parameter] public string? ConfirmText { get; set; }
+    [Parameter] public string? CancelText { get; set; }
     [Parameter] public Color Color { get; set; } = Color.Error;
 
     private void Confirm() => MudDialog.Close(DialogResult.Ok(true));

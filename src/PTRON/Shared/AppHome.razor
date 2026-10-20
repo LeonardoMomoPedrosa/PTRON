@@ -3,11 +3,11 @@
 @using PTRON.Services
 @inject SignupDashboardService Signups
 
-<PageTitle>Makelectron — Início</PageTitle>
+<PageTitle>@L["Makelectron — Início"]</PageTitle>
 
 <BrandLogo Height="64" />
 <MudText Typo="Typo.subtitle1" Class="mt-3 mb-6">
-    Controle de produção de equipamentos eletrônicos.
+    @L["Controle de produção de equipamentos eletrônicos."]
 </MudText>
 
 <MudGrid>
@@ -17,7 +17,7 @@
             <MudCard Class="pa-2">
                 <MudCardContent>
                     <MudIcon Icon="@Icons.Material.Filled.People" Color="Color.Primary" Size="Size.Large" />
-                    <MudText Typo="Typo.h6" Class="mt-2">Usuários cadastrados</MudText>
+                    <MudText Typo="Typo.h6" Class="mt-2">@L["Usuários cadastrados"]</MudText>
                     <MudText Typo="Typo.h4">@_signups.Cadastrados</MudText>
                     <MudText Typo="Typo.body2">@Detalhe</MudText>
                 </MudCardContent>
@@ -30,11 +30,11 @@
             <MudCard Class="pa-2" Style="height:100%">
                 <MudCardContent>
                     <MudIcon Icon="@item.Icon" Color="Color.Primary" Size="Size.Large" />
-                    <MudText Typo="Typo.h6" Class="mt-2">@item.Titulo</MudText>
-                    <MudText Typo="Typo.body2">@item.Descricao</MudText>
+                    <MudText Typo="Typo.h6" Class="mt-2">@L[item.Titulo]</MudText>
+                    <MudText Typo="Typo.body2">@L[item.Descricao]</MudText>
                 </MudCardContent>
                 <MudCardActions>
-                    <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Primary">Abrir</MudButton>
+                    <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Primary">@L["Abrir"]</MudButton>
                 </MudCardActions>
             </MudCard>
         </MudItem>
@@ -45,11 +45,11 @@
             <MudCard Class="pa-2" Style="height:100%">
                 <MudCardContent>
                     <MudIcon Icon="@Icons.Material.Filled.Storage" Color="Color.Primary" Size="Size.Large" />
-                    <MudText Typo="Typo.h6" Class="mt-2">SQL</MudText>
-                    <MudText Typo="Typo.body2">Consultas e comandos diretos no banco.</MudText>
+                    <MudText Typo="Typo.h6" Class="mt-2">@L["SQL"]</MudText>
+                    <MudText Typo="Typo.body2">@L["Consultas e comandos diretos no banco."]</MudText>
                 </MudCardContent>
                 <MudCardActions>
-                    <MudButton Href="sql" Variant="Variant.Text" Color="Color.Primary">Abrir</MudButton>
+                    <MudButton Href="sql" Variant="Variant.Text" Color="Color.Primary">@L["Abrir"]</MudButton>
                 </MudCardActions>
             </MudCard>
         </MudItem>
@@ -77,11 +77,11 @@
         get
         {
             if (_signups is null || _signups.Cadastrados == 0)
-                return "Ninguém se cadastrou ainda.";
+                return L["Ninguém se cadastrou ainda."];
 
             var pendentes = _signups.Cadastrados - _signups.Ativos;
             if (pendentes == 0)
-                return "Todos já ativaram a conta.";
+                return L["Todos já ativaram a conta."];
 
             return $"{FraseAtivos(_signups.Ativos)} {FrasePendentes(pendentes)}";
         }
@@ -100,11 +100,11 @@
             _signups = await Signups.GetAsync();
     }
 
-    private static string FraseAtivos(int n) => n == 1
-        ? "1 já ativou a conta."
-        : $"{n} já ativaram a conta.";
+    private string FraseAtivos(int n) => n == 1
+        ? L["1 já ativou a conta."]
+        : L["{0} já ativaram a conta.", n];
 
-    private static string FrasePendentes(int n) => n == 1
-        ? "1 ainda aguarda o e-mail."
-        : $"{n} ainda aguardam o e-mail.";
+    private string FrasePendentes(int n) => n == 1
+        ? L["1 ainda aguarda o e-mail."]
+        : L["{0} ainda aguardam o e-mail.", n];
 }

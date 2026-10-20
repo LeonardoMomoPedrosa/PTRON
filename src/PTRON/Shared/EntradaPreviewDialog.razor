@@ -1,84 +1,84 @@
 <MudDialog>
     <DialogContent>
         <MudText Typo="Typo.body2" Class="mb-3">
-            A proporção de cada produto usa só o valor dos itens, na moeda dos produtos.
-            Frete e impostos entram depois, na mesma proporção, cada um na sua moeda.
-            O custo do estoque é gravado em reais.
+            @L["A proporção de cada produto usa só o valor dos itens, na moeda dos produtos."]
+            @L["Frete e impostos entram depois, na mesma proporção, cada um na sua moeda."]
+            @L["O custo do estoque é gravado em reais."]
         </MudText>
 
         <MudGrid Class="mb-2">
             <MudItem xs="6" sm="4">
-                <MudText Typo="Typo.caption" Class="mud-text-secondary">Produtos</MudText>
+                <MudText Typo="Typo.caption" Class="mud-text-secondary">@L["Produtos"]</MudText>
                 <MudText>@Format.Money(Rateio.TotalProdutos, Rateio.MoedaProdutos)</MudText>
                 @if (Rateio.MoedaProdutos != Moedas.Destino)
                 {
                     <MudText Typo="Typo.caption" Class="mud-text-secondary">
-                        câmbio @Format.Money(Rateio.CambioProdutos) / @Moedas.Symbol(Rateio.MoedaProdutos) 1
+                        @L["câmbio {0} / {1} 1", Format.Money(Rateio.CambioProdutos), Moedas.Symbol(Rateio.MoedaProdutos)]
                     </MudText>
                 }
             </MudItem>
             <MudItem xs="6" sm="4">
-                <MudText Typo="Typo.caption" Class="mud-text-secondary">Frete</MudText>
+                <MudText Typo="Typo.caption" Class="mud-text-secondary">@L["Frete"]</MudText>
                 <MudText>@Format.Money(Rateio.Frete, Rateio.MoedaFrete)</MudText>
             </MudItem>
             <MudItem xs="6" sm="4">
-                <MudText Typo="Typo.caption" Class="mud-text-secondary">Impostos</MudText>
+                <MudText Typo="Typo.caption" Class="mud-text-secondary">@L["Impostos"]</MudText>
                 <MudText>@Format.Money(Rateio.Impostos, Rateio.MoedaImpostos)</MudText>
                 @if (Rateio.MoedaImpostos != Moedas.Destino && Rateio.MoedaImpostos != Rateio.MoedaProdutos)
                 {
                     <MudText Typo="Typo.caption" Class="mud-text-secondary">
-                        câmbio @Format.Money(Rateio.CambioImpostos) / @Moedas.Symbol(Rateio.MoedaImpostos) 1
+                        @L["câmbio {0} / {1} 1", Format.Money(Rateio.CambioImpostos), Moedas.Symbol(Rateio.MoedaImpostos)]
                     </MudText>
                 }
             </MudItem>
             @if (Rateio.MoedasIguais)
             {
                 <MudItem xs="6" sm="4">
-                    <MudText Typo="Typo.caption" Class="mud-text-secondary">Total @Moedas.Symbol(Rateio.MoedaProdutos)</MudText>
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">@L["Total {0}", Moedas.Symbol(Rateio.MoedaProdutos)]</MudText>
                     <MudText Typo="Typo.subtitle1"><b>@Format.Money(Rateio.TotalMoeda, Rateio.MoedaProdutos)</b></MudText>
                 </MudItem>
             }
             <MudItem xs="6" sm="4">
-                <MudText Typo="Typo.caption" Class="mud-text-secondary">Total em R$</MudText>
+                <MudText Typo="Typo.caption" Class="mud-text-secondary">@L["Total em R$"]</MudText>
                 <MudText Typo="Typo.subtitle1"><b>@Format.Money(Rateio.TotalBrl)</b></MudText>
             </MudItem>
         </MudGrid>
 
         <MudTable Items="Itens" Dense="true" Hover="true" Elevation="0" Breakpoint="Breakpoint.Md">
             <HeaderContent>
-                <MudTh>Insumo</MudTh>
-                <MudTh Style="text-align:right">Qtd</MudTh>
-                <MudTh Style="text-align:right">Preço unit.</MudTh>
-                <MudTh Style="text-align:right">Subtotal</MudTh>
-                <MudTh Style="text-align:right">Proporção</MudTh>
-                <MudTh Style="text-align:right">Frete</MudTh>
-                <MudTh Style="text-align:right">Impostos</MudTh>
-                <MudTh Style="text-align:right">Custo unit. (R$)</MudTh>
-                <MudTh Style="text-align:right">Total (R$)</MudTh>
+                <MudTh>@L["Insumo"]</MudTh>
+                <MudTh Style="text-align:right">@L["Qtd"]</MudTh>
+                <MudTh Style="text-align:right">@L["Preço unit."]</MudTh>
+                <MudTh Style="text-align:right">@L["Subtotal"]</MudTh>
+                <MudTh Style="text-align:right">@L["Proporção"]</MudTh>
+                <MudTh Style="text-align:right">@L["Frete"]</MudTh>
+                <MudTh Style="text-align:right">@L["Impostos"]</MudTh>
+                <MudTh Style="text-align:right">@L["Custo unit. (R$)"]</MudTh>
+                <MudTh Style="text-align:right">@L["Total (R$)"]</MudTh>
             </HeaderContent>
             <RowTemplate>
-                <MudTd DataLabel="Insumo">
+                <MudTd DataLabel="@L["Insumo"]">
                     <MudText Typo="Typo.body2">@context.Nome</MudText>
                     <MudText Typo="Typo.caption" Class="mud-text-secondary">@context.Detalhe</MudText>
                 </MudTd>
-                <MudTd DataLabel="Qtd" Style="text-align:right">@Format.Number(context.Linha.Qtd)</MudTd>
-                <MudTd DataLabel="Preço unit." Style="text-align:right">
+                <MudTd DataLabel="@L["Qtd"]" Style="text-align:right">@Format.Number(context.Linha.Qtd)</MudTd>
+                <MudTd DataLabel="@L["Preço unit."]" Style="text-align:right">
                     @Format.Money(context.Linha.PrecoUnitario, Rateio.MoedaProdutos)
                 </MudTd>
-                <MudTd DataLabel="Subtotal" Style="text-align:right">
+                <MudTd DataLabel="@L["Subtotal"]" Style="text-align:right">
                     @Format.Money(context.Linha.Subtotal, Rateio.MoedaProdutos)
                 </MudTd>
-                <MudTd DataLabel="Proporção" Style="text-align:right">@Format.Percent(context.Linha.Proporcao)</MudTd>
-                <MudTd DataLabel="Frete" Style="text-align:right">
+                <MudTd DataLabel="@L["Proporção"]" Style="text-align:right">@Format.Percent(context.Linha.Proporcao)</MudTd>
+                <MudTd DataLabel="@L["Frete"]" Style="text-align:right">
                     @Format.Money(context.Linha.FreteRateado, Rateio.MoedaFrete)
                 </MudTd>
-                <MudTd DataLabel="Impostos" Style="text-align:right">
+                <MudTd DataLabel="@L["Impostos"]" Style="text-align:right">
                     @Format.Money(context.Linha.ImpostoRateado, Rateio.MoedaImpostos)
                 </MudTd>
-                <MudTd DataLabel="Custo unit. (R$)" Style="text-align:right">
+                <MudTd DataLabel="@L["Custo unit. (R$)"]" Style="text-align:right">
                     @Format.Money(context.Linha.CustoUnitarioBrl)
                 </MudTd>
-                <MudTd DataLabel="Total (R$)" Style="text-align:right">
+                <MudTd DataLabel="@L["Total (R$)"]" Style="text-align:right">
                     @Format.Money(context.Linha.SubtotalBrl)
                 </MudTd>
             </RowTemplate>
@@ -86,7 +86,7 @@
                 <MudTd></MudTd>
                 <MudTd></MudTd>
                 <MudTd></MudTd>
-                <MudTd Style="text-align:right"><b>Total</b></MudTd>
+                <MudTd Style="text-align:right"><b>@L["Total"]</b></MudTd>
                 <MudTd Style="text-align:right"><b>@Format.Percent(1m)</b></MudTd>
                 <MudTd Style="text-align:right"><b>@Format.Money(Rateio.Frete, Rateio.MoedaFrete)</b></MudTd>
                 <MudTd Style="text-align:right"><b>@Format.Money(Rateio.Impostos, Rateio.MoedaImpostos)</b></MudTd>
@@ -96,8 +96,8 @@
         </MudTable>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel">Voltar</MudButton>
-        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Confirm">Confirmar entrada</MudButton>
+        <MudButton OnClick="Cancel">@L["Voltar"]</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Confirm">@L["Confirmar entrada"]</MudButton>
     </DialogActions>
 </MudDialog>
 

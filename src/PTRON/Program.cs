@@ -187,12 +187,19 @@ using (var scope = app.Services.CreateScope())
     Directory.CreateDirectory(Path.Combine(env.WebRootPath, "uploads"));
 }
 
-app.UseRequestLocalization(new Microsoft.AspNetCore.Builder.RequestLocalizationOptions
+var localizationOptions = new Microsoft.AspNetCore.Builder.RequestLocalizationOptions
 {
     DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture(ptBr),
     SupportedCultures = SupportedLanguages.Cultures,
     SupportedUICultures = SupportedLanguages.Cultures
-});
+};
+// The API keeps answering in Portuguese until E11-S6 (clients match on message text).
+localizationOptions.RequestCultureProviders.Insert(0, new Microsoft.AspNetCore.Localization.CustomRequestCultureProvider(
+    context => Task.FromResult<Microsoft.AspNetCore.Localization.ProviderCultureResult?>(
+        context.Request.Path.StartsWithSegments("/api")
+            ? new Microsoft.AspNetCore.Localization.ProviderCultureResult(SupportedLanguages.Default)
+            : null)));
+app.UseRequestLocalization(localizationOptions);
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
