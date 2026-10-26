@@ -19,7 +19,14 @@ public class BomLinhaPreview
 
     public decimal SaldoDisponivel { get; set; }
     public decimal CustoUnitario { get; set; }
-    public decimal Subtotal => QtdNecessaria * CustoUnitario;
+    
+    /// <summary>Custom cost for preview calculation when item is missing from stock.</summary>
+    public decimal? CustoCustomizado { get; set; }
+    
+    /// <summary>Effective cost used in calculation (custom if set, otherwise unit cost).</summary>
+    public decimal CustoEfetivo => CustoCustomizado ?? CustoUnitario;
+    
+    public decimal Subtotal => QtdNecessaria * CustoEfetivo;
     public decimal Faltante => Math.Max(0, QtdNecessaria - SaldoDisponivel);
     public bool Disponivel => Faltante == 0;
 }
@@ -37,7 +44,10 @@ public class ProducaoPreview
     /// <summary>Landed cost of one product.</summary>
     public decimal CustoPorUnidade => Quantidade == 0 ? 0m : CustoEstimado / Quantidade;
 
-    public bool PodeProduzir => Linhas.Count > 0 && Linhas.All(l => l.Disponivel);
+    /// <summary>Whether any line has a custom cost set (preview mode).</summary>
+    public bool TemCustosCustomizados => Linhas.Any(l => l.CustoCustomizado.HasValue);
+
+    public bool PodeProduzir => Linhas.Count > 0 && Linhas.All(l => l.Disponivel) && !TemCustosCustomizados;
     public List<BomLinhaPreview> Faltantes => Linhas.Where(l => !l.Disponivel).ToList();
 }
 
