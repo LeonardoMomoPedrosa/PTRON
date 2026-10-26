@@ -1,0 +1,25 @@
+@inject IConfiguration Configuration
+
+@if (!string.IsNullOrEmpty(ConversionId) && !string.IsNullOrEmpty(ConversionLabel))
+{
+    <HeadContent>
+        @* Google Ads Conversion Tracking *@
+        <script>
+            gtag('event', 'conversion', {
+                'send_to': '@ConversionId/@ConversionLabel',
+                'value': @Value,
+                'currency': '@Currency',
+                'transaction_id': '@TransactionId'
+            });
+        </script>
+    </HeadContent>
+}
+
+@code {
+    [Parameter] public string? ConversionLabel { get; set; }
+    [Parameter] public decimal Value { get; set; }
+    [Parameter] public string Currency { get; set; } = "BRL";
+    [Parameter] public string? TransactionId { get; set; }
+    
+    private string? ConversionId => Configuration["GoogleAds:ConversionId"];
+}

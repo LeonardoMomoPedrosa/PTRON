@@ -1,0 +1,138 @@
+@inject IConfiguration Configuration
+@inject NavigationManager Navigation
+
+<HeadContent>
+    @* Basic Meta Tags *@
+    @if (!string.IsNullOrEmpty(Description))
+    {
+        <meta name="description" content="@Description" />
+    }
+    
+    @if (!string.IsNullOrEmpty(Keywords))
+    {
+        <meta name="keywords" content="@Keywords" />
+    }
+
+    @if (!string.IsNullOrEmpty(Author))
+    {
+        <meta name="author" content="@Author" />
+    }
+
+    @* Canonical URL *@
+    <link rel="canonical" href="@GetCanonicalUrl()" />
+
+    @* Open Graph Tags *@
+    <meta property="og:type" content="@OgType" />
+    <meta property="og:url" content="@GetCanonicalUrl()" />
+    <meta property="og:title" content="@(OgTitle ?? Title)" />
+    
+    @if (!string.IsNullOrEmpty(OgDescription ?? Description))
+    {
+        <meta property="og:description" content="@(OgDescription ?? Description)" />
+    }
+    
+    @if (!string.IsNullOrEmpty(OgImage))
+    {
+        <meta property="og:image" content="@GetAbsoluteImageUrl(OgImage)" />
+        <meta property="og:image:alt" content="@(OgImageAlt ?? Title)" />
+    }
+
+    <meta property="og:locale" content="@GetLocale()" />
+    <meta property="og:site_name" content="Makelectron" />
+
+    @* Twitter Card Tags *@
+    <meta name="twitter:card" content="@TwitterCard" />
+    <meta name="twitter:title" content="@(TwitterTitle ?? OgTitle ?? Title)" />
+    
+    @if (!string.IsNullOrEmpty(TwitterDescription ?? OgDescription ?? Description))
+    {
+        <meta name="twitter:description" content="@(TwitterDescription ?? OgDescription ?? Description)" />
+    }
+    
+    @if (!string.IsNullOrEmpty(TwitterImage ?? OgImage))
+    {
+        <meta name="twitter:image" content="@GetAbsoluteImageUrl(TwitterImage ?? OgImage)" />
+    }
+
+    @if (!string.IsNullOrEmpty(TwitterSite))
+    {
+        <meta name="twitter:site" content="@TwitterSite" />
+    }
+
+    @* Additional SEO Meta Tags *@
+    <meta name="robots" content="@Robots" />
+    
+    @if (NoIndex || NoFollow)
+    {
+        <meta name="robots" content="@GetRobotsContent()" />
+    }
+</HeadContent>
+
+@code {
+    [Parameter] public string Title { get; set; } = "Makelectron";
+    [Parameter] public string? Description { get; set; }
+    [Parameter] public string? Keywords { get; set; }
+    [Parameter] public string? Author { get; set; } = "Makelectron";
+    [Parameter] public string? CanonicalUrl { get; set; }
+    
+    // Open Graph
+    [Parameter] public string OgType { get; set; } = "website";
+    [Parameter] public string? OgTitle { get; set; }
+    [Parameter] public string? OgDescription { get; set; }
+    [Parameter] public string? OgImage { get; set; }
+    [Parameter] public string? OgImageAlt { get; set; }
+    
+    // Twitter
+    [Parameter] public string TwitterCard { get; set; } = "summary_large_image";
+    [Parameter] public string? TwitterTitle { get; set; }
+    [Parameter] public string? TwitterDescription { get; set; }
+    [Parameter] public string? TwitterImage { get; set; }
+    [Parameter] public string? TwitterSite { get; set; }
+    
+    // Robots
+    [Parameter] public string Robots { get; set; } = "index, follow";
+    [Parameter] public bool NoIndex { get; set; }
+    [Parameter] public bool NoFollow { get; set; }
+
+    private string GetCanonicalUrl()
+    {
+        if (!string.IsNullOrEmpty(CanonicalUrl))
+            return CanonicalUrl;
+
+        var baseUrl = Configuration["SiteUrl"] ?? "https://makelectron.com";
+        var uri = new Uri(Navigation.Uri);
+        return $"{baseUrl}{uri.AbsolutePath}";
+    }
+
+    private string GetAbsoluteImageUrl(string? imageUrl)
+    {
+        if (string.IsNullOrEmpty(imageUrl))
+            return string.Empty;
+
+        if (imageUrl.StartsWith("http://") || imageUrl.StartsWith("https://"))
+            return imageUrl;
+
+        var baseUrl = Configuration["SiteUrl"] ?? "https://makelectron.com";
+        return $"{baseUrl}{(imageUrl.StartsWith("/") ? "" : "/")}{imageUrl}";
+    }
+
+    private string GetLocale()
+    {
+        var culture = System.Globalization.CultureInfo.CurrentUICulture.Name;
+        return culture switch
+        {
+            "pt-BR" => "pt_BR",
+            "en-US" => "en_US",
+            "es" => "es_ES",
+            _ => "pt_BR"
+        };
+    }
+
+    private string GetRobotsContent()
+    {
+        var parts = new List<string>();
+        parts.Add(NoIndex ? "noindex" : "index");
+        parts.Add(NoFollow ? "nofollow" : "follow");
+        return string.Join(", ", parts);
+    }
+}

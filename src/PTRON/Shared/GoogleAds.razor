@@ -1,0 +1,41 @@
+@inject IConfiguration Configuration
+
+@if (!string.IsNullOrEmpty(ConversionId))
+{
+    <HeadContent>
+        @* Google Ads Global Site Tag (gtag.js) *@
+        <script async src="https://www.googletagmanager.com/gtag/js?id=@ConversionId"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '@ConversionId');
+            
+            @if (EnableRemarketing)
+            {
+                @* Enable remarketing features *@
+                <text>
+            gtag('config', '@ConversionId', {
+                'allow_ad_personalization_signals': true
+            });
+                </text>
+            }
+
+            @if (EnableEnhancedConversions)
+            {
+                @* Enhanced conversions setup - requires user data to be passed *@
+                <text>
+            gtag('config', '@ConversionId', {
+                'allow_enhanced_conversions': true
+            });
+                </text>
+            }
+        </script>
+    </HeadContent>
+}
+
+@code {
+    private string? ConversionId => Configuration["GoogleAds:ConversionId"];
+    private bool EnableRemarketing => Configuration.GetValue<bool>("GoogleAds:EnableRemarketing", true);
+    private bool EnableEnhancedConversions => Configuration.GetValue<bool>("GoogleAds:EnableEnhancedConversions", false);
+}

@@ -1,0 +1,13 @@
+# robots.txt for PTRON/Makelectron
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /sql
+Disallow: /_framework/
+Disallow: /_content/
+
+# Sitemap location
+Sitemap: https://makelectron.com/sitemap.xml
+
+# Crawl-delay to be respectful
+Crawl-delay: 1

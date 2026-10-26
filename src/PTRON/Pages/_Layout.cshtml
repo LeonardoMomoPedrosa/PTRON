@@ -8,14 +8,35 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <title>Makelectron</title>
     <base href="~/" />
+    
+    @* Favicons *@
     <link rel="icon" type="image/png" href="favicon.png" />
     <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+    
+    @* Preconnect to external domains for performance *@
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://www.googletagmanager.com" />
+    
+    @* Stylesheets *@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
     <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
     <link href="css/site.css" rel="stylesheet" asp-append-version="true" />
     <link href="PTRON.styles.css" rel="stylesheet" asp-append-version="true" />
+    
+    @* Alternate language versions (hreflang) *@
+    @{
+        var currentPath = Context.Request.Path.Value ?? "/";
+        var siteUrl = Context.RequestServices.GetRequiredService<IConfiguration>()["SiteUrl"] ?? "https://makelectron.com";
+    }
+    <link rel="alternate" hreflang="pt-BR" href="@($"{siteUrl}{currentPath}?cultura=pt-BR")" />
+    <link rel="alternate" hreflang="en" href="@($"{siteUrl}{currentPath}?cultura=en")" />
+    <link rel="alternate" hreflang="es" href="@($"{siteUrl}{currentPath}?cultura=es")" />
+    <link rel="alternate" hreflang="x-default" href="@($"{siteUrl}{currentPath}")" />
+    
     <component type="typeof(HeadOutlet)" render-mode="ServerPrerendered" />
 </head>
 <body>
