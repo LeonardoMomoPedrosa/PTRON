@@ -6,7 +6,7 @@
     <ActivatorContent>
         <MudButton Color="Color.Inherit" Class="language-button" OnClick="@context.ToggleAsync" aria-label="@L["Escolher idioma"]">
             <FlagIcon Code="@_current.Code" Width="22" />
-            <span lang="@_current.Code" class="ml-2">@_current.Name</span>
+            <span lang="@_current.Code" class="ml-2 language-name">@_current.Name</span>
         </MudButton>
     </ActivatorContent>
     <ChildContent>

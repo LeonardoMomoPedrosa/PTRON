@@ -392,6 +392,10 @@ a, .btn-link {
         display: none;
     }
 
+    .language-name {
+        display: none;
+    }
+
     .insumos-page {
         margin-top: -1.5rem;
     }
