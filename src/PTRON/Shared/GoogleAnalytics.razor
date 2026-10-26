@@ -1,0 +1,23 @@
+@inject IConfiguration Configuration
+
+@if (!string.IsNullOrEmpty(MeasurementId))
+{
+    <HeadContent>
+        @* Google Analytics 4 *@
+        <script async src="https://www.googletagmanager.com/gtag/js?id=@MeasurementId"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '@MeasurementId', {
+                'anonymize_ip': @(AnonymizeIp ? "true" : "false"),
+                'cookie_flags': 'SameSite=None;Secure'
+            });
+        </script>
+    </HeadContent>
+}
+
+@code {
+    private string? MeasurementId => Configuration["GoogleAnalytics:MeasurementId"];
+    private bool AnonymizeIp => Configuration.GetValue<bool>("GoogleAnalytics:AnonymizeIp", true);
+}

@@ -1,0 +1,130 @@
+@inject IConfiguration Configuration
+
+<HeadContent>
+    <script type="application/ld+json">
+        @((MarkupString)GetStructuredData())
+    </script>
+</HeadContent>
+
+@code {
+    [Parameter] public string Type { get; set; } = "Organization";
+    [Parameter] public string? Name { get; set; }
+    [Parameter] public string? Description { get; set; }
+    [Parameter] public string? Url { get; set; }
+    [Parameter] public string? Logo { get; set; }
+    [Parameter] public string? Image { get; set; }
+    
+    // For WebApplication/SoftwareApplication
+    [Parameter] public string? ApplicationCategory { get; set; }
+    [Parameter] public string? OperatingSystem { get; set; }
+    [Parameter] public string? BrowserRequirements { get; set; }
+    
+    // For BreadcrumbList
+    [Parameter] public List<BreadcrumbItem>? Breadcrumbs { get; set; }
+
+    private string GetStructuredData()
+    {
+        var baseUrl = Configuration["SiteUrl"] ?? "https://makelectron.com";
+        
+        return Type switch
+        {
+            "Organization" => GetOrganizationSchema(baseUrl),
+            "WebApplication" => GetWebApplicationSchema(baseUrl),
+            "SoftwareApplication" => GetSoftwareApplicationSchema(baseUrl),
+            "BreadcrumbList" => GetBreadcrumbListSchema(baseUrl),
+            _ => GetOrganizationSchema(baseUrl)
+        };
+    }
+
+    private string GetOrganizationSchema(string baseUrl)
+    {
+        return $$"""
+        {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "name": "{{Name ?? "Makelectron"}}",
+            "description": "{{Description ?? "Controle de produção de equipamentos eletrônicos com gestão de estoque e cálculo de custos"}}",
+            "url": "{{Url ?? baseUrl}}",
+            "logo": "{{GetAbsoluteUrl(Logo ?? "/logo.png", baseUrl)}}",
+            "sameAs": []
+        }
+        """;
+    }
+
+    private string GetWebApplicationSchema(string baseUrl)
+    {
+        return $$"""
+        {
+            "@context": "https://schema.org",
+            "@type": "WebApplication",
+            "name": "{{Name ?? "Makelectron"}}",
+            "description": "{{Description ?? "Aplicativo web para controle de produção, gestão de estoque de componentes e cálculo de custos com suporte a múltiplas moedas"}}",
+            "url": "{{Url ?? baseUrl}}",
+            "applicationCategory": "{{ApplicationCategory ?? "BusinessApplication"}}",
+            "operatingSystem": "{{OperatingSystem ?? "Any"}}",
+            "browserRequirements": "{{BrowserRequirements ?? "Requires JavaScript. Requires HTML5."}}",
+            "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "BRL"
+            },
+            "screenshot": "{{GetAbsoluteUrl(Image ?? "/fancy_image.jpg", baseUrl)}}"
+        }
+        """;
+    }
+
+    private string GetSoftwareApplicationSchema(string baseUrl)
+    {
+        return $$"""
+        {
+            "@context": "https://schema.org",
+            "@type": "SoftwareApplication",
+            "name": "{{Name ?? "Makelectron"}}",
+            "description": "{{Description ?? "Sistema de controle de produção e gestão de estoque para equipamentos eletrônicos"}}",
+            "url": "{{Url ?? baseUrl}}",
+            "applicationCategory": "{{ApplicationCategory ?? "BusinessApplication"}}",
+            "operatingSystem": "{{OperatingSystem ?? "Web Browser"}}",
+            "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "BRL"
+            }
+        }
+        """;
+    }
+
+    private string GetBreadcrumbListSchema(string baseUrl)
+    {
+        if (Breadcrumbs == null || !Breadcrumbs.Any())
+            return "{}";
+
+        var items = string.Join(",\n            ", Breadcrumbs.Select((item, index) => $$"""
+            {
+                "@type": "ListItem",
+                "position": {{index + 1}},
+                "name": "{{item.Name}}",
+                "item": "{{GetAbsoluteUrl(item.Url, baseUrl)}}"
+            }
+            """));
+
+        return $$"""
+        {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+            {{items}}
+            ]
+        }
+        """;
+    }
+
+    private string GetAbsoluteUrl(string url, string baseUrl)
+    {
+        if (url.StartsWith("http://") || url.StartsWith("https://"))
+            return url;
+        
+        return $"{baseUrl}{(url.StartsWith("/") ? "" : "/")}{url}";
+    }
+
+    public record BreadcrumbItem(string Name, string Url);
+}
