@@ -396,6 +396,34 @@ a, .btn-link {
         display: none;
     }
 
+    .beta-mark {
+        display: none;
+    }
+
+    .mud-appbar .ml-2 {
+        margin-left: 0.25rem !important;
+    }
+
+    .mud-appbar .brand-logo {
+        height: 24px !important;
+    }
+
+    .mud-appbar .brand-logo img {
+        height: 24px;
+    }
+
+    .language-button {
+        min-width: 40px !important;
+        padding-left: 8px !important;
+        padding-right: 8px !important;
+    }
+
+    .mud-appbar .mud-button-root.mud-icon-button {
+        padding: 8px;
+    }
+}
+}
+
     .insumos-page {
         margin-top: -1.5rem;
     }
