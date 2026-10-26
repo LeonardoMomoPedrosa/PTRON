@@ -58,7 +58,7 @@ else
                 : L["Produção concluída. O estoque agora não cobre outra leva de {0} unidades.", _preview.Quantidade])
         </MudAlert>
     }
-    else if (!_preview.PodeProduzir)
+    else if (!_preview.PodeProduzir && !_preview.TemCustosCustomizados)
     {
         <MudAlert Severity="Severity.Error" Class="mb-4" Dense="true">
             <MudText Typo="Typo.subtitle2">
@@ -74,6 +74,30 @@ else
                     </li>
                 }
             </ul>
+            <MudText Typo="Typo.body2" Class="mt-3">
+                @L["💡 Você pode inserir custos customizados abaixo para estimar o custo de pré-venda."]
+            </MudText>
+        </MudAlert>
+    }
+    else if (_preview.TemCustosCustomizados)
+    {
+        <MudAlert Severity="Severity.Info" Class="mb-4" Dense="true">
+            <MudText Typo="Typo.subtitle2">
+                @L["Modo de Prévia — Estimativa de Custo para Pré-Venda"]
+            </MudText>
+            <MudText Typo="Typo.body2" Class="mt-2">
+                @(_preview.Quantidade == 1
+                    ? L["Custo estimado com valores customizados:"]
+                    : L["Custo estimado para {0} unidades com valores customizados:", _preview.Quantidade])
+                <b>@Format.Money(_preview.CustoEstimado)</b>
+                @if (_preview.Quantidade > 1)
+                {
+                    <text> (@L["Custo por unidade:"] <b>@Format.Money(_preview.CustoPorUnidade)</b>)</text>
+                }
+            </MudText>
+            <MudText Typo="Typo.caption" Class="mt-2 mud-text-secondary">
+                @L["⚠️ Esta é apenas uma estimativa. Produção não está disponível com custos customizados."]
+            </MudText>
         </MudAlert>
     }
     else
@@ -111,6 +135,12 @@ else
                     {
                         <MudText Typo="Typo.caption" Class="mud-text-secondary">@context.InsumoDetalhe</MudText>
                     }
+                    @if (!context.Disponivel)
+                    {
+                        <MudText Typo="Typo.caption" Class="mud-error-text">
+                            @L["Falta {0}", Format.Number(context.Faltante)]
+                        </MudText>
+                    }
                 </MudTd>
                 <MudTd DataLabel="@L["Necessário"]" Style="text-align:right">
                     @Format.Number(context.QtdNecessaria)
@@ -125,18 +155,53 @@ else
                        Class="@(context.Disponivel ? null : "mud-error-text")">
                     @Format.Number(context.SaldoDisponivel)
                 </MudTd>
-                <MudTd DataLabel="@L["Custo unit."]" Style="text-align:right">@Format.Money(context.CustoUnitario)</MudTd>
-                <MudTd DataLabel="@L["Subtotal"]" Style="text-align:right">@Format.Money(context.Subtotal)</MudTd>
+                <MudTd DataLabel="@L["Custo unit."]" Style="text-align:right">
+                    @if (!context.Disponivel)
+                    {
+                        <MudNumericField T="decimal?"
+                                         @bind-Value="context.CustoCustomizado"
+                                         @bind-Value:after="StateHasChanged"
+                                         Label="@L["Custo estimado"]"
+                                         Placeholder="@Format.Money(context.CustoUnitario)"
+                                         Min="0"
+                                         Step="0.01m"
+                                         Variant="Variant.Outlined"
+                                         Margin="Margin.Dense"
+                                         Clearable="true"
+                                         HideSpinButtons="true"
+                                         Adornment="Adornment.Start"
+                                         AdornmentIcon="@Icons.Material.Filled.AttachMoney" />
+                        @if (context.CustoCustomizado.HasValue)
+                        {
+                            <MudText Typo="Typo.caption" Class="mud-text-secondary">
+                                @L["Original:"] @Format.Money(context.CustoUnitario)
+                            </MudText>
+                        }
+                    }
+                    else
+                    {
+                        @Format.Money(context.CustoUnitario)
+                    }
+                </MudTd>
+                <MudTd DataLabel="@L["Subtotal"]" Style="text-align:right">
+                    @Format.Money(context.Subtotal)
+                    @if (context.CustoCustomizado.HasValue)
+                    {
+                        <MudIcon Icon="@Icons.Material.Filled.Preview" Color="Color.Info" Size="Size.Small" Title="@L["Custo customizado"]" />
+                    }
+                </MudTd>
                 <MudTd DataLabel="@L["Status"]" Style="text-align:center">
                     @if (context.Disponivel)
                     {
                         <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Small" />
                     }
+                    else if (context.CustoCustomizado.HasValue)
+                    {
+                        <MudIcon Icon="@Icons.Material.Filled.Calculate" Color="Color.Info" Size="Size.Small" Title="@L["Prévia"]" />
+                    }
                     else
                     {
-                        <MudChip T="string" Color="Color.Error" Size="Size.Small">
-                            @L["Falta {0}", Format.Number(context.Faltante)]
-                        </MudChip>
+                        <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" Size="Size.Small" />
                     }
                 </MudTd>
             </RowTemplate>
@@ -144,8 +209,25 @@ else
                 <MudTd></MudTd>
                 <MudTd></MudTd>
                 <MudTd></MudTd>
-                <MudTd Style="text-align:right"><b>@(_preview.Quantidade == 1 ? L["Custo estimado"] : L["Custo de {0}", _preview.Quantidade])</b></MudTd>
-                <MudTd Style="text-align:right"><b>@Format.Money(_preview.CustoEstimado)</b></MudTd>
+                <MudTd Style="text-align:right">
+                    <b>
+                        @if (_preview.TemCustosCustomizados)
+                        {
+                            @(_preview.Quantidade == 1 ? L["Prévia de custo"] : L["Prévia de custo de {0}", _preview.Quantidade])
+                        }
+                        else
+                        {
+                            @(_preview.Quantidade == 1 ? L["Custo estimado"] : L["Custo de {0}", _preview.Quantidade])
+                        }
+                    </b>
+                </MudTd>
+                <MudTd Style="text-align:right">
+                    <b>@Format.Money(_preview.CustoEstimado)</b>
+                    @if (_preview.TemCustosCustomizados)
+                    {
+                        <MudIcon Icon="@Icons.Material.Filled.Preview" Color="Color.Info" Size="Size.Small" />
+                    }
+                </MudTd>
                 <MudTd></MudTd>
             </FooterContent>
         </MudTable>
